@@ -8,5 +8,7 @@ import {
 FactoryContract_NewCore_loader(({ event, context }) => {});
 FactoryContract_NewCore_handler(({ event, context }) => {});
 
-FactoryContract_NewPool_loader(({ event, context }) => {});
+FactoryContract_NewPool_loader(({ event, context }) => {
+  context.contractRegistration.addLPv2(event.params.lp);
+});
 FactoryContract_NewPool_handler(({ event, context }) => {});

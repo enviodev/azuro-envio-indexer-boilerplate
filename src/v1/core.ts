@@ -23,5 +23,8 @@ CoreContract_ConditionShifted_handler(({ event, context }) => {});
 CoreContract_ConditionStopped_loader(({ event, context }) => {});
 CoreContract_ConditionStopped_handler(({ event, context }) => {});
 
-CoreContract_LpChanged_loader(({ event, context }) => {});
+CoreContract_LpChanged_loader(({ event, context }) => {
+  context.contractRegistration.addLP(event.params.newLp);
+});
+
 CoreContract_LpChanged_handler(({ event, context }) => {});
