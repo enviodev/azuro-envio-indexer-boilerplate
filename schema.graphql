@@ -1,0 +1,9 @@
+type FreebetContract @entity {
+  id: ID! # contractAddress-chainId
+  # liquidityPool: LiquidityPoolContract! # todo
+  liquidityPool: String!
+  address: String!
+  name: String
+  affiliate: String
+  manager: String
+}
