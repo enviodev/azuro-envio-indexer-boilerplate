@@ -11,6 +11,10 @@ import {
   CoreContract_LpChanged_handler,
 } from "../../generated/src/Handlers.gen";
 
+import { getTokenForPool } from "../contracts/lpv1";
+
+import { createPoolEntity } from "../common/pool";
+
 CoreContract_ConditionCreated_loader(({ event, context }) => {});
 CoreContract_ConditionCreated_handler(({ event, context }) => {});
 
@@ -23,8 +27,24 @@ CoreContract_ConditionShifted_handler(({ event, context }) => {});
 CoreContract_ConditionStopped_loader(({ event, context }) => {});
 CoreContract_ConditionStopped_handler(({ event, context }) => {});
 
-CoreContract_LpChanged_loader(({ event, context }) => {
-  context.contractRegistration.addLP(event.params.newLp);
+CoreContract_LpChanged_loader(async ({ event, context }) => {
+  await context.contractRegistration.addLP(event.params.newLp);
 });
 
-CoreContract_LpChanged_handler(({ event, context }) => {});
+CoreContract_LpChanged_handler(async ({ event, context }) => {
+  const { newLp } = event.params;
+
+  const token = await getTokenForPool(newLp, event.chainId);
+
+  const pool = await createPoolEntity(
+    "v1",
+    event.srcAddress,
+    newLp,
+    token.token,
+    event.blockNumber,
+    event.blockTimestamp,
+    event.chainId
+  );
+
+  context.LiquidityPoolContract.set(pool);
+});

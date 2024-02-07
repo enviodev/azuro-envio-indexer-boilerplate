@@ -1,3 +1,39 @@
+type LiquidityPoolContract @entity {
+  id: ID!
+  chainId: Int!
+  # chainName: String!
+  address: String!
+  # cores: [CoreContract!]! @derivedFrom(field: "liquidityPool") # todo
+  coreAddresses: [String!]
+  version: String! # previously "type" but type is a reserved word so going with version
+  token: String!
+  tokenDecimals: Int!
+  asset: String!
+  betsAmount: BigInt!
+  betsCount: BigInt!
+  wonBetsAmount: BigInt!
+  wonBetsCount: BigInt!
+  firstCalculatedBlockNumber: BigInt!
+  # firstCalculatedBlockTimestamp: BigInt!
+  lastCalculatedBlockNumber: BigInt!
+  lastCalculatedBlockTimestamp: BigInt!
+  daysSinceDeployment: BigInt!
+  depositedAmount: BigInt!
+  withdrawnAmount: BigInt!
+  withdrawTimeout: BigInt!
+  # todo
+  # "all funds on Liquidity Pool"
+  # rawTvl: BigInt!
+  # tvl: BigDecimal!
+  # "(betsAmount - wonBetsAmount) * Xprofit / (depositedAmount - withdrawnAmount) / daysSinceDeployment * 365"
+  # rawApr: BigInt!
+  apr: BigInt! # BigDecimal! will need to handle big decimals
+  # nfts: [LiquidityPoolNft!]! @derivedFrom(field: "liquidityPool")
+  # liquidityManager: String
+  depositedWithStakingAmount: BigInt!
+  withdrawnWithStakingAmount: BigInt!
+}
+
 type FreebetContract @entity {
   id: ID! # contractAddress-chainId
   # liquidityPool: LiquidityPoolContract! # todo

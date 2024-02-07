@@ -4,6 +4,7 @@ contracts:
     handler: src/v1/core.ts
     events:
       - event: ConditionCreated(uint256 indexed oracleConditionId, uint256 indexed conditionId, uint64 timestamp)
+        isAsync: true
       - event: ConditionResolved(uint256 indexed oracleConditionId, uint256 indexed conditionId, uint64 outcomeWin, uint8 state, uint256 amountForLp)
       - event: ConditionShifted(uint256 oracleCondId, uint256 conditionId, uint64 newTimestamp)
       - event: ConditionStopped(uint256 indexed conditionId, bool flag)
