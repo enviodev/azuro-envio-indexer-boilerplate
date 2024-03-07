@@ -4,6 +4,7 @@ import * as path from "path";
 export const CacheCategory = {
   Token: "token",
   LPv1: "lpv1",
+  FreebetV1Contract: "freebetv1",
 } as const;
 
 export type CacheCategory = (typeof CacheCategory)[keyof typeof CacheCategory];
@@ -18,6 +19,8 @@ type ShapeToken = Shape &
 
 type ShapeLPv1 = Shape & Record<Address, { token: string }>;
 
+type ShapeFreebetV1 = Shape & Record<Address, { name: string; lp: string }>;
+
 export class Cache {
   static init<C = CacheCategory>(
     category: C,
@@ -31,6 +34,8 @@ export class Cache {
       ? ShapeToken
       : C extends "lpv1"
       ? ShapeLPv1
+      : C extends "freebetv1"
+      ? ShapeFreebetV1
       : ShapeRoot;
     const entry = new Entry<S>(`${category}-${chainId.toString()}`);
     return entry;
