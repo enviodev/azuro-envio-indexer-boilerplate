@@ -1,4 +1,5 @@
 name: azuro
+description: Azuro subgraphs migrated from thegraph
 contracts:
   - name: Core
     handler: src/v1/core.ts
