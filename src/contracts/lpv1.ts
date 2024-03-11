@@ -33,7 +33,6 @@ export async function getTokenForPool(
   try {
     const address = await Promise.resolve(lpv1token.methods.token().call());
 
-    // Return an object containing the name, decimals, and symbol
     const entry = {
       token: address?.toString() || "",
     } as const;

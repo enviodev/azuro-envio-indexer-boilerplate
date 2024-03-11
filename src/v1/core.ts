@@ -8,7 +8,7 @@ import {
   CoreContract_ConditionStopped_loader,
   CoreContract_ConditionStopped_handler,
   CoreContract_LpChanged_loader,
-  CoreContract_LpChanged_handler,
+  CoreContract_LpChanged_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 
 import { getTokenForPool } from "../contracts/lpv1";
@@ -31,7 +31,7 @@ CoreContract_LpChanged_loader(async ({ event, context }) => {
   await context.contractRegistration.addLP(event.params.newLp);
 });
 
-CoreContract_LpChanged_handler(async ({ event, context }) => {
+CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
   const { newLp } = event.params;
 
   const token = await getTokenForPool(newLp, event.chainId);
