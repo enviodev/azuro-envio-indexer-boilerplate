@@ -43,7 +43,9 @@ LPv2Contract_LiquidityRemoved_loader(({ event, context }) => {});
 LPv2Contract_LiquidityRemoved_handler(({ event, context }) => {});
 
 LPv2Contract_NewGame_loader(({ event, context }) => {});
-LPv2Contract_NewGame_handler(({ event, context }) => {});
+LPv2Contract_NewGame_handler(({ event, context }) => {
+  context.log.info(event.params.ipfsHash);
+});
 
 LPv2Contract_Transfer_loader(({ event, context }) => {});
 LPv2Contract_Transfer_handler(({ event, context }) => {});

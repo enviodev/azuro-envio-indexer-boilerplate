@@ -22,9 +22,11 @@
     "typescript": "5.2.2"
   },
   "dependencies": {
+    "bs58": "^5.0.0",
     "chai": "4.3.10",
-    "envio": "^0.0.32",
+    "envio": "^0.0.33",
     "ethers": "6.8.0",
+    "multihashes": "^4.0.3",
     "web3": "^4.4.0"
   }
 }
