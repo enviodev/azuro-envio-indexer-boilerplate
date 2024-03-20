@@ -42,8 +42,5 @@ export async function createPoolEntity(
     withdrawnWithStakingAmount: 0n,
   };
 
-  console.log("liquidityPoolContractEntity");
-  console.log(liquidityPoolContractEntity);
-
   return liquidityPoolContractEntity;
 }
