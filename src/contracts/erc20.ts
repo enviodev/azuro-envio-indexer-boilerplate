@@ -60,3 +60,28 @@ export async function getErc20TokenDetails(
     throw err; // or handle the error as needed
   }
 }
+
+export async function getErc20TokenBalance(
+  tokenAddress: string,
+  ownerAddress: string,
+  chainId: number,
+): Promise<bigint> {
+  // RPC URL
+  const rpcURL = CHAIN_CONSTANTS[chainId].rpcURL;
+
+  // Create Web3 instance
+  const web3 = new Web3(rpcURL);
+
+  // Create ERC20 contract instance
+  const erc20token = new web3.eth.Contract(contractABI, tokenAddress);
+
+  try {
+    // Use Promise.all to execute all calls in parallel and wait for all of them to resolve
+    const balance = await erc20token.methods.balanceOf(ownerAddress).call();
+    
+    return BigInt(balance);
+  } catch (err) {
+    console.error("An error occurred", err);
+    throw err; // or handle the error as needed
+  }
+}

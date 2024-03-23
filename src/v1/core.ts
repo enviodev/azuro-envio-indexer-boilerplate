@@ -89,7 +89,8 @@ CoreContract_ConditionCreated_handler(({ event, context }) => {
 CoreContract_ConditionResolved_loader(({ event, context }) => {});
 CoreContract_ConditionResolved_handler(({ event, context }) => {});
 
-CoreContract_ConditionShifted_loader(({ event, context }) => {});
+CoreContract_ConditionShifted_loader(({ event, context }) => {
+});
 CoreContract_ConditionShifted_handler(({ event, context }) => {});
 
 CoreContract_ConditionStopped_loader(({ event, context }) => {});

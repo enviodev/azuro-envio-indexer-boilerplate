@@ -15,3 +15,8 @@ Questions:
 5. load with id or address?
 6. Should I return entity after setting properties?
 7. How to check code is correct?
+8. This vs load in graphql: const betEntity = new Bet(betEntityId)
+9. What to do with bigdecimal
+10. arrays of entities are unsupported in schema. e.g. outcomes: [LiveOutcome!]! @derivedFrom(field: "condition")
+11. Cacheing for things that can easily change? E.g. token balance https://github.com/Azuro-protocol/Azuro-subgraphs/blob/e06907395126eb08e6bcf1097f789390d0fcec19/api/src/common/pool.ts#L53
+12. No handlers for handleOldLiquidityRemoved https://github.com/Azuro-protocol/Azuro-subgraphs/blob/e06907395126eb08e6bcf1097f789390d0fcec19/api/src/v1/lp.ts#L122
