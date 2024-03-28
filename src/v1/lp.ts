@@ -1,3 +1,4 @@
+import { env } from "process";
 import {
   LPContract_BetterWin_loader,
   LPContract_BetterWin_handler,
@@ -17,9 +18,9 @@ import {
 
 import { createBet, bettorWin } from "../common/bets";
 
-import { depositLiquidity } from "../common/pool";
+import { depositLiquidity, withdrawLiquidity, transferLiquidity, changeWithdrawalTimeout } from "../common/pool";
 
-import { VERSION_V1, BET_TYPE_ORDINAR } from "../constants";
+import { VERSION_V1, BET_TYPE_ORDINAR, ZERO_ADDRESS } from "../constants";
 
 LPContract_BetterWin_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
@@ -60,13 +61,14 @@ LPContract_LiquidityAdded_handler(({ event, context }) => {
 LPContract_LiquidityRemoved_loader(({ event, context }) => {
 
 });
+// TODO
 LPContract_LiquidityRemoved_handler(({ event, context }) => {
   let isFullyWithdrawn = false
 
-  const liquidityPoolSC = LPV1Abi.bind(event.address)
+  const liquidityPoolSC = LPV1Abi.bind(event.srcAddress)
   const nodeWithdrawView = liquidityPoolSC.try_nodeWithdrawView(event.params.leaf)
 
-  if (!nodeWithdrawView.reverted && nodeWithdrawView.value.equals(BigInt.zero())) {
+  if (!nodeWithdrawView.reverted && nodeWithdrawView.value === 0n) {
     isFullyWithdrawn = true
   }
 
@@ -77,12 +79,15 @@ LPContract_LiquidityRemoved_handler(({ event, context }) => {
     event.params.account,
     isFullyWithdrawn,
     event.blockNumber,
+    event.blockTimestamp,
     event.transactionHash,
+    event.chainId,
+    context,
   )
 });
 
-LPContract_LiquidityRequested_loader(({ event, context }) => {});
-LPContract_LiquidityRequested_handler(({ event, context }) => {});
+LPContract_LiquidityRequested_loader(({ event, context }) => { });
+LPContract_LiquidityRequested_handler(({ event, context }) => { });
 
 LPContract_NewBet_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
@@ -129,11 +134,22 @@ LPContract_NewBet_handler(({ event, context }) => {
 });
 
 LPContract_Transfer_loader(({ event, context }) => {
-  
+
 });
 LPContract_Transfer_handler(({ event, context }) => {
-  
+  if (event.params.from === ZERO_ADDRESS) {
+    return
+  }
+
+  transferLiquidity(
+    event.srcAddress,
+    event.params.tokenId,
+    event.params.to,
+    context,
+  )
 });
 
-LPContract_WithdrawTimeoutChanged_loader(({ event, context }) => {});
-LPContract_WithdrawTimeoutChanged_handler(({ event, context }) => {});
+LPContract_WithdrawTimeoutChanged_loader(({ event, context }) => { });
+LPContract_WithdrawTimeoutChanged_handler(({ event, context }) => { 
+  changeWithdrawalTimeout(event.srcAddress, event.params.newWithdrawTimeout, context)
+});
