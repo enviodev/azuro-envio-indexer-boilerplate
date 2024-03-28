@@ -1,14 +1,14 @@
 import { LiquidityPoolContractEntity, LiquidityPoolNftEntity, LiquidityPoolTransactionEntity } from "../../generated/src/Types.gen";
 
-import { getErc20TokenDetails } from "../contracts/erc20";
+import { getErc20TokenDetails, getErc20TokenBalance } from "../contracts/erc20";
+
+import { LP_TRANSACTION_TYPE_DEPOSIT, LP_TRANSACTION_TYPE_WITHDRAWAL, X_PROFIT, X_PROFIT_DIVIDER, ZERO_ADDRESS } from "../constants";
 
 import { toDecimal } from "../utils/math";
 
-import { LP_TRANSACTION_TYPE_DEPOSIT, X_PROFIT, X_PROFIT_DIVIDER } from "../constants";
-
 import { daysBetweenTimestamps } from "../utils/time";
 
-import { getErc20TokenBalance } from "../contracts/erc20";
+import { addUniqueItem } from "../utils/array";
 
 async function updatePoolOnCommonEvents(
   liquidityPoolAddress: string,
@@ -174,11 +174,13 @@ export function withdrawLiquidity(
   leaf: bigint,
   account: string,
   isFullyWithdrawn: boolean,
-  block: number,
+  blockNumber: number,
+  blockTimestamp: number,
   txHash: string,
+  chainId: number,
   context: any,
 ): LiquidityPoolTransactionEntity | null {
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress)!;
+  const liquidityPoolContractEntity: LiquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress)!;
 
   // TODO remove later
   if (!liquidityPoolContractEntity) {
@@ -186,13 +188,106 @@ export function withdrawLiquidity(
     return null
   }
 
-  liquidityPoolContractEntity.withdrawnAmount = liquidityPoolContractEntity.withdrawnAmount + amount
+  context.LiquidityPoolContract.set({
+    ...liquidityPoolContractEntity,
+    withdrawnAmount: liquidityPoolContractEntity.withdrawnAmount + amount,
+  })
 
   if (liquidityPoolContractEntity.liquidityManager) {
-    liquidityPoolContractEntity.withdrawnWithStakingAmount = liquidityPoolContractEntity.withdrawnWithStakingAmount + amount
+    context.LiquidityPoolContract.set({
+      ...liquidityPoolContractEntity,
+      withdrawnWithStakingAmount: liquidityPoolContractEntity.withdrawnWithStakingAmount + amount,
+    })
   }
 
-  updatePoolOnCommonEvents(liquidityPoolAddress, block.number, block.timestamp, context)
+  updatePoolOnCommonEvents(liquidityPoolAddress, blockNumber, blockTimestamp, chainId, context)
 
-  const liquidityPoolNftEntityId = liquidity
+  const liquidityPoolNftEntityId = liquidityPoolAddress + "_" + leaf.toString()
+  const liquidityPoolNftEntity: LiquidityPoolNftEntity = context.LiquidityPoolNft.get(liquidityPoolNftEntityId)
+
+  // TODO remove later
+  if (!liquidityPoolNftEntity) {
+    context.log.error(`withdrawLiquidity liquidityPoolNftEntity not found. liquidityPoolNftEntityId = ${liquidityPoolNftEntityId}`)
+    return null
+  }
+
+  context.LiquidityPoolNft.set({
+    ...liquidityPoolNftEntity,
+    rawWithdrawnAmount: liquidityPoolNftEntity.rawWithdrawnAmount + amount,
+    withdrawnAmount: toDecimal(
+      liquidityPoolNftEntity.rawWithdrawnAmount,
+      liquidityPoolContractEntity.tokenDecimals,
+    ),
+    isFullyWithdrawn: isFullyWithdrawn,
+  })
+
+  const transactionEntity: LiquidityPoolTransactionEntity = context.LiquidityPoolTransaction.get(txHash)
+
+  context.LiquidityPoolTransaction.set({
+    ...transactionEntity,
+    txHash: txHash,
+    account: account,
+    type: LP_TRANSACTION_TYPE_WITHDRAWAL,
+    nft: liquidityPoolNftEntity.id,
+    rawAmount: amount,
+    amount: toDecimal(amount, liquidityPoolContractEntity.tokenDecimals),
+    blockNumber: blockNumber,
+    blockTimestamp: blockTimestamp,
+    liquidityPool: liquidityPoolContractEntity.id,
+  })
+
+  return transactionEntity
+}
+
+
+export function transferLiquidity(
+  liquidityPoolAddress: string,
+  leaf: bigint,
+  to: string,
+  context: any,
+): LiquidityPoolNftEntity | null {
+  const liquidityPoolNftEntityId = liquidityPoolAddress + "_" + leaf.toString()
+  const liquidityPoolNftEntity: LiquidityPoolNftEntity = context.LiquidityPoolNft.get(liquidityPoolNftEntityId)
+
+  // TODO remove later
+  if (!liquidityPoolNftEntity) {
+    context.log.error(`transferLiquidity liquidityPoolNftEntity not found. liquidityPoolNftEntityId = ${liquidityPoolNftEntityId}`)
+    return null
+  }
+
+  context.LiquidityPoolNft.set({
+    ...liquidityPoolNftEntity,
+    owner: to,
+  })
+
+  if (to !== ZERO_ADDRESS) {
+    context.LiquidityPoolNft.set({
+      ...liquidityPoolNftEntity,
+      historicalOwners: addUniqueItem(liquidityPoolNftEntity.historicalOwners, to),
+    })
+  }
+
+  return liquidityPoolNftEntity
+}
+
+
+export function changeWithdrawalTimeout(
+  liquidityPoolAddress: string,
+  newWithdrawTimeout: BigInt,
+  context: any,
+): LiquidityPoolContractEntity | null {
+  const liquidityPoolContractEntity: LiquidityPoolContractEntity = context.LiquidityPoolContract.load(liquidityPoolAddress)
+
+  // TODO remove later
+  if (!liquidityPoolContractEntity) {
+    context.log.error(`changeWithdrawalTimeout liquidityPoolContractEntity not found. liquidityPoolAddress = ${liquidityPoolAddress}`)
+    return null
+  }
+
+  context.LiquidityPoolContract.set({
+    ...liquidityPoolContractEntity,
+    withdrawTimeout: newWithdrawTimeout,
+  })
+
+  return liquidityPoolContractEntity
 }

@@ -21,15 +21,14 @@ type LiquidityPoolContract @entity {
   depositedAmount: BigInt!
   withdrawnAmount: BigInt!
   withdrawTimeout: BigInt!
-  # todo
-  # "all funds on Liquidity Pool"
-  # rawTvl: BigInt!
+  "all funds on Liquidity Pool"
+  rawTvl: BigInt!
   # tvl: BigDecimal!
   # "(betsAmount - wonBetsAmount) * Xprofit / (depositedAmount - withdrawnAmount) / daysSinceDeployment * 365"
-  # rawApr: BigInt!
+  rawApr: BigInt!
   apr: BigInt! # BigDecimal! will need to handle big decimals
   # nfts: [LiquidityPoolNft!]! @derivedFrom(field: "liquidityPool")
-  # liquidityManager: String
+  liquidityManager: String
   depositedWithStakingAmount: BigInt!
   withdrawnWithStakingAmount: BigInt!
 }

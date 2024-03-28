@@ -17,6 +17,8 @@ import { createPoolEntity } from "../common/pool";
 import { createCoreContractEntity } from "../common/factory";
 import { createCondition } from "../common/condition";
 import { VERSION_V1 } from "../constants";
+import { createAzuroBetEntity } from "../common/azurobet";
+import { coreContractEntity } from "../src/Types.gen";
 
 CoreContract_ConditionCreated_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
@@ -31,21 +33,17 @@ CoreContract_ConditionCreated_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const startsAt = event.params.timestamp
 
-  // const conditionId = event.params.conditionId
-  // const startsAt = event.params.timestamp
+  const coreSC = CoreV1.bind(event.srcAddress)
+  const conditionData = coreSC.try_getCondition(conditionId)
 
+  if (conditionData.reverted) {
+    context.log.error('getCondition reverted. conditionId = {}')
+    return
+  }
 
-  // TODO
-  // const coreSC = CoreV1.bind(event.address)
-  // const conditionData = coreSC.try_getCondition(conditionId)
+  const coreAddress = event.srcAddress
+  const liquidityPoolAddress = coreContractEntity.liquidityPool_id
 
-  // if (conditionData.reverted) {
-  //   log.error('getCondition reverted. conditionId = {}', [conditionId.toString()])
-
-  //   return
-  // }
-
-  // const coreAddress = event.address.toHexString()
   // const liquidityPoolAddress = CoreContract.load(coreAddress)!.liquidityPool
   
   const gameEntity = createGame(
@@ -59,12 +57,10 @@ CoreContract_ConditionCreated_handler(({ event, context }) => {
     event.blockNumber, // event.block,
   )
 
-  // // TODO remove later
-  // if (!gameEntity) {
-  //   log.error('v1 ConditionCreated can\'t create game. conditionId = {}', [conditionId.toString()])
-
-  //   return
-  // }
+  if (!gameEntity) {
+    context.log.error('v1 ConditionCreated can\'t create game. conditionId = {}')
+    return
+  }
 
   let conditionCreated = createCondition(
     VERSION_V1,
@@ -102,14 +98,15 @@ CoreContract_LpChanged_loader(async ({ event, context }) => {
 });
 
 CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
-  const { newLp } = event.params;
+  const coreAddress = event.srcAddress
+  const liquidityPoolAddress = event.params.newLp;
 
-  const token = await getTokenForPool(newLp, event.chainId);
+  const token = await getTokenForPool(liquidityPoolAddress, event.chainId);
 
   const liquidityPool = await createPoolEntity(
-    "v1",
-    event.srcAddress,
-    newLp,
+    VERSION_V1,
+    coreAddress,
+    liquidityPoolAddress,
     token.token,
     event.blockNumber,
     event.blockTimestamp,
@@ -118,16 +115,23 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
 
   context.LiquidityPoolContract.set(liquidityPool);
   
-  const coreContractEntity = context.CoreContract.get(event.srcAddress); 
+  const coreContractEntity = await context.CoreContract.get(event.srcAddress); 
 
   if (!coreContractEntity) {
-    let coreContract = createCoreContractEntity(event.srcAddress, newLp, "v1");
+    let coreContract = createCoreContractEntity(event.srcAddress, liquidityPoolAddress, "v1");
     context.CoreContract.set(coreContract);
   }
 
-  // let coreContractEntity = CoreContract.load(coreAddress)
+  const azuroBetAddress = liquidityPoolSC.try_azuroBet()
 
-  // if (!coreContractEntity) {
-  //   coreContractEntity = createCoreEntity(coreAddress, liquidityPoolContractEntity, CORE_TYPE_PRE_MATCH)
-  // }
+  if (azuroBetAddress.reverted) {
+    context.log.error('v1 handleLpChanged call azuroBet reverted')
+
+    return
+  }
+  
+  createAzuroBetEntity(coreAddress, azuroBetAddress, context)
+
+  AzuroBetV1.create(azuroBetAddress.value)
+
 });
