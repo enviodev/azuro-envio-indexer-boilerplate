@@ -291,3 +291,33 @@ export function changeWithdrawalTimeout(
 
   return liquidityPoolContractEntity
 }
+
+export function countConditionResolved(
+  liquidityPoolAddress: string,
+  betsAmount: bigint,
+  wonBetsAmount: bigint,
+  blockNumber: number,
+  blockTimestamp: number,
+  chainId: number,
+  context: any,
+): LiquidityPoolContractEntity | null {
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress)
+
+  // TODO remove later
+  if (!liquidityPoolContractEntity) {
+    context.log.error(`countConditionResolved liquidityPoolContractEntity not found. liquidityPoolAddress = ${liquidityPoolAddress}`)
+    return null
+  }
+
+  context.LiquidityPoolContract.set({
+    ...liquidityPoolContractEntity,
+    betsAmount: liquidityPoolContractEntity.betsAmount + betsAmount,
+    betsCount: liquidityPoolContractEntity.betsCount + 1n,
+    wonBetsAmount: liquidityPoolContractEntity.wonBetsAmount + wonBetsAmount,
+    wonBetsCount: liquidityPoolContractEntity.wonBetsCount + 1n,
+  })
+  
+  updatePoolOnCommonEvents(liquidityPoolAddress, blockNumber, blockTimestamp, chainId, context)
+
+  return liquidityPoolContractEntity
+}
