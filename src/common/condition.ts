@@ -1,6 +1,9 @@
-import { ConditionEntity } from "../../generated/src/Types.gen";
-import { Condition } from "../src/DbFunctions.bs";
-import { getOdds } from '../utils/math'
+import { ConditionEntity, GameEntity } from "../../generated/src/Types.gen";
+import { BET_RESULT_LOST, BET_RESULT_WON, BET_STATUS_CANCELED, BET_STATUS_RESOLVED, BET_TYPE_EXPRESS, BET_TYPE_ORDINAR, CONDITION_STATUS_CANCELED, CONDITION_STATUS_CREATED, CONDITION_STATUS_PAUSED, CONDITION_STATUS_RESOLVED, GAME_STATUS_CANCELED, GAME_STATUS_CREATED, GAME_STATUS_PAUSED, GAME_STATUS_RESOLVED, SELECTION_RESULT_LOST, SELECTION_RESULT_WON, VERSION_V2, VERSION_V3 } from "../constants";
+import { removeItem } from "../utils/array";
+import { getOdds, toDecimal } from '../utils/math'
+import { calcPayoutV2, calcPayoutV3 } from "./express";
+import { countConditionResolved } from "./pool";
 
 export function createCondition(
   version: string,
@@ -53,7 +56,7 @@ export function createCondition(
     conditionEntity._winningOutcomesCount,
   )
 
-  return conditionEntity //  why are we returning here again?
+  return conditionEntity
 
   // context.ConditionEntity.set()
   //conditionEntity.save()
@@ -121,4 +124,408 @@ export function createCondition(
   // }
 
   // return conditionEntity
+}
+
+
+export function resolveCondition(
+  version: string,
+  liquidityPoolAddress: string,
+  conditionEntityId: string,
+  winningOutcomes: bigint[],
+  transactionHash: string,
+  blockNumber: number,
+  blockTimestamp: number,
+  chainId: number,
+  context: any,
+): ConditionEntity | null {
+  const conditionEntity = context.Condition.load(conditionEntityId)
+
+  const isCanceled = winningOutcomes.length === 0 || winningOutcomes[0] === 0n
+
+  let betsAmount = 0n
+  let wonBetsAmount = 0n
+
+  if (isCanceled) {
+    context.Condition.set({
+      ...conditionEntity,
+      status: CONDITION_STATUS_CANCELED,
+    })
+  }
+  else {
+    let wonOutcomes: string[] = []
+
+    for (let i = 0; i < winningOutcomes.length; i++) {
+      const outcomeEntityId = conditionEntity.id + "_" + winningOutcomes[i].toString()
+      const outcomeEntity = context.Outcome.load(outcomeEntityId)!.id
+
+      wonOutcomes = wonOutcomes.concat([outcomeEntity])
+    }
+
+    context.Condition.set({
+      ...conditionEntity,
+      wonOutcomes: wonOutcomes,
+      wonOutcomesIds: winningOutcomes,
+      status: CONDITION_STATUS_RESOLVED,
+    })
+  }
+
+  context.Condition.set({
+    ...conditionEntity,
+    resolvedTxHash: transactionHash,
+    resolvedBlockNumber: blockNumber,
+    resolvedBlockTimestamp: blockTimestamp,
+    _updatedAt: blockTimestamp,
+  })
+
+  // TODO remove later
+  if (!conditionEntity.outcomesIds) {
+    context.log.error(`resolveCondition outcomesIds is empty.`)
+    return null
+  }
+
+  for (let i = 0; i < conditionEntity.outcomesIds!.length; i++) {
+    const outcomeEntityId = conditionEntity.id + "_" + conditionEntity.outcomesIds![i]
+    const outcomeEntity = context.Outcome.load(outcomeEntityId)!
+
+    if (outcomeEntity._betsEntityIds!.length === 0) {
+      continue
+    }
+
+    for (let j = 0; j < outcomeEntity._betsEntityIds!.length; j++) {
+      const betEntityId = outcomeEntity._betsEntityIds![j]
+      const betEntity = context.Bet.load(betEntityId)!
+
+      betsAmount = betsAmount + betEntity.rawAmount
+
+      const selectionEntityId = betEntityId + "_" + conditionEntity.conditionId.toString()
+      const selectionEntity = context.Selection.load(selectionEntityId)!
+
+      if (!isCanceled) {
+        if (winningOutcomes.indexOf(selectionEntity._outcomeId) !== -1) {
+          context.Bet.set({
+            ...betEntity,
+            _wonSubBetsCount: betEntity._wonSubBetsCount + 1,
+          })
+
+          context.Selection.set({
+            ...selectionEntity,
+            result: SELECTION_RESULT_WON,
+          })
+        }
+        else {
+          context.Bet.set({
+            ...betEntity,
+            _lostSubBetsCount: betEntity._lostSubBetsCount + 1,
+          })
+
+          context.Selection.set({
+            ...selectionEntity,
+            result: SELECTION_RESULT_LOST,
+          })
+        }
+      }
+      else {
+        context.Bet.set({
+          ...betEntity,
+          _canceledSubBetsCount: betEntity._canceledSubBetsCount + 1,
+        })
+      }
+
+      // All subBets is resolved
+      if (
+        betEntity._wonSubBetsCount
+        + betEntity._lostSubBetsCount
+        + betEntity._canceledSubBetsCount
+        === betEntity._subBetsCount
+      ) {
+        context.Bet.set({
+          ...betEntity,
+          resolvedBlockTimestamp: blockTimestamp,
+          resolvedBlockNumber: blockNumber,
+          resolvedTxHash: transactionHash,
+          rawSettledOdds: betEntity.rawOdds,
+          settledOdds: betEntity.odds,
+        })
+
+        // At least one subBet is lost - customer lost
+        if (betEntity._lostSubBetsCount > 0) {
+          context.Bet.set({
+            ...betEntity,
+            result: BET_RESULT_LOST,
+            status: BET_STATUS_RESOLVED,
+            rawPayout: 0n,
+            payout: BigDecimal.zero(),
+          })
+        }
+        // At least one subBet is won and no lost subBets - customer won
+        else if (betEntity._wonSubBetsCount > 0) {
+          context.Bet.set({
+            ...betEntity,
+            result: BET_RESULT_WON,
+            status: BET_STATUS_RESOLVED,
+            isRedeemable: true,
+          })
+
+          if (betEntity.type === BET_TYPE_ORDINAR) {
+            context.Bet.set({
+              ...betEntity,
+              rawPayout: betEntity.rawPotentialPayout,
+              payout: betEntity.potentialPayout,
+            })
+          }
+          else if (
+            betEntity.type === BET_TYPE_EXPRESS
+          ) {
+            let payoutSC: bigint | null = null
+
+            if (version === VERSION_V2) {
+              payoutSC = calcPayoutV2(betEntity.core, betEntity.betId)
+            }
+            else if (version === VERSION_V3) {
+              payoutSC = calcPayoutV3(betEntity.core, betEntity.betId)
+            }
+
+            if (payoutSC !== null) {
+              context.Bet.set({
+                ...betEntity,
+                rawPayout: payoutSC,
+                payout: toDecimal(payoutSC, betEntity._tokenDecimals),
+                rawSettledOdds: (payoutSC * 10n) ** betEntity._oddsDecimals / betEntity.rawAmount,
+                settledOdds: toDecimal(
+                  betEntity.rawSettledOdds!,
+                  betEntity._oddsDecimals,
+                ),
+              })
+            }
+            else {
+              context.Bet.set({
+                ...betEntity,
+                rawPayout: 0n,
+                payout: 0n,
+              })
+            }
+          }
+
+          wonBetsAmount = wonBetsAmount + betEntity.rawPayout!
+        }
+
+        // Only canceled subBets - express was canceled
+        else {
+          context.Bet.set({
+            ...betEntity,
+            status: BET_STATUS_CANCELED,
+            isRedeemable: true,
+            rawPayout: betEntity.rawAmount,
+            payout: betEntity.amount,
+          })
+        }
+      }
+      context.Bet.set({
+        ...betEntity,
+        _updatedAt: blockTimestamp,
+      })
+    }
+  }
+
+  // determine game status
+  // determine if game has active conditions
+  // determine if league has active games
+  // determine if sport has active leagues
+  // calculate turnover
+
+  const gameEntity = context.Game.load(conditionEntity.game)!
+  const leagueEntity = context.League.load(gameEntity.league)!
+  const countryEntity = context.Country.load(leagueEntity.country)!
+
+  context.Game.set({
+    ...gameEntity,
+    _activeConditionsEntityIds: removeItem(
+      gameEntity._activeConditionsEntityIds!,
+      conditionEntity.id,
+    ),
+    _pausedConditionsEntityIds: removeItem(
+      gameEntity._pausedConditionsEntityIds!,
+      conditionEntity.id,
+    ),
+  })
+
+  if (isCanceled) {
+    context.Game.set({
+      ...gameEntity,
+      _canceledConditionsEntityIds: gameEntity._canceledConditionsEntityIds!.concat([conditionEntity.id]),
+    })
+  }
+  else {
+    context.Game.set({
+      ...gameEntity,
+      _resolvedConditionsEntityIds: gameEntity._resolvedConditionsEntityIds!.concat([conditionEntity.id]),
+    })
+  }
+
+
+  if (gameEntity._activeConditionsEntityIds!.length === 0) {
+    if (gameEntity.hasActiveConditions) {
+      context.Game.set({
+        ...gameEntity,
+        hasActiveConditions: false,
+      })
+    }
+
+    if (
+      gameEntity._resolvedConditionsEntityIds!.length === 0
+      && gameEntity._pausedConditionsEntityIds!.length === 0
+      && gameEntity._canceledConditionsEntityIds!.length > 0
+    ) {
+      context.Game.set({
+        ...gameEntity,
+        status: GAME_STATUS_CANCELED,
+      })
+    }
+    else if (
+      gameEntity._resolvedConditionsEntityIds!.length > 0
+      && gameEntity._pausedConditionsEntityIds!.length === 0
+    ) {
+      context.Game.set({
+        ...gameEntity,
+        status: GAME_STATUS_RESOLVED,
+      })
+    }
+
+    context.League.set({
+      ...leagueEntity,
+      activeGamesEntityIds: removeItem(
+        leagueEntity.activeGamesEntityIds!,
+        gameEntity.id,
+      ),
+    })
+
+    if (
+      leagueEntity.hasActiveGames
+      && leagueEntity.activeGamesEntityIds!.length === 0
+    ) {
+      context.League.set({
+        ...leagueEntity,
+        hasActiveGames: false,
+      })
+
+      context.Country.set({
+        ...countryEntity,
+        activeLeaguesEntityIds: removeItem(
+          countryEntity.activeLeaguesEntityIds!,
+          leagueEntity.id,
+        ),
+      })
+
+      if (
+        countryEntity.hasActiveLeagues
+        && countryEntity.activeLeaguesEntityIds!.length === 0
+      ) {
+        countryEntity.hasActiveLeagues = false
+      }
+    }
+  }
+
+  context.Game.set({
+    ...gameEntity,
+    turnover: gameEntity.turnover - conditionEntity.turnover,
+    _updatedAt: blockTimestamp,
+  })
+
+  context.League.set({
+    ...leagueEntity,
+    turnover: leagueEntity.turnover - conditionEntity.turnover,
+  })
+
+  context.Country.set({
+    ...countryEntity,
+    turnover: countryEntity.turnover - conditionEntity.turnover,
+  })
+
+  countConditionResolved(
+    liquidityPoolAddress,
+    betsAmount,
+    wonBetsAmount,
+    blockNumber,
+    blockTimestamp,
+    chainId,
+    context,
+  )
+
+  return conditionEntity
+}
+
+
+export function pauseUnpauseCondition(
+  conditionEntity: ConditionEntity,
+  flag: boolean,
+  blockNumber: number,
+  blockTimestamp: number,
+  context: any,
+): ConditionEntity | null {
+  if (flag) {
+    context.Condition.set({
+      ...conditionEntity,
+      status: CONDITION_STATUS_PAUSED,
+    })
+  }
+  else {
+    context.Condition.set({
+      ...conditionEntity,
+      status: CONDITION_STATUS_CREATED,
+    })
+  }
+
+  context.Condition.set({
+    ...conditionEntity,
+    _updatedAt: blockTimestamp,
+  })
+
+  const gameEntity: GameEntity = context.Game.get(conditionEntity.game)!
+
+  if (flag) {
+    context.Game.set({
+      ...gameEntity,
+      _activeConditionsEntityIds: removeItem(
+        gameEntity._activeConditionsEntityIds!,
+        conditionEntity.id,
+      ),
+      _pausedConditionsEntityIds: gameEntity._pausedConditionsEntityIds!.concat([conditionEntity.id]),
+    })
+
+    if (
+      gameEntity.status === GAME_STATUS_CREATED
+      && gameEntity._activeConditionsEntityIds!.length === 0
+    ) {
+      context.Game.set({
+        ...gameEntity,
+        hasActiveConditions: false,
+        status: GAME_STATUS_PAUSED,
+      })
+    }
+  }
+  else {
+    context.Game.set({
+      ...gameEntity,
+      _activeConditionsEntityIds: gameEntity._activeConditionsEntityIds!.concat([conditionEntity.id]),
+      _pausedConditionsEntityIds: removeItem(
+        gameEntity._pausedConditionsEntityIds!,
+        conditionEntity.id,
+      ),
+    })
+
+    if (gameEntity.status === GAME_STATUS_PAUSED) {
+      context.Game.set({
+        ...gameEntity,
+        hasActiveConditions: true,
+        status: GAME_STATUS_CREATED,
+      })
+    }
+  }
+
+  context.Game.set({
+    ...gameEntity,
+    _updatedAt: blockTimestamp,
+  })
+
+  return conditionEntity
 }

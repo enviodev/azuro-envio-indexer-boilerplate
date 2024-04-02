@@ -87,3 +87,34 @@ export function createGame(
     }
 
     let countryName = DEFAULT_COUNTRY.toString()
+
+
+}
+
+export function shiftGame(
+    gameEntityId: string,
+    startsAt: bigint,
+    txHash: string,
+    shiftedBlockNumber: number,
+    shiftedBlockTimestamp: number,
+    context: any,
+): GameEntity | null {
+    const gameEntity: GameEntity = context.Game.get(gameEntityId)
+
+    // TODO remove later
+    if (!gameEntity) {
+        context.log.error(`shiftGame gameEntity not found. gameEntityId = ${gameEntityId}`, [gameEntityId])
+        return null
+    }
+
+    context.Game.set({
+        ...gameEntity,
+        startsAt: startsAt,
+        shiftedTxHash: txHash,
+        shiftedBlockNumber: shiftedBlockNumber,
+        shiftedBlockTimestamp: shiftedBlockTimestamp,
+        _updatedAt: shiftedBlockTimestamp,
+    })
+
+    return gameEntity
+}

@@ -22,12 +22,33 @@ export const C1e12 = BigInt('1000000000000')
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const BET_TYPE_ORDINAR = 'Ordinar'
+export const BET_TYPE_EXPRESS = 'Express'
 
+export const CONDITION_STATUS_CREATED = 'Created'
+export const CONDITION_STATUS_RESOLVED = 'Resolved'
+export const CONDITION_STATUS_CANCELED = 'Canceled'
+export const CONDITION_STATUS_PAUSED = 'Paused'
 
+export const BET_RESULT_WON = 'Won'
+export const BET_RESULT_LOST = 'Lost'
 
+export const BET_STATUS_ACCEPTED = 'Accepted'
+export const BET_STATUS_CANCELED = 'Canceled'
+export const BET_STATUS_RESOLVED = 'Resolved'
 
+export const SELECTION_RESULT_WON = 'Won'
+export const SELECTION_RESULT_LOST = 'Lost'
 
+export const LP_TRANSACTION_TYPE_DEPOSIT = 'Deposit'
+export const LP_TRANSACTION_TYPE_WITHDRAWAL = 'Withdrawal'
 
+export const GAME_STATUS_CREATED = 'Created'
+export const GAME_STATUS_PAUSED = 'Paused'
+export const GAME_STATUS_CANCELED = 'Canceled'
+export const GAME_STATUS_RESOLVED = 'Resolved'
+
+export const X_PROFIT = BigInt(75)
+export const X_PROFIT_DIVIDER = BigInt(100)
 
 
 
@@ -123,9 +144,3 @@ export const BASES_VERSIONS = new TypedMap<string, number>()
 BASES_VERSIONS.set(VERSION_V1, V1_BASE)
 BASES_VERSIONS.set(VERSION_V2, V2_BASE)
 BASES_VERSIONS.set(VERSION_V3, V3_BASE)
-
-export const LP_TRANSACTION_TYPE_DEPOSIT = 'Deposit'
-export const LP_TRANSACTION_TYPE_WITHDRAWAL = 'Withdrawal'
-
-export const X_PROFIT = BigInt(75)
-export const X_PROFIT_DIVIDER = BigInt(100)
