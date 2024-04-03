@@ -47,6 +47,12 @@ export const GAME_STATUS_PAUSED = 'Paused'
 export const GAME_STATUS_CANCELED = 'Canceled'
 export const GAME_STATUS_RESOLVED = 'Resolved'
 
+export const CORE_TYPE_PRE_MATCH = 'pre-match'
+export const CORE_TYPE_PRE_MATCH_V2 = 'pre-match-v2'
+export const CORE_TYPE_EXPRESS = 'express'
+export const CORE_TYPE_EXPRESS_V2 = 'express-v2'
+export const CORE_TYPE_LIVE = 'live'
+
 export const X_PROFIT = BigInt(75)
 export const X_PROFIT_DIVIDER = BigInt(100)
 
