@@ -11,7 +11,7 @@ import {
   CoreContract_LpChanged_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 
-import { getTokenForPool } from "../contracts/lpv1";
+import { getAzuroBetAddress, getTokenForPool } from "../contracts/lpv1";
 
 import { createPoolEntity } from "../common/pool";
 import { createCoreContractEntity } from "../common/factory";
@@ -20,11 +20,12 @@ import { VERSION_V1 } from "../constants";
 import { createAzuroBetEntity } from "../common/azurobet";
 import { ConditionEntity, coreContractEntity } from "../src/Types.gen";
 import { shiftGame } from "../common/games";
+import { getConditionFromId } from "../contracts/corev1";
 
 CoreContract_ConditionCreated_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
 });
-CoreContract_ConditionCreated_handler(({ event, context }) => {
+CoreContract_ConditionCreated_handler(async ({ event, context }) => {
   const coreContractEntity = context.CoreContract.get(event.srcAddress);
 
   if (!coreContractEntity) {
@@ -35,21 +36,13 @@ CoreContract_ConditionCreated_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const startsAt = event.params.timestamp
 
-  const coreSC = CoreV1.bind(event.srcAddress)
-  const conditionData = coreSC.try_getCondition(conditionId)
-
-  if (conditionData.reverted) {
-    context.log.error('getCondition reverted. conditionId = {}')
-    return
-  }
+  const conditionData = await getConditionFromId(conditionId, event.chainId)
 
   const coreAddress = event.srcAddress
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
 
-  // const liquidityPoolAddress = CoreContract.load(coreAddress)!.liquidityPool
-
   const gameEntity = createGame(
-    coreContractEntity?.liquidityPool_id,
+    liquidityPoolAddress,
     null,
     "", //conditionData.value.ipfsHash,
     null,
@@ -60,19 +53,19 @@ CoreContract_ConditionCreated_handler(({ event, context }) => {
   )
 
   if (!gameEntity) {
-    context.log.error('v1 ConditionCreated can\'t create game. conditionId = {}')
+    context.log.error(`v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`)
     return
   }
-
+  
   let conditionCreated = createCondition(
     VERSION_V1,
-    event.srcAddress,
+    coreAddress,
     conditionId,
     gameEntity.id,
-    conditionData.value.margin,
-    conditionData.value.reinforcement,
-    conditionData.value.outcomes,
-    conditionData.value.fundBank,
+    conditionData.condition.margin,
+    conditionData.condition.reinforcement,
+    conditionData.condition.outcomes,
+    conditionData.condition.fundBank,
     1,
     false,
     gameEntity.provider,
@@ -135,7 +128,7 @@ CoreContract_ConditionShifted_handler(({ event, context }) => {
   context.Condition.set({
     ...conditionEntity,
     internalStartsAt: event.params.newTimestamp,
-    _updatedAt: event.blockTimestamp,
+    _updatedAt: BigInt(event.blockTimestamp),
   })
 
 });
@@ -188,15 +181,9 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
     context.CoreContract.set(coreContract);
   }
 
-  const azuroBetAddress = liquidityPoolSC.try_azuroBet()
+  const resp = await getAzuroBetAddress(coreAddress, event.chainId)
 
-  if (azuroBetAddress.reverted) {
-    context.log.error('v1 handleLpChanged call azuroBet reverted')
-
-    return
-  }
-
-  createAzuroBetEntity(coreAddress, azuroBetAddress, context)
+  createAzuroBetEntity(coreAddress, resp.azuroBetAddress, context)
 
   AzuroBetV1.create(azuroBetAddress.value)
 
