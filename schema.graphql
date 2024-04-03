@@ -141,16 +141,16 @@ enum BetResult {
   Lost
 }
 
-#enum BetType {
-#   Ordinar
-#   Express
-# }
+enum BetType {
+  Ordinar
+  Express
+}
 
 type Bet @entity {
   "Core contract address + Bet Id"
   id: ID!
   core: CoreContract!
-  #type: BetType!
+  bet_type: BetType!
   betId: BigInt!
   bettor: String!
   owner: String!
