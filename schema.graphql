@@ -437,3 +437,9 @@ type LiquidityPoolTransaction @entity {
   blockTimestamp: BigInt!
   txHash: String!
 }
+
+type ExpressPrematchRelation @entity(immutable: true) {
+  "Express (core) contract address"
+  id: ID!
+  prematchAddress: String!
+}
