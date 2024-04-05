@@ -1,6 +1,6 @@
 import { zeroPadBytes } from "ethers"
 import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE } from "../constants"
-import { BetEntity, GameEntity, LiveBetEntity } from "../src/Types.gen"
+import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LiveBetEntity } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal } from "../utils/math"
 
@@ -12,7 +12,7 @@ export function transferBet(
   from: string,
   to: string,
   block: number,
-  context: any,
+  context: Expressv2Contract_TransferEvent_handlerContext,
 ): BetEntity | null {
   // create nft
   if (from === ZERO_ADDRESS) {
@@ -55,13 +55,13 @@ export function transferBet(
       ...betEntity,
       owner: to,
       actor: to,
-      _updatedAt: block,
+      _updatedAt: BigInt(block),
     })
   } else {
     context.Bet.set({
       ...betEntity,
       owner: to,
-      _updatedAt: block,
+      _updatedAt: BigInt(block),
     })
   }
 
@@ -116,13 +116,13 @@ export function createBet(
   createdBlockTimestamp: number,
   createdBlockNumber: number,
   funds: bigint[] | null,
-  context: any,
+  context: LPContract_NewBetEvent_handlerContext | Corev2Contract_NewBetEvent_handlerContext,
 ): BetEntity | null {
   let conditionIds: bigint[] = []
   let conditionEntitiesIds: string[] = []
   let gameEntitiesIds: string[] = []
 
-  let approxSettledAt = BigInt('0')
+  let approxSettledAt = 0n
 
   for (let i = 0; i < conditionEntities.length; i++) {
     conditionIds[i] = conditionEntities[i].conditionId
@@ -138,46 +138,36 @@ export function createBet(
 
   // update outcomes, condition and game turnover for ordinar bets
   if (betType === BET_TYPE_ORDINAR) {
-    const conditionEntity: ConditionEntity = context.condition.get(conditionEntitiesIds[0])!
-    context.ConditionEntity.set({
+    const conditionEntity: ConditionEntity = context.Condition.get(conditionEntitiesIds[0])!
+    context.Condition.set({
       ...conditionEntity,
       turnover: conditionEntity.turnover + amount,
-      _updatedAt: createdBlockTimestamp,
+      _updatedAt: BigInt(createdBlockTimestamp),
     })
 
     const gameEntity: GameEntity = context.Game.get(conditionEntities[0].game_id)!
     context.Game.set({
       ...gameEntity,
       turnover: gameEntity.turnover + amount,
-      _updatedAt: createdBlockTimestamp,
+      _updatedAt: BigInt(createdBlockTimestamp),
     })
 
     const leagueEntity = context.League.get(gameEntity.league_id)!
-    leagueEntity.turnover = leagueEntity.turnover.plus(amount)
+    context.League.set({
+      ...leagueEntity,
+      turnover: leagueEntity.turnover + amount,
+    })
 
     const countryEntity = context.Country.get(leagueEntity.country)!
-    countryEntity.turnover = countryEntity.turnover + amount
+    context.Country.set({
+      ...countryEntity,
+      turnover: countryEntity.turnover + amount,
+    })
   }
 
   const potentialPayout = amount * odds / (MULTIPLIERS_VERSIONS.get(version)!)
 
-  const betEntityId = coreAddress + "_" + tokenId.toString()
-  const betEntity: BetEntity = context.Bet.get(betEntityId)
-
-  context.Bet.set({
-    ...betEntity,
-    type: betType,
-    _subBetsCount: betOutcomeEntities.length,
-    _wonSubBetsCount: 0,
-    _lostSubBetsCount: 0,
-    _canceledSubBetsCount: 0,
-    rawOdds: odds,
-    odds: toDecimal(
-      betEntity.rawOdds,
-      BASES_VERSIONS.mustGetEntry(version).value,
-    ),
-    _oddsDecimals: BASES_VERSIONS.mustGetEntry(version).value
-  })
+  const _betType = betType as "Ordinar" | "Express"
 
   for (let k = 0; k < conditionEntities.length; k++) {
     const conditionEntity = conditionEntities[k]
@@ -231,67 +221,93 @@ export function createBet(
         context.Outcome.set({
           ...outcomeEntity,
           fund: funds[i],
-          currentOdds: toDecimal(
-            outcomeEntity.rawCurrentOdds,
-            BASES_VERSIONS.mustGetEntry(version).value,
-          ),
+          // currentOdds: toDecimal(
+          //   outcomeEntity.rawCurrentOdds,
+          //   BASES_VERSIONS.mustGetEntry(version).value,
+          // ),
         })
 
       }
 
       context.Outcome.set({
         ...outcomeEntity,
-        _updatedAt: createdBlockTimestamp,
+        _updatedAt: BigInt(createdBlockTimestamp),
       })
     }
   }
 
-  context.Bet.set({
-    _conditions: conditionEntitiesIds,
-    _games: gameEntitiesIds,
+  const betEntityId = coreAddress + "_" + tokenId.toString()
+
+  const betEntity = {
+    id: betEntityId, 
+    betType: _betType,
+    _subBetsCount: betOutcomeEntities.length,
+    _wonSubBetsCount: 0,
+    _lostSubBetsCount: 0,
+    _canceledSubBetsCount: 0,
+    rawOdds: odds,
+    // odds: toDecimal(
+    //   betEntity.rawOdds,
+    //   BASES_VERSIONS.mustGetEntry(version).value,
+    // ),
+    _oddsDecimals: BASES_VERSIONS.mustGetEntry(version).value,
+    // _conditions: conditionEntitiesIds,
+    // _games: gameEntitiesIds,
     approxSettledAt: approxSettledAt,  // TODO: fix game shifted
     betId: tokenId,
-    core: coreAddress,
+    core_id: coreAddress,
     bettor: bettor,
     owner: bettor,
     actor: bettor,
-    affiliate: affiliate ? affiliate : null,
+    affiliate: affiliate ? affiliate : undefined,
     rawAmount: amount,
-    amount: toDecimal(betEntity.rawAmount, tokenDecimals),
+    // amount: toDecimal(amount, tokenDecimals),
     _tokenDecimals: tokenDecimals,
     _conditionIds: conditionIds,
     rawPotentialPayout: potentialPayout,
-    potentialPayout: toDecimal(
-      betEntity.rawPotentialPayout,
-      tokenDecimals,
-    ),
+    // potentialPayout: toDecimal(
+      // potentialPayout,
+      // tokenDecimals,
+    // ),
     createdTxHash: txHash,
-    createdBlockNumber: createdBlockNumber,
-    createdBlockTimestamp: createdBlockTimestamp,
-    status: BET_STATUS_ACCEPTED.toString(),
+    createdBlockNumber: BigInt(createdBlockNumber),
+    createdBlockTimestamp: BigInt(createdBlockTimestamp),
+    status: BET_STATUS_ACCEPTED.toString() as "Accepted",
     isRedeemed: false,
     isRedeemable: false,
     _isFreebet: false,
-    _updatedAt: createdBlockTimestamp,
-  })
+    _updatedAt: BigInt(createdBlockTimestamp),
+    redeemedBlockTimestamp: undefined, 
+    resolvedBlockTimestamp: undefined, 
+    redeemedBlockNumber: undefined, 
+    redeemedTxHash: undefined,
+    resolvedBlockNumber: undefined, 
+    result: undefined, 
+    freebet_id: undefined,
+    rawPayout: undefined, 
+    rawSettledOdds: undefined, 
+    resolvedTxHash: undefined
+  }
+
+  context.Bet.set(betEntity)
 
   for (let i = 0; i < betOutcomeEntities.length; i++) {
     const betOutcomeEntity: OutcomeEntity = betOutcomeEntities[i]
 
     const selectionEntityId = betEntityId + "_" + conditionEntities[i].conditionId.toString()
-    const selectionEntity = context.Selection.load(selectionEntityId)
 
     context.Selection.set({
-      ...selectionEntity,
+      id: selectionEntityId,
       rawOdds: conditionOdds[i],
-      odds: toDecimal(
-        selectionEntity.rawOdds,
-        betEntity._oddsDecimals,
-      ),
+      // odds: toDecimal(
+        // selectionEntity.rawOdds,
+        // betEntity._oddsDecimals,
+      // ),
       _oddsDecimals: betEntity._oddsDecimals,
-      outcome: betOutcomeEntity.id,
+      outcome_id: betOutcomeEntity.id,
       _outcomeId: betOutcomeEntity.outcomeId,
-      bet: betEntity.id,
+      bet_id: betEntityId,
+      result: undefined,
     })
   }
 

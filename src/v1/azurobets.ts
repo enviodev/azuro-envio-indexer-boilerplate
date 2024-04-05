@@ -9,7 +9,7 @@ AzurobetsContract_Transfer_loader(({ event, context }) => {
   context.AzuroBetContract.load(event.srcAddress, {}); // correct this
 });
 AzurobetsContract_Transfer_handler(({ event, context }) => {
-  const betEntity = transferBet(
+  transferBet(
     null,
     event.srcAddress,
     event.params.tokenId,

@@ -38,7 +38,7 @@ async function updatePoolOnCommonEvents(
       rawApr: BigInt(liquidityPoolContractEntity.betsAmount - liquidityPoolContractEntity.wonBetsAmount)
         * X_PROFIT
         * BigInt('365')
-        * bigInt.pow(BigInt('10'), 8) // too low number * 10^8
+        * (BigInt('10') ** BigInt(8)) // too low number * 10^8
         / X_PROFIT_DIVIDER
         / liquidityPoolContractEntity.daysSinceDeployment
         / liquidityPoolContractEntity.depositedAmount - liquidityPoolContractEntity.withdrawnAmount,
@@ -79,16 +79,16 @@ export async function createPoolEntity(
     chainId: chainId,
     tokenDecimals: decimals,
     asset: symbol,
-    // rawApr: 0n,
+    rawApr: 0n,
     apr: 0n,
     betsAmount: 0n,
     betsCount: 0n,
     wonBetsAmount: 0n,
     wonBetsCount: 0n,
-    // rawTvl: todo,
-    // tvl: todo,
+    rawTvl: 0n,
+    tvl: 0n,
     firstCalculatedBlockNumber: BigInt(blockNumber),
-    // firstCalculatedBlockTimestamp: BigInt(blockTimestamp),
+    firstCalculatedBlockTimestamp: BigInt(blockTimestamp),
     lastCalculatedBlockNumber: BigInt(blockNumber),
     lastCalculatedBlockTimestamp: BigInt(blockTimestamp),
     daysSinceDeployment: 0n,
@@ -97,6 +97,7 @@ export async function createPoolEntity(
     withdrawTimeout: 0n,
     depositedWithStakingAmount: 0n,
     withdrawnWithStakingAmount: 0n,
+    liquidityManager: "",
   };
 
   return liquidityPoolContractEntity;

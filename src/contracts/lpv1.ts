@@ -73,7 +73,7 @@ export async function getAzuroBetAddress(
     const azuroBetAddress = await Promise.resolve(_lpv1.methods.azuroBet().call());
 
     const entry = {
-      azuroBet: azuroBetAddress?.toString().toLowerCase() || "",
+      azuroBetAddress: azuroBetAddress?.toString().toLowerCase() || "",
     } as const;
 
     cache.add({ [contractAddress.toLowerCase()]: entry as any });

@@ -77,7 +77,8 @@ export async function getErc20TokenBalance(
 
   try {
     // Use Promise.all to execute all calls in parallel and wait for all of them to resolve
-    const balance = await erc20token.methods.balanceOf(ownerAddress).call();
+    const _balance = await erc20token.methods.balanceOf(ownerAddress).call() as unknown;
+    const balance = _balance as bigint;
     
     return BigInt(balance);
   } catch (err) {

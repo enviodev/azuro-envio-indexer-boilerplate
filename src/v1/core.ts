@@ -19,7 +19,7 @@ import { createCondition, pauseUnpauseCondition, resolveCondition } from "../com
 import { VERSION_V1 } from "../constants";
 import { createAzuroBetEntity } from "../common/azurobet";
 import { ConditionEntity, coreContractEntity } from "../src/Types.gen";
-import { shiftGame } from "../common/games";
+import { createGame, shiftGame } from "../common/games";
 import { getConditionFromId } from "../contracts/corev1";
 
 CoreContract_ConditionCreated_loader(({ event, context }) => {
@@ -36,7 +36,7 @@ CoreContract_ConditionCreated_handler(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const startsAt = event.params.timestamp
 
-  const conditionData = await getConditionFromId(conditionId, event.chainId)
+  const conditionData = await getConditionFromId(conditionId, event.chainId) // TODO get correct contract address
 
   const coreAddress = event.srcAddress
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
@@ -51,6 +51,8 @@ CoreContract_ConditionCreated_handler(async ({ event, context }) => {
     event.transactionHash,
     event.blockNumber,
   )
+
+  context.Game.set(gameEntity)
 
   if (!gameEntity) {
     context.log.error(`v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`)
@@ -71,6 +73,7 @@ CoreContract_ConditionCreated_handler(async ({ event, context }) => {
     gameEntity.provider,
     event.transactionHash,
     event.blockNumber,
+    event.blockTimestamp,
     startsAt,
   )
 
@@ -154,6 +157,10 @@ CoreContract_ConditionStopped_handler(({ event, context }) => {
 CoreContract_LpChanged_loader(async ({ event, context }) => {
   await context.contractRegistration.addLP(event.params.newLp);
   context.CoreContract.load(event.srcAddress, {});
+
+  const resp = await getAzuroBetAddress(event.srcAddress, event.chainId)
+  await context.contractRegistration.addAzurobets(resp.azuroBetAddress)
+
 });
 
 CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
@@ -184,7 +191,4 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
   const resp = await getAzuroBetAddress(coreAddress, event.chainId)
 
   createAzuroBetEntity(coreAddress, resp.azuroBetAddress, context)
-
-  AzuroBetV1.create(azuroBetAddress.value)
-
 });

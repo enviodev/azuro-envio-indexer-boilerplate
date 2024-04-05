@@ -1,5 +1,38 @@
+import { ContractCodeNotStoredError } from "web3"
 import { TypedMap } from "../constants"
 import { GameEntity } from "../src/Types.gen"
+
+
+const DEFAULT_GAME: GameEntity = {
+    id: "1",
+    liquidityPool_id: "",
+    gameId: 0n,
+    title: "",
+    slug: "",
+    league_id: "",
+    sport_id: "",
+    status: "Created",
+    // # participants: [Participant!]! @derivedFrom(field: "game"),
+    // # conditions: [Condition!]! @derivedFrom(field: "game"),
+    hasActiveConditions: false,
+    _activeConditionsEntityIds: [""],
+    _resolvedConditionsEntityIds: [""],
+    _canceledConditionsEntityIds: [""],
+    _pausedConditionsEntityIds: [""],
+    startsAt: 0n,
+    provider: 0n,
+    turnover: 0n,
+    createdBlockNumber: 0n,
+    createdBlockTimestamp:0n ,
+    createdTxHash: "",
+    shiftedBlockNumber: 0n,
+    shiftedBlockTimestamp: 0n,
+    shiftedTxHash: "",
+    resolvedBlockNumber: 0n,
+    resolvedBlockTimestamp: 0n,
+    resolvedTxHash: "",
+    _updatedAt: 0n,
+  }
 
 
 export function createGame(
@@ -11,9 +44,9 @@ export function createGame(
     network: string | null,
     txHash: string,
     createBlock: number,
-): GameEntity | null {
+): GameEntity {
 
-    let data: TypedMap<string, JSONValue> | null = null
+    // let data: TypedMap<string, JSONValue> | null = null
 
     // // V2
     // if (ipfsHashBytes !== null) {
@@ -62,32 +95,33 @@ export function createGame(
 
     // }
 
-    data = data!
+    // data = data!
 
-    let sportId: bigint | null = null
+    // let sportId: bigint | null = null
 
-    // V1
-    const sportTypeIdField = data.get('sportTypeId')
+    // // V1
+    // const sportTypeIdField = data.get('sportTypeId')
 
-    if (sportTypeIdField && sportTypeIdField.kind === JSONValueKind.NUMBER) {
-        sportId = sportTypeIdField.toBigInt()
-    }
+    // if (sportTypeIdField && sportTypeIdField.kind === JSONValueKind.NUMBER) {
+    //     sportId = sportTypeIdField.toBigInt()
+    // }
 
-    // V2
-    const sportIdField = data.get('sportId')
+    // // V2
+    // const sportIdField = data.get('sportId')
 
-    if (sportIdField && sportIdField.kind === JSONValueKind.NUMBER) {
-        sportId = sportIdField.toBigInt()
-    }
+    // if (sportIdField && sportIdField.kind === JSONValueKind.NUMBER) {
+    //     sportId = sportIdField.toBigInt()
+    // }
 
-    if (sportId === null) {
-        log.error('createGame sportId is null', [])
+    // if (sportId === null) {
+    //     log.error('createGame sportId is null', [])
 
-        return null
-    }
+    //     return null
+    // }
 
-    let countryName = DEFAULT_COUNTRY.toString()
+    // let countryName = DEFAULT_COUNTRY.toString()
 
+    return DEFAULT_GAME
 
 }
 
