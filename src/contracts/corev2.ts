@@ -20,10 +20,10 @@ type OriginalConditionResult = {
 };
 
 // LPv1 Contract ABI
-const contractABI = require("../../abis/CoreV1.json");
+const contractABI = require("../../abis/CoreV2.json");
 
 // Function to get ERC20 token address from the liquidity pool contract
-export async function getConditionFromId(
+export async function getConditionV2FromId(
     _conditionId: bigint,
     chainId: number
 ): Promise<{
@@ -44,7 +44,7 @@ export async function getConditionFromId(
     const web3 = new Web3(rpcURL);
 
     // Create LPv1 contract instance
-    const corev1Contract = new web3.eth.Contract(contractABI, "0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d");
+    const corev1Contract = new web3.eth.Contract(contractABI, "0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d"); // TODO get Corev2 address
 
     try {
         const _result = await Promise.resolve(corev1Contract.methods.getCondition(_conditionId).call()) as unknown;
@@ -74,6 +74,6 @@ export async function getConditionFromId(
         return entry;
     } catch (err) {
         console.error("An error occurred", err);
-        throw err; // or handle the error as needed
+        throw err;
     }
 }

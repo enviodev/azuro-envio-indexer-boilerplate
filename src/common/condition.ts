@@ -1,9 +1,11 @@
-import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionStoppedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity } from "../../generated/src/Types.gen";
-import { BET_RESULT_LOST, BET_RESULT_WON, BET_STATUS_CANCELED, BET_STATUS_RESOLVED, BET_TYPE_EXPRESS, BET_TYPE_ORDINAR, CONDITION_STATUS_CANCELED, CONDITION_STATUS_CREATED, CONDITION_STATUS_PAUSED, CONDITION_STATUS_RESOLVED, GAME_STATUS_CANCELED, GAME_STATUS_CREATED, GAME_STATUS_PAUSED, GAME_STATUS_RESOLVED, SELECTION_RESULT_LOST, SELECTION_RESULT_WON, VERSION_V2, VERSION_V3 } from "../constants";
+import { start } from "repl";
+import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionStoppedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContext, Corev2Contract_OddsChangedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity, OutcomeEntity, outcomeLoaderConfig } from "../../generated/src/Types.gen";
+import { BASES_VERSIONS, BET_RESULT_LOST, BET_RESULT_WON, BET_STATUS_CANCELED, BET_STATUS_RESOLVED, BET_TYPE_EXPRESS, BET_TYPE_ORDINAR, CONDITION_STATUS_CANCELED, CONDITION_STATUS_CREATED, CONDITION_STATUS_PAUSED, CONDITION_STATUS_RESOLVED, GAME_STATUS_CANCELED, GAME_STATUS_CREATED, GAME_STATUS_PAUSED, GAME_STATUS_RESOLVED, SELECTION_RESULT_LOST, SELECTION_RESULT_WON, VERSION_V2, VERSION_V3 } from "../constants";
 import { removeItem } from "../utils/array";
 import { getOdds, toDecimal } from '../utils/math'
 import { calcPayoutV2, calcPayoutV3 } from "./express";
 import { countConditionResolved } from "./pool";
+import { Condition } from "../src/DbFunctions.bs";
 
 export function createCondition(
   version: string,
@@ -18,35 +20,37 @@ export function createCondition(
   isExpressForbidden: boolean,
   provider: bigint,
   txHash: string,
-  createBlock: number,  // number?
+  createBlockNumber: number,  // number?
+  createBlockTimestamp: number,
+  context: Corev2Contract_ConditionCreatedEvent_handlerContext,
   startsAt: bigint | null = null,
-): ConditionEntity {
+): ConditionEntity | null {
 
   const conditionEntityId = coreAddress + "_" + conditionId.toString()
 
-  const conditionEntity: ConditionEntity = {
+  const conditionEntity: Mutable<ConditionEntity> = {
     id: conditionEntityId,
     core_id: coreAddress,
     coreAddress: coreAddress,
     conditionId: conditionId,
-    // game: gameEntityId,
+    game_id: gameEntityId,
     _winningOutcomesCount: winningOutcomesCount,
-    // isExpressForbidden: isExpressForbidden,
-    // createdTxHash: txHash,
-    // createdBlockNumber: createBlock.number,
-    // createdBlockTimestamp: createBlock.timestamp,
-    // status: CONDITION_STATUS_CREATED.toString(),
+    isExpressForbidden: isExpressForbidden,
+    createdTxHash: txHash,
+    createdBlockNumber: BigInt(createBlockNumber),
+    createdBlockTimestamp: BigInt(createBlockTimestamp),
+    status: "Created",
     margin: margin,
-    // reinforcement: reinforcement,
-    // turnover: BigInt.zero(),
-    // provider: provider,
-    // status: CONDITION_STATUS_CREATED.toString()
-    // margin: margin
-    // reinforcement: reinforcement
-    // turnover: BigInt.zero()
-    // provider: provider
-
-    // _updatedAt: createBlock.timestamp
+    reinforcement: reinforcement,
+    turnover: 0n,
+    provider: provider,
+    _updatedAt: BigInt(createBlockTimestamp),
+    resolvedTxHash: undefined,
+    resolvedBlockNumber: undefined,
+    wonOutcomeIds: undefined,
+    internalStartsAt: startsAt ? BigInt(startsAt) : undefined,
+    resolvedBlockTimestamp: undefined,
+    outcomesIds: undefined,
   }
 
   const newOdds = getOdds(
@@ -56,74 +60,116 @@ export function createCondition(
     conditionEntity._winningOutcomesCount,
   )
 
+  if (newOdds === null) {
+    context.log.error(`createCondition getOdds returned null, conditionId {}`)
+    return null
+  }
+
+  let outcomeIds: bigint[] = []
+
+  for (let i = 0; i < outcomes.length; i++) {
+    outcomeIds = outcomeIds.concat([outcomes[i]])
+
+    const outcomeId = outcomes[i].toString()
+
+    const outcomeEntityId = conditionEntityId + "_" + outcomeId
+
+    const outcomeEntity: OutcomeEntity = {
+      id: outcomeEntityId, // TODO correct?
+      core_id: coreAddress,
+      outcomeId: outcomes[i],
+      condition_id: conditionEntity.id,
+      sortOrder: i,
+      fund: funds[i],
+      rawCurrentOdds: newOdds[i],
+      _betsEntityIds: [],
+      // currentOdds: toDecimal(
+      //   newOdds[i],
+      //   BASES_VERSIONS.mustGetEntry(version).value,
+      // ),
+      _updatedAt: BigInt(createBlockTimestamp),
+    }
+
+    context.Outcome.set(outcomeEntity)
+  }
+
+  conditionEntity.outcomesIds = outcomeIds
+
+  if (startsAt) {
+    conditionEntity.internalStartsAt = startsAt
+  }
+
+  conditionEntity._updatedAt = BigInt(createBlockTimestamp)
+
+  const gameEntity = context.Game.get(gameEntityId)!
+
+  context.Game.set({
+    ...gameEntity,
+    _activeConditionsEntityIds: gameEntity._activeConditionsEntityIds!.concat([conditionEntityId]),
+    hasActiveConditions: true,
+    status: GAME_STATUS_CREATED,
+    _updatedAt: BigInt(createBlockTimestamp),
+  })
+
+  const leagueEntity = context.League.get(gameEntity.league_id)!
+
+  if (!leagueEntity.activeGamesEntityIds!.includes(gameEntityId)) {
+    context.League.set({
+      ...leagueEntity,
+      activeGamesEntityIds: leagueEntity.activeGamesEntityIds!.concat([gameEntityId]),
+      hasActiveGames: true,
+    })
+
+    const countryEntity = context.Country.get(leagueEntity.country_id)!
+
+    if (!countryEntity.activeLeaguesEntityIds!.includes(leagueEntity.id)) {
+      context.Country.set({
+        ...countryEntity,
+        activeLeaguesEntityIds: countryEntity.activeLeaguesEntityIds!.concat([leagueEntity.id]),
+        hasActiveLeagues: true,
+      })
+    }
+
+  }
   return conditionEntity
+}
 
-  // context.ConditionEntity.set()
-  //conditionEntity.save()
 
-  // let outcomeIds: BigInt[] = []
+export function updateConditionOdds(
+  version: string,
+  conditionEntity: ConditionEntity,
+  outcomesEntities: OutcomeEntity[],
+  funds: bigint[],
+  block: number,
+  context: Corev2Contract_OddsChangedEvent_handlerContext,
+): ConditionEntity | null {
+  const odds = getOdds(
+    version,
+    funds,
+    conditionEntity.margin,
+    conditionEntity._winningOutcomesCount,
+  )
 
-  // for (let i = 0; i < outcomes.length; i++) {
-  //   outcomeIds = outcomeIds.concat([outcomes[i]])
+  if (odds === null) {
+    return null
+  }
 
-  //   const outcomeId = outcomes[i].toString()
+  for (let i = 0; i < outcomesEntities.length; i++) {
+    const outcomeEntity = outcomesEntities[i]
 
-  //   const outcomeEntityId = getOutcomeEntityId(conditionEntityId, outcomeId)
-  //   const outcomeEntity = new Outcome(outcomeEntityId)
+    context.Outcome.set({
+      ...outcomeEntity,
+      fund: funds[i],
+      rawCurrentOdds: odds[i],
+      // currentOdds: toDecimal(
+      //   odds[i],
+      //   BASES_VERSIONS.mustGetEntry(version).value,
+      // ),
+      _updatedAt: BigInt(block),
+    })
+  }
 
-  //   outcomeEntity.core = coreAddress
-  //   outcomeEntity.outcomeId = outcomes[i]
-  //   outcomeEntity.condition = conditionEntity.id
-  //   outcomeEntity.sortOrder = i
-  //   outcomeEntity.fund = funds[i]
-  //   outcomeEntity.rawCurrentOdds = newOdds[i]
-
-  //   outcomeEntity._betsEntityIds = []
-  //   outcomeEntity.currentOdds = toDecimal(
-  //     outcomeEntity.rawCurrentOdds,
-  //     BASES_VERSIONS.mustGetEntry(version).value,
-  //   )
-  //   outcomeEntity._updatedAt = createBlock.timestamp
-
-  //   outcomeEntity.save()
-  // }
-
-  // conditionEntity.outcomesIds = outcomeIds
-
-  // if (startsAt) {
-  //   conditionEntity.internalStartsAt = startsAt
-  // }
-
-  // conditionEntity._updatedAt = createBlock.timestamp
-  // conditionEntity.save()
-
-  // const gameEntity = Game.load(gameEntityId)!
-
-  // gameEntity._activeConditionsEntityIds = gameEntity._activeConditionsEntityIds!.concat([conditionEntityId])
-  // gameEntity.hasActiveConditions = true
-  // gameEntity.status = GAME_STATUS_CREATED.toString()
-
-  // gameEntity._updatedAt = createBlock.timestamp
-
-  // gameEntity.save()
-
-  // const leagueEntity = League.load(gameEntity.league)!
-
-  // if (!leagueEntity.activeGamesEntityIds!.includes(gameEntityId)) {
-  //   leagueEntity.activeGamesEntityIds = leagueEntity.activeGamesEntityIds!.concat([gameEntityId])
-  //   leagueEntity.hasActiveGames = true
-  //   leagueEntity.save()
-
-  //   const countryEntity = Country.load(leagueEntity.country)!
-
-  //   if (!countryEntity.activeLeaguesEntityIds!.includes(leagueEntity.id)) {
-  //     countryEntity.activeLeaguesEntityIds = countryEntity.activeLeaguesEntityIds!.concat([leagueEntity.id])
-  //     countryEntity.hasActiveLeagues = true
-  //     countryEntity.save()
-  //   }
-  // }
-
-  // return conditionEntity
+  return conditionEntity
 }
 
 
@@ -269,7 +315,7 @@ export function resolveCondition(
             context.Bet.set({
               ...betEntity,
               rawPayout: betEntity.rawPotentialPayout,
-              payout: betEntity.potentialPayout,
+              // payout: betEntity.potentialPayout,
             })
           }
           else if (
@@ -288,19 +334,19 @@ export function resolveCondition(
               context.Bet.set({
                 ...betEntity,
                 rawPayout: payoutSC,
-                payout: toDecimal(payoutSC, betEntity._tokenDecimals),
+                // payout: toDecimal(payoutSC, betEntity._tokenDecimals),
                 rawSettledOdds: ((payoutSC * 10n) ** BigInt(betEntity._oddsDecimals)) / betEntity.rawAmount,
-                settledOdds: toDecimal(
-                  betEntity.rawSettledOdds!,
-                  betEntity._oddsDecimals,
-                ),
+                // settledOdds: toDecimal(
+                // betEntity.rawSettledOdds!,
+                // betEntity._oddsDecimals,
+                // ),
               })
             }
             else {
               context.Bet.set({
                 ...betEntity,
                 rawPayout: 0n,
-                payout: 0n,
+                // payout: 0n,
               })
             }
           }
@@ -315,7 +361,7 @@ export function resolveCondition(
             status: BET_STATUS_CANCELED,
             isRedeemable: true,
             rawPayout: betEntity.rawAmount,
-            payout: betEntity.amount,
+            // payout: betEntity.amount,
           })
         }
       }

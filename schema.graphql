@@ -150,7 +150,7 @@ type Bet @entity {
   "Core contract address + Bet Id"
   id: ID!
   core: CoreContract!
-  bet_type: BetType!
+  betType: BetType!
   betId: BigInt!
   bettor: String!
   owner: String!

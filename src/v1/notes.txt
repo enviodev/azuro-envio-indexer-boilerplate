@@ -20,3 +20,7 @@ Questions:
 10. arrays of entities are unsupported in schema. e.g. outcomes: [LiveOutcome!]! @derivedFrom(field: "condition")
 11. Cacheing for things that can easily change? E.g. token balance https://github.com/Azuro-protocol/Azuro-subgraphs/blob/e06907395126eb08e6bcf1097f789390d0fcec19/api/src/common/pool.ts#L53
 12. No handlers for handleOldLiquidityRemoved https://github.com/Azuro-protocol/Azuro-subgraphs/blob/e06907395126eb08e6bcf1097f789390d0fcec19/api/src/v1/lp.ts#L122
+
+
+13. Corev2 contract address
+14. list of entities then change list of entities (what is this doing? https://github.com/Azuro-protocol/Azuro-subgraphs/blob/e06907395126eb08e6bcf1097f789390d0fcec19/api/src/common/conditions.ts#L200)

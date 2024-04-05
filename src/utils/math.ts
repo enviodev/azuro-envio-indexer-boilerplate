@@ -35,10 +35,16 @@ function addMargin(odds: bigint, margin: bigint, decimals: bigint): bigint {
   return newOdds
 }
 
-export function toDecimal(x: bigint, decimals: number = 18): BigDecimal {
-  const divisor = new BigDecimal(BigInt(10) ** BigInt(decimals))
+// export function toDecimal(x: bigint, decimals: number = 18): BigDecimal {
+//   const divisor = new BigDecimal(BigInt(10) ** BigInt(decimals))
 
-  return new BigDecimal(x) / (divisor)
+//   return new BigDecimal(x) / (divisor)
+// }
+
+export function toDecimal(x: bigint, decimals: number = 18): bigint {
+  const divisor = BigInt(10) ** BigInt(decimals)
+
+  return x / divisor
 }
 
 function ceil(a: bigint, m: bigint, decimals: bigint): bigint {
@@ -286,13 +292,13 @@ function v1(fund1: bigint, fund2: bigint, outcomeIndex: number, margin: bigint, 
 
 export function getOdds(version: string, funds: bigint[], margin: bigint, winningOutcomesCount: number): bigint[] {
 
-  // if (version === VERSION_V3) {
-  //   return v3(funds, margin, winningOutcomesCount)
-  // }
+  if (version === VERSION_V3) {
+    // return v3(funds, margin, winningOutcomesCount)
+  }
 
-  // if (version === VERSION_V2) {
-  //   return [v2(funds[0], funds[1], 0, margin, C1e12), v2(funds[0], funds[1], 1, margin, C1e12)]
-  // }
+  if (version === VERSION_V2) {
+    // return [v2(funds[0], funds[1], 0, margin, C1e12), v2(funds[0], funds[1], 1, margin, C1e12)]
+  }
 
   return [v1(funds[0], funds[1], 0, margin, C1e9), v1(funds[0], funds[1], 1, margin, C1e9)]
 }

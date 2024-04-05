@@ -36,6 +36,10 @@ contracts:
     handler: src/v1/azurobets.ts
     events:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+  - name: Azurobetv2
+    handler: src/v2/azurobet.ts
+    events:
+      - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - name: Corev2
     handler: src/v2/core.ts
     events:
@@ -127,6 +131,7 @@ networks:
         address:
           - 0xB425E555492eE36c5A2918481EbbcF04AE73682b
       - name: Corev2
+      - name: Azurobetv2
       - name: Expressv2
       - name: FreeBetFactory
         address:
