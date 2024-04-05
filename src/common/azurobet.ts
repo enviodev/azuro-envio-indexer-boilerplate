@@ -1,12 +1,17 @@
 import { AzuroBetContractEntity, CoreContract_LpChangedEvent_handlerContextAsync } from "../src/Types.gen"
 
 
-async export function createAzuroBetEntity(
+export async function createAzuroBetEntity(
     coreAddress: string,
     azuroBetAddress: string,
     context: CoreContract_LpChangedEvent_handlerContextAsync,
-): Promise<azuroBetContractEntity> {
-    const azuroBetContractEntity: AzuroBetContractEntity = await context.AzuroBetContract.get(azuroBetAddress)
+): Promise<typeof azuroBetContractEntity> {
+    const azuroBetContractEntity = await context.AzuroBetContract.get(azuroBetAddress)
+
+    if (!azuroBetContractEntity) {
+        context.log.error(`createAzuroBetEntity azuroBetContractEntity not found. azuroBetAddress = ${azuroBetAddress}`)
+        throw new Error(`createAzuroBetEntity azuroBetContractEntity not found. azuroBetAddress = ${azuroBetAddress}`)
+    }
     
     context.AzuroBetContract.set({
         ...azuroBetContractEntity,
