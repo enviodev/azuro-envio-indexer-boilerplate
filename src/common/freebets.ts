@@ -1,4 +1,4 @@
-import { FreebetContractEntity, FreebetEntity } from "../../generated/src/Types.gen";
+import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreebetContractEntity, FreebetEntity, eventLog } from "../../generated/src/Types.gen";
 
 export function createFreebetContractEntity(
   chainId: string,
@@ -36,6 +36,7 @@ export function createFreebet(
   coreAddress: string | null,
   azuroBetId: bigint | null,
   createBlock: number,
+  context: FreeBetContract_FreeBetMintedEvent_handlerContext,
 ): FreebetEntity {
   const freebetEntityId = freebetContractAddress + '_' + freebetId.toString()
 
@@ -66,7 +67,7 @@ export function createFreebet(
     _updatedAt: BigInt(createBlock),
   }
 
-  // don't need to do freebetContractEntity.save()
+  context.Freebet.set(freebetEntity)
 
   return freebetEntity
 }
@@ -76,7 +77,7 @@ export function reissueFreebet(
   freebetContractAddress: string,
   freebetId: bigint,
   reissueBlock: number,
-  context: any,
+  context: FreeBetContract_FreeBetReissuedEvent_handlerContext,
 ): FreebetEntity {
   
   const freebetEntityId = freebetContractAddress + "_" + freebetId.toString()
@@ -103,8 +104,8 @@ export function redeemFreebet(
   freebetId: bigint,
   coreAddress: string,
   azuroBetId: bigint,
-  context: any,
-  event: any,
+  context: FreeBetContract_FreeBetRedeemedEvent_handlerContext,
+  event: eventLog<FreeBetContract_FreeBetRedeemedEvent_eventArgs>,
 ): FreebetEntity {
   const freebetEntityId = freebetContractAddress + "_" + freebetId.toString()
 
@@ -112,8 +113,8 @@ export function redeemFreebet(
   context.Freebet.set({
     azuroBetId: azuroBetId,
     status: "Redeemed",
-    core: coreAddress,
-    _updatedAt: event.blockTimestamp,
+    core_id: coreAddress,
+    _updatedAt: BigInt(event.blockTimestamp),
   })
 
   const freebetEntity: FreebetEntity = context.Freebet.get(freebetEntityId)
@@ -130,13 +131,13 @@ export function redeemFreebet(
 export function withdrawFreebet(
   freebetEntityId: string, 
   blockTimestamp: number,
-  context: any,
+  context: FreeBetContract_BettorWinEvent_handlerContext,
 ): FreebetEntity | null {
-  const freebetEntity: FreebetEntity = context.Freebet.get(freebetEntityId)
+  const freebetEntity = context.Freebet.get(freebetEntityId)
 
   // TODO remove later
   if (!freebetEntity) {
-    context.log.error('withdrawFreebet freebetEntity not found. freebetEntityId = {}', [freebetEntityId])
+    context.log.error(`withdrawFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
 
     return null
   }
@@ -144,7 +145,7 @@ export function withdrawFreebet(
   context.Freebet.set({
     ...freebetEntity,
     status: "Withdrawn",
-    _updatedAt: blockTimestamp,
+    _updatedAt: BigInt(blockTimestamp),
   })
 
   return freebetEntity
@@ -156,7 +157,7 @@ export function transferFreebet(
   tokenId: BigInt,
   to: string,
   blockTimestamp: number,
-  context: any,
+  context: FreeBetContract_TransferEvent_handlerContext,
 ): FreebetEntity | null {
 
   const freebetEntityId = freebetContractAddress + "_" + tokenId.toString()
@@ -165,7 +166,7 @@ export function transferFreebet(
   context.Freebet.set({
     ...freebetEntity,
     owner: to,
-    _updatedAt: blockTimestamp,
+    _updatedAt: BigInt(blockTimestamp),
   })
 
   const coreAddress = freebetEntity.core_id
@@ -185,7 +186,7 @@ export function transferFreebet(
     context.Bet.set({
       ...betEntity,
       actor: to,
-      _updatedAt: blockTimestamp,
+      _updatedAt: BigInt(blockTimestamp),
     })
   }
 
@@ -198,7 +199,7 @@ export function resolveFreebet(
   tokenId: BigInt,
   burned: boolean,
   blockTimestamp: number,
-  context: any,
+  context: FreeBetContract_TransferEvent_handlerContext,
 ): void {
   const freebetEntityId = freebetContractAddress + "_" + tokenId.toString()
   const freebetEntity = context.Freebet.get(freebetEntityId)
@@ -206,7 +207,7 @@ export function resolveFreebet(
   context.Freebet.set({
     ...freebetEntity,
     isResolved: true,
-    _updatedAt: blockTimestamp,
+    _updatedAt: BigInt(blockTimestamp),
   })
   
   if (burned) {
