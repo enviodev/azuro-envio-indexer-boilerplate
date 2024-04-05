@@ -124,6 +124,7 @@ XYZFreeBetContract_FreeBetMinted_handler(async ({ event, context }) => {
     null,
     null,
     event.blockNumber,
+    context,
   )
 
 });
@@ -168,10 +169,10 @@ XYZFreeBetContract_FreeBetMintedBatch_handler(async ({ event, context }) => {
       null,
       null,
       event.blockNumber,
+      context 
     )
   }
 
-  // do we have to do createEvent and createFreebet?
 });
 
 XYZFreeBetContract_FreeBetRedeemed_loader(({ event, context }) => {

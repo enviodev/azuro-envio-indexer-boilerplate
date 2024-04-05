@@ -1,6 +1,6 @@
 import { zeroPadBytes } from "ethers"
 import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE } from "../constants"
-import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LiveBetEntity } from "../src/Types.gen"
+import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LiveBetEntity } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal } from "../utils/math"
 
@@ -75,7 +75,7 @@ export function linkBetWithFreeBet(
   freebetEntityId: string,
   freebetOwner: string,
   blockTimestamp: number,
-  context: any,
+  context: FreeBetContract_FreeBetRedeemedEvent_handlerContext,
 ): BetEntity | null {
 
   const betEntityId = coreAddress + "_" + tokenId.toString()
@@ -89,11 +89,11 @@ export function linkBetWithFreeBet(
 
   context.Bet.set({
     ...betEntity,
-    freebet: freebetEntityId,
+    freebet_id: freebetEntityId,
     _isFreebet: true,
     bettor: freebetOwner,
     actor: freebetOwner,
-    _updatedAt: blockTimestamp,
+    _updatedAt: BigInt(blockTimestamp),
   })
 
   return betEntity
@@ -158,7 +158,7 @@ export function createBet(
       turnover: leagueEntity.turnover + amount,
     })
 
-    const countryEntity = context.Country.get(leagueEntity.country)!
+    const countryEntity = context.Country.get(leagueEntity.country_id)!
     context.Country.set({
       ...countryEntity,
       turnover: countryEntity.turnover + amount,
@@ -166,6 +166,7 @@ export function createBet(
   }
 
   const potentialPayout = amount * odds / (MULTIPLIERS_VERSIONS.get(version)!)
+  const betEntityId = coreAddress + "_" + tokenId.toString()
 
   const _betType = betType as "Ordinar" | "Express"
 
@@ -235,8 +236,6 @@ export function createBet(
       })
     }
   }
-
-  const betEntityId = coreAddress + "_" + tokenId.toString()
 
   const betEntity = {
     id: betEntityId, 
