@@ -150,3 +150,5 @@ export const BASES_VERSIONS = new TypedMap<string, number>()
 BASES_VERSIONS.set(VERSION_V1, V1_BASE)
 BASES_VERSIONS.set(VERSION_V2, V2_BASE)
 BASES_VERSIONS.set(VERSION_V3, V3_BASE)
+
+export const CORE_TYPES = new TypedMap<string, string>()

@@ -1,10 +1,10 @@
-import { AzuroBetContractEntity, CoreContract_LpChangedEvent_handlerContextAsync } from "../src/Types.gen"
+import { AzuroBetContractEntity, CoreContract_LpChangedEvent_handlerContextAsync, FactoryContract_NewCoreEvent_handlerContext, FactoryContract_NewCoreEvent_handlerContextAsync } from "../src/Types.gen"
 
 
 export async function createAzuroBetEntity(
     coreAddress: string,
     azuroBetAddress: string,
-    context: CoreContract_LpChangedEvent_handlerContextAsync,
+    context: CoreContract_LpChangedEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext,
 ): Promise<typeof azuroBetContractEntity> {
     const azuroBetContractEntity = await context.AzuroBetContract.get(azuroBetAddress)
 
