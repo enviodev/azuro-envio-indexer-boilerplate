@@ -1,3 +1,8 @@
+enum LiquidityPoolContractType {
+  V1
+  V2
+}
+
 type LiquidityPoolContract @entity {
   id: ID!
   chainId: Int!
@@ -5,6 +10,7 @@ type LiquidityPoolContract @entity {
   address: String!
   # cores: [CoreContract!]! @derivedFrom(field: "liquidityPool") # todo
   coreAddresses: [String!]
+  type_: LiquidityPoolContractType!
   version: String! # previously "type" but type is a reserved word so going with version
   token: String!
   tokenDecimals: Int!
@@ -150,7 +156,7 @@ type Bet @entity {
   "Core contract address + Bet Id"
   id: ID!
   core: CoreContract!
-  betType: BetType!
+  type_: BetType!
   betId: BigInt!
   bettor: String!
   owner: String!
@@ -429,7 +435,7 @@ type LiquidityPoolTransaction @entity {
   id: ID!
   account: String!
   nft: LiquidityPoolNft!
-  # type: LiquidityPoolTransactionType!
+  type_: LiquidityPoolTransactionType!
   liquidityPool: LiquidityPoolContract!
   rawAmount: BigInt!
   # amount: BigDecimal!
