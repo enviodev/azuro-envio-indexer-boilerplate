@@ -1,5 +1,5 @@
 import { start } from "repl";
-import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionStoppedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContext, Corev2Contract_OddsChangedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity, OutcomeEntity, outcomeLoaderConfig } from "../../generated/src/Types.gen";
+import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionStoppedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContext, Corev2Contract_OddsChangedEvent_handlerContext, Corev3Contract_MarginChangedEvent_handlerContext, Corev3Contract_ReinforcementChangedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity, OutcomeEntity, outcomeLoaderConfig } from "../../generated/src/Types.gen";
 import { BASES_VERSIONS, BET_RESULT_LOST, BET_RESULT_WON, BET_STATUS_CANCELED, BET_STATUS_RESOLVED, BET_TYPE_EXPRESS, BET_TYPE_ORDINAR, CONDITION_STATUS_CANCELED, CONDITION_STATUS_CREATED, CONDITION_STATUS_PAUSED, CONDITION_STATUS_RESOLVED, GAME_STATUS_CANCELED, GAME_STATUS_CREATED, GAME_STATUS_PAUSED, GAME_STATUS_RESOLVED, SELECTION_RESULT_LOST, SELECTION_RESULT_WON, VERSION_V2, VERSION_V3 } from "../constants";
 import { removeItem } from "../utils/array";
 import { getOdds, toDecimal } from '../utils/math'
@@ -311,7 +311,7 @@ export function resolveCondition(
             isRedeemable: true,
           })
 
-          if (betEntity.bet_type === BET_TYPE_ORDINAR) {
+          if (betEntity.betType === BET_TYPE_ORDINAR) {
             context.Bet.set({
               ...betEntity,
               rawPayout: betEntity.rawPotentialPayout,
@@ -319,7 +319,7 @@ export function resolveCondition(
             })
           }
           else if (
-            betEntity.bet_type === BET_TYPE_EXPRESS
+            betEntity.betType === BET_TYPE_EXPRESS
           ) {
             let payoutSC: bigint | null = null
 
@@ -572,6 +572,37 @@ export function pauseUnpauseCondition(
 
   context.Game.set({
     ...gameEntity,
+    _updatedAt: BigInt(blockTimestamp),
+  })
+
+  return conditionEntity
+}
+
+
+export function updateConditionMargin(
+  conditionEntity: ConditionEntity,
+  newMargin: bigint,
+  blockTimestamp: number,
+  context: Corev3Contract_MarginChangedEvent_handlerContext,
+): ConditionEntity | null {
+  context.Condition.set({
+    ...conditionEntity,
+    margin: newMargin,
+    _updatedAt: BigInt(blockTimestamp),
+  })
+
+  return conditionEntity
+}
+
+export function updateConditionReinforcement(
+  conditionEntity: ConditionEntity,
+  newReinforcement: bigint,
+  blockTimestamp: number,
+  context: Corev3Contract_ReinforcementChangedEvent_handlerContext,
+): ConditionEntity | null {
+  context.Condition.set({
+    ...conditionEntity,
+    reinforcement: newReinforcement,
     _updatedAt: BigInt(blockTimestamp),
   })
 
