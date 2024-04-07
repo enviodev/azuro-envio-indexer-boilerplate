@@ -15,10 +15,15 @@ import {
 import { linkBetWithFreeBet } from "../common/bets";
 import { createFreebet, createFreebetContractEntity, redeemFreebet, reissueFreebet, resolveFreebet, transferFreebet, withdrawFreebet } from "../common/freebets";
 import { VERSION_V2, ZERO_ADDRESS } from "../constants";
-import { FreebetContractEntity } from "../src/Types.gen";
+import { FreeBetContract_FreeBetMintedEvent_handlerContext, FreebetContractEntity } from "../src/Types.gen";
+import { getEntityId } from "../utils/schema";
 
-function getOrCreateFreebetContract(freebetContractAddress: string, chainId: number, context: any): FreebetContractEntity | null {
-  let freebetContractEntity = context.FreebetContract.load(freebetContractAddress)
+function getOrCreateFreebetContract(
+  freebetContractAddress: string,
+  chainId: number,
+  context: FreeBetContract_FreeBetMintedEvent_handlerContext,
+): FreebetContractEntity | null {
+  let freebetContractEntity = context.FreebetContract.get(freebetContractAddress)
 
   if (freebetContractEntity) {
     return freebetContractEntity
@@ -53,7 +58,7 @@ FreeBetContract_BettorWin_handler(({ event, context }) => {
     return
   }
 
-  const betEntityId = coreContractEntity.id + "_" + event.params.azuroBetId.toString()
+  const betEntityId = getEntityId(coreContractEntity.id, event.params.azuroBetId.toString())
   const betEntity = context.Bet.get(betEntityId)
 
   if (!betEntity) {
@@ -86,7 +91,7 @@ FreeBetContract_FreeBetMinted_handler(({ event, context }) => {
     freebetContractEntity.id,
     event.srcAddress,
     freebetContractEntity.name,
-    null,
+    undefined,
     event.params.id,
     event.params.receiver,
     event.params.bet[0],
@@ -94,8 +99,8 @@ FreeBetContract_FreeBetMinted_handler(({ event, context }) => {
     event.params.bet[1],
     event.params.bet[2],
     event.transactionHash,
-    null,
-    null,
+    undefined,
+    undefined,
     event.blockNumber,
     context,
   )
@@ -113,14 +118,13 @@ FreeBetContract_FreeBetMintedBatch_handler(({ event, context }) => {
 
   for (let i = 0; i < event.params.ids.length; i++) {
     // parse FreeBetMintedBatch to multiple FreeBetMinted
-    // const fakeLogIndex = event.logIndex + i
 
     createFreebet(
       VERSION_V2,
       freebetContractEntity.id,
       event.srcAddress,
       freebetContractEntity.name,
-      null,
+      undefined,
       event.params.ids[i],
       event.params.receivers[i],
       event.params.bets[i][0],
@@ -128,8 +132,8 @@ FreeBetContract_FreeBetMintedBatch_handler(({ event, context }) => {
       event.params.bets[i][1],
       event.params.bets[i][2],
       event.transactionHash,
-      null,
-      null,
+      undefined,
+      undefined,
       event.blockNumber,
       context,
     )

@@ -84,6 +84,7 @@ FactoryContract_NewPool_handler(({ event, context }) => {
     event.blockNumber,
     event.blockTimestamp,
     event.chainId,
+    context,
   )
 
   LPV2.create(event.params.lp)
@@ -101,4 +102,5 @@ FactoryContract_NewPool_handler(({ event, context }) => {
     if (prematchAddress !== null) {
       createExpressPrematchRelationEntity(coreAddress, prematchAddress, context)
     }
- });
+  }
+});

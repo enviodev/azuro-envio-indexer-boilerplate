@@ -28,7 +28,7 @@ Corev3Contract_ConditionResolved_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionEntityId = coreAddress + "_" + conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   // TODO remove later
@@ -59,7 +59,7 @@ Corev3Contract_ConditionStopped_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionEntityId = coreAddress + "_" + conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   // TODO remove later

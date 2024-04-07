@@ -3,6 +3,7 @@ import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, B
 import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal } from "../utils/math"
+import { getEntityId } from "../utils/schema"
 
 
 export function transferBet(
@@ -30,7 +31,6 @@ export function transferBet(
     finalCoreAddress = coreAddress
   }
   else if (azuroBetAddress !== null) {
-    // id?
     const azuroBetContractEntity = context.AzuroBetContract.get(azuroBetAddress)
 
     // TODO remove later
@@ -42,7 +42,7 @@ export function transferBet(
     finalCoreAddress = azuroBetContractEntity.core_id
   }
 
-  const betEntityId = finalCoreAddress + "_" + tokenId.toString()
+  const betEntityId = getEntityId(finalCoreAddress, tokenId.toString())
   const betEntity = context.Bet.get(betEntityId)
 
   if (!betEntity) {
@@ -50,20 +50,17 @@ export function transferBet(
     return null
   }
 
+  let actor = betEntity.actor
   if (!betEntity._isFreebet) {
-    context.Bet.set({
-      ...betEntity,
-      owner: to,
-      actor: to,
-      _updatedAt: BigInt(block),
-    })
-  } else {
-    context.Bet.set({
-      ...betEntity,
-      owner: to,
-      _updatedAt: BigInt(block),
-    })
+    actor = to
   }
+  
+  context.Bet.set({
+    ...betEntity,
+    actor: actor,
+    owner: to,
+    _updatedAt: BigInt(block),
+  })
 
   return betEntity
 }
@@ -237,9 +234,9 @@ export function createBet(
     }
   }
 
-  const betEntity = {
+  const betEntity: BetEntity = {
     id: betEntityId, 
-    betType: _betType,
+    type_: _betType,
     _subBetsCount: betOutcomeEntities.length,
     _wonSubBetsCount: 0,
     _lostSubBetsCount: 0,
@@ -293,7 +290,7 @@ export function createBet(
   for (let i = 0; i < betOutcomeEntities.length; i++) {
     const betOutcomeEntity: OutcomeEntity = betOutcomeEntities[i]
 
-    const selectionEntityId = betEntityId + "_" + conditionEntities[i].conditionId.toString()
+    const selectionEntityId = getEntityId(betEntityId, conditionEntities[i].conditionId.toString())
 
     context.Selection.set({
       id: selectionEntityId,
@@ -331,8 +328,8 @@ export function bettorWin(
     return
   }
 
-  if (coreContractEntity.type === CORE_TYPE_LIVE) {
-    const liveBetEntity: LiveBetEntity = context.LiveBet.get(betEntityId)
+  if (coreContractEntity.type_ === CORE_TYPE_LIVE) {
+    const liveBetEntity = context.LiveBet.get(betEntityId)
 
     if (!liveBetEntity) {
       context.log.error(`v1 handleBettorWin betEntity not found. betEntity = ${betEntityId}`)
@@ -344,14 +341,14 @@ export function bettorWin(
       isRedeemed: true,
       isRedeemable: false,
       rawPayout: amount,
-      payout: toDecimal(amount, liveBetEntity._tokenDecimals),
+      // payout: toDecimal(amount, liveBetEntity._tokenDecimals),
       redeemedBlockNumber: BigInt(blockNumber),
       redeemedBlockTimestamp: BigInt(blockTimestamp),
       redeemedTxHash: txHash,
       _updatedAt: BigInt(blockTimestamp),
     })
   } else {
-    const betEntity: BetEntity = context.Bet.get(betEntityId)
+    const betEntity = context.Bet.get(betEntityId)
 
     if (!betEntity) {
       context.log.error(`v1 handleBettorWin betEntity not found. betEntity = ${betEntityId}`)

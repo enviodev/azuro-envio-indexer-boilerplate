@@ -133,7 +133,7 @@ export function shiftGame(
     shiftedBlockTimestamp: number,
     context: LPv2Contract_GameShiftedEvent_handlerContext,
 ): GameEntity | null {
-    const gameEntity: GameEntity = context.Game.get(gameEntityId)
+    const gameEntity = context.Game.get(gameEntityId)
 
     // TODO remove later
     if (!gameEntity) {

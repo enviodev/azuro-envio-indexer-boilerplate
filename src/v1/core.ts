@@ -59,7 +59,7 @@ CoreContract_ConditionCreated_handler(async ({ event, context }) => {
     return
   }
   
-  let conditionCreated = createCondition(
+  createCondition(
     VERSION_V1,
     coreAddress,
     conditionId,
@@ -74,10 +74,9 @@ CoreContract_ConditionCreated_handler(async ({ event, context }) => {
     event.transactionHash,
     event.blockNumber,
     event.blockTimestamp,
+    context,
     startsAt,
   )
-
-  context.Condition.set(conditionCreated)
 });
 
 CoreContract_ConditionResolved_loader(({ event, context }) => {
@@ -176,10 +175,9 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
     token.token,
     event.blockNumber,
     event.blockTimestamp,
-    event.chainId
+    event.chainId,
+    context,
   );
-
-  context.LiquidityPoolContract.set(liquidityPool);
 
   const coreContractEntity = await context.CoreContract.get(event.srcAddress);
 

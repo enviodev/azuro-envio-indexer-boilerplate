@@ -16,6 +16,7 @@ import { BET_TYPE_ORDINAR, VERSION_V2 } from "../constants";
 import { getConditionV2FromId } from "../contracts/corev2";
 import { createBet } from "../common/bets";
 import { OutcomeEntity } from "../src/Types.gen";
+import { getEntityId } from "../utils/schema";
 
 // TODO: get contract addresses
 
@@ -64,7 +65,7 @@ Corev2Contract_ConditionResolved_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionEntityId = coreAddress + "_" + conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   // TODO remove later
@@ -93,7 +94,7 @@ Corev2Contract_ConditionStopped_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionEntityId = coreAddress + "_" + conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   // TODO remove later
@@ -116,7 +117,7 @@ Corev2Contract_NewBet_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionEntityId = coreAddress + "_" + conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   // TODO remove later
@@ -128,7 +129,7 @@ Corev2Contract_NewBet_handler(({ event, context }) => {
   const lp = context.CoreContract.get(coreAddress)!.liquidityPool_id
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
 
-  const outcomeEntityId = conditionEntity.id + "_" + event.params.outcomeId.toString()
+  const outcomeEntityId = getEntityId(conditionEntity.id, event.params.outcomeId.toString())
   const outcomeEntity = context.Outcome.get(outcomeEntityId)!
 
   createBet(
@@ -171,7 +172,7 @@ Corev2Contract_OddsChanged_handler(async ({ event, context }) => {
   let outcomesEntities: OutcomeEntity[] = []
 
   for (let i = 0; i < conditionEntity.outcomesIds!.length; i++) {
-    const outcomeEntityId = conditionEntity.id + "_" + conditionEntity.outcomesIds![i].toString()
+    const outcomeEntityId = getEntityId(conditionEntity.id, conditionEntity.outcomesIds![i].toString())
     const outcomeEntity = context.Outcome.get(outcomeEntityId)!
     outcomesEntities = outcomesEntities.concat([outcomeEntity])
   }

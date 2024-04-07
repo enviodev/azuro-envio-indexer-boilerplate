@@ -14,7 +14,7 @@ import {
   XYZFreeBetContract_Transfer_handler,
 } from "../../generated/src/Handlers.gen";
 
-import { FreebetContractEntity } from "../../generated/src/Types.gen";
+import { FreebetContractEntity, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContext } from "../../generated/src/Types.gen";
 
 import { createFreebetContractEntity, createFreebet, reissueFreebet, redeemFreebet, resolveFreebet, transferFreebet, withdrawFreebet } from "../common/freebets";
 import { linkBetWithFreeBet } from "../common/bets";
@@ -26,7 +26,7 @@ import { VERSION_V1, ZERO_ADDRESS } from "../constants";
 async function getOrCreateFreebetContract(
   chainId: number,
   freebetContractAddress: string,
-  context: any
+  context: XYZFreeBetContract_FreeBetRedeemedEvent_handlerContext
 ): Promise<FreebetContractEntity> {
   let freebetContractEntity = context.FreebetContract.get(
     freebetContractAddress
@@ -113,7 +113,7 @@ XYZFreeBetContract_FreeBetMinted_handler(async ({ event, context }) => {
     freebetContractEntity.id,
     event.srcAddress,
     freebetContractEntity.name,
-    null,
+    undefined,
     event.params.id,
     event.params.receiver,
     event.params.bet[0],
@@ -121,8 +121,8 @@ XYZFreeBetContract_FreeBetMinted_handler(async ({ event, context }) => {
     event.params.bet[1],
     event.params.bet[2],
     event.transactionHash,
-    null,
-    null,
+    undefined,
+    undefined,
     event.blockNumber,
     context,
   )
@@ -158,7 +158,7 @@ XYZFreeBetContract_FreeBetMintedBatch_handler(async ({ event, context }) => {
       freebetContractEntity.id,
       event.srcAddress,
       freebetContractEntity.name,
-      null,
+      undefined,
       event.params.ids[i],
       event.params.receivers[i],
       event.params.bets[i][0],
@@ -166,8 +166,8 @@ XYZFreeBetContract_FreeBetMintedBatch_handler(async ({ event, context }) => {
       event.params.bets[i][1],
       event.params.bets[i][2],
       event.transactionHash,
-      null,
-      null,
+      undefined,
+      undefined,
       event.blockNumber,
       context 
     )
@@ -207,7 +207,6 @@ XYZFreeBetContract_FreeBetRedeemed_handler(async ({ event, context }) => {
 
   if (!freebetEntity) {
     context.log.error(`v1 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id}`)
-
     return
   }
 
