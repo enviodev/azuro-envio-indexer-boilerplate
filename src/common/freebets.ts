@@ -11,7 +11,7 @@ export function createFreebetContractEntity(
 ): FreebetContractEntity {
   const freebetContractEntity: FreebetContractEntity = {
     id: freebetContractAddress + "_" + chainId,
-    liquidityPool: liquidityPoolAddress,
+    liquidityPool_id: liquidityPoolAddress,
     address: freebetContractAddress,
     name: freebetContractName ? freebetContractName : "",
     affiliate: freebetContractAffiliate ? freebetContractAffiliate : "",
