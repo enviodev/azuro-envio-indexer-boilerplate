@@ -15,13 +15,56 @@ import {
   Corev3Contract_ReinforcementChanged_handler,
 } from "../../generated/src/Handlers.gen";
 import { createBet } from "../common/bets";
-import { pauseUnpauseCondition, resolveCondition, updateConditionMargin, updateConditionOdds, updateConditionReinforcement } from "../common/condition";
+import { createCondition, pauseUnpauseCondition, resolveCondition, updateConditionMargin, updateConditionOdds, updateConditionReinforcement } from "../common/condition";
 import { BET_TYPE_ORDINAR, VERSION_V3 } from "../constants";
 import { OutcomeEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
 Corev3Contract_ConditionCreated_loader(({ event, context }) => {});
-Corev3Contract_ConditionCreated_handler(({ event, context }) => {});
+Corev3Contract_ConditionCreated_handler(({ event, context }) => {
+  const conditionId = event.params.conditionId
+  const coreAddress = event.srcAddress
+
+  const coreSC = Core.bind(event.srcAddress)
+  const conditionData = coreSC.try_getCondition(conditionId)
+
+  if (conditionData.reverted) {
+    context.log.error('getCondition reverted. conditionId = ${conditionId.toString()}')
+    return
+  }
+
+  const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
+  const gameEntityId = getEntityId(
+    liquidityPoolAddress,
+    event.params.gameId.toString(),
+  )
+
+  const gameEntity = context.Game.get(gameEntityId)
+
+  // TODO remove later
+  if (!gameEntity) {
+    context.log.error('v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}')
+    return
+  }
+
+  createCondition(
+    VERSION_V3,
+    coreAddress,
+    conditionId,
+    gameEntity.id,
+    conditionData.value.margin,
+    conditionData.value.reinforcement,
+    event.params.outcomes,
+    conditionData.value.virtualFunds,
+    conditionData.value.winningOutcomesCount,
+    conditionData.value.isExpressForbidden,
+    gameEntity.provider,
+    event.transactionHash,
+    event.blockNumber,
+    event.blockTimestamp,
+    context,
+  )
+});
 
 Corev3Contract_ConditionResolved_loader(({ event, context }) => {});
 Corev3Contract_ConditionResolved_handler(({ event, context }) => {
@@ -123,7 +166,7 @@ Corev3Contract_OddsChanged_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const coreSC = Core.bind(event.address)
+  const coreSC = Core.bind(event.srcAddress)
   const conditionData = coreSC.try_getCondition(conditionId)
 
   if (conditionData.reverted) {
