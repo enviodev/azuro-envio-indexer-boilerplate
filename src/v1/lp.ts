@@ -21,6 +21,7 @@ import { createBet, bettorWin } from "../common/bets";
 import { depositLiquidity, withdrawLiquidity, transferLiquidity, changeWithdrawalTimeout } from "../common/pool";
 
 import { VERSION_V1, BET_TYPE_ORDINAR, ZERO_ADDRESS } from "../constants";
+import { getEntityId } from "../utils/schema";
 
 LPContract_BetterWin_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
@@ -101,7 +102,7 @@ LPContract_NewBet_handler(({ event, context }) => {
 
   const coreAddress = liquidityPoolContractEntity?.coreAddresses![0]
 
-  const conditionEntityId = coreAddress + "_" + event.params.conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   if (!conditionEntity) {
@@ -109,7 +110,7 @@ LPContract_NewBet_handler(({ event, context }) => {
     return
   }
 
-  const outcomeEntityId = conditionEntity.id + "_" + event.params.outcomeId.toString()
+  const outcomeEntityId = getEntityId(conditionEntity.id,event.params.outcomeId.toString())
   const outcomeEntity = context.Outcome.get(outcomeEntityId)!
 
   createBet(

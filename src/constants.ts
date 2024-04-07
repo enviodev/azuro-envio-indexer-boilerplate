@@ -47,6 +47,11 @@ export const GAME_STATUS_PAUSED = 'Paused'
 export const GAME_STATUS_CANCELED = 'Canceled'
 export const GAME_STATUS_RESOLVED = 'Resolved'
 
+export const FREEBET_STATUS_CREATED = 'Created'
+export const FREEBET_STATUS_REISSUED = 'Reissued'
+export const FREEBET_STATUS_REDEEMED = 'Redeemed'
+export const FREEBET_STATUS_WITHDRAWN = 'Withdrawn'
+
 export const CORE_TYPE_PRE_MATCH = 'pre-match'
 export const CORE_TYPE_PRE_MATCH_V2 = 'pre-match-v2'
 export const CORE_TYPE_EXPRESS = 'express'

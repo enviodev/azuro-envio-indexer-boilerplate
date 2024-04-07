@@ -1,4 +1,5 @@
-import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreebetContractEntity, FreebetEntity, eventLog } from "../../generated/src/Types.gen";
+import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreebetContractEntity, FreebetEntity, XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs, eventLog } from "../../generated/src/Types.gen";
+import { FREEBET_STATUS_CREATED, FREEBET_STATUS_REDEEMED } from "../constants";
 
 export function createFreebetContractEntity(
   chainId: string,
@@ -25,7 +26,7 @@ export function createFreebet(
   freebetContractEntityId: string,
   freebetContractAddress: string,
   freebetContractName: string | undefined,
-  freebetContractAffiliate: string | null,
+  freebetContractAffiliate: string | undefined,
   freebetId: bigint,
   owner: string,
   amount: bigint,
@@ -33,25 +34,33 @@ export function createFreebet(
   minOdds: bigint,
   durationTime: bigint,
   txHash: string,
-  coreAddress: string | null,
-  azuroBetId: bigint | null,
+  coreAddress: string | undefined,
+  azuroBetId: bigint | undefined,
   createBlock: number,
   context: FreeBetContract_FreeBetMintedEvent_handlerContext,
 ): FreebetEntity {
   const freebetEntityId = freebetContractAddress + '_' + freebetId.toString()
 
+  let _status: typeof FREEBET_STATUS_REDEEMED | typeof FREEBET_STATUS_CREATED;
+
+  if (coreAddress !== null && azuroBetId !== null) {
+    _status = FREEBET_STATUS_REDEEMED
+  }
+  else {
+    _status = FREEBET_STATUS_CREATED
+  }
+
   const freebetEntity: FreebetEntity = {
     id: freebetEntityId,
-    // freebet: freebetContractEntityId,
-    freebetContractAddress: freebetContractAddress,
-    freebetContractName: freebetContractName ? freebetContractName : "",
-    freebetId: freebetId,
-    freebetContractAffiliate: freebetContractAffiliate ? freebetContractAffiliate : "",
     freebet_id: freebetContractEntityId,
+    freebetContractAddress: freebetContractAddress,
+    freebetContractName: freebetContractName,
+    freebetId: freebetId,
+    freebetContractAffiliate: freebetContractAffiliate,
     owner: owner,
-    azuroBetId: azuroBetId ? azuroBetId : BigInt(0),
-    core_id: coreAddress ? coreAddress : "",
-    status: azuroBetId ? "Redeemed" : "Created",
+    azuroBetId: azuroBetId,
+    core_id: coreAddress,
+    status: _status,
     rawAmount: amount,
     // amount: amount.toBigDecimal(),
     tokenDecimals: tokenDecimals,
@@ -78,22 +87,25 @@ export function reissueFreebet(
   freebetId: bigint,
   reissueBlock: number,
   context: FreeBetContract_FreeBetReissuedEvent_handlerContext,
-): FreebetEntity {
-  
+): FreebetEntity | null {
+
   const freebetEntityId = freebetContractAddress + "_" + freebetId.toString()
 
-  const freebetEntity: FreebetEntity = context.Freebet.get(freebetContractAddress)
+  const freebetEntity = context.Freebet.get(freebetContractAddress)
 
   if (!freebetEntity) {
     context.log.error(`freebetEntity not found. freebetentityId = ${freebetEntityId}`)
+    return null
   }
 
-  // what to do here
-  // freebetEntity.expiresAt = freebetEntity.durationTime.plus(reissueBlock.timestamp)
-  // freebetEntity.status = FREEBET_STATUS_REISSUED.toString()
-  // freebetEntity.core = null
-  // freebetEntity.azuroBetId = null
-  // freebetEntity._updatedAt = reissueBlock.timestamp
+  context.Freebet.set({
+    ...freebetEntity,
+    expiresAt: freebetEntity.durationTime + BigInt(reissueBlock),
+    status: FREEBET_STATUS_REDEEMED,
+    core_id: undefined,
+    azuroBetId: undefined,
+    _updatedAt: BigInt(reissueBlock),
+  })
 
   return freebetEntity
 }
@@ -105,31 +117,32 @@ export function redeemFreebet(
   coreAddress: string,
   azuroBetId: bigint,
   context: FreeBetContract_FreeBetRedeemedEvent_handlerContext,
-  event: eventLog<FreeBetContract_FreeBetRedeemedEvent_eventArgs>,
-): FreebetEntity {
+  event: eventLog<FreeBetContract_FreeBetRedeemedEvent_eventArgs> | eventLog<XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs>,
+): FreebetEntity | null {
   const freebetEntityId = freebetContractAddress + "_" + freebetId.toString()
+  const freebetEntity = context.Freebet.get(freebetEntityId)
 
-  // do I need to specify all properties here?
+  // TODO remove later
+  if (!freebetEntity) {
+    context.log.error(`redeemFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    return null
+  }
+
   context.Freebet.set({
+    ...freebetEntity,
     azuroBetId: azuroBetId,
-    status: "Redeemed",
+    status: FREEBET_STATUS_REDEEMED,
     core_id: coreAddress,
     _updatedAt: BigInt(event.blockTimestamp),
   })
 
-  const freebetEntity: FreebetEntity = context.Freebet.get(freebetEntityId)
-
-  // are these checks unnecessary?
-  if (!freebetEntity) {
-    context.log.error(`freebetEntity not found. freebetentityId = ${freebetEntityId}`)
-  }
 
   return freebetEntity
 }
 
 
 export function withdrawFreebet(
-  freebetEntityId: string, 
+  freebetEntityId: string,
   blockTimestamp: number,
   context: FreeBetContract_BettorWinEvent_handlerContext,
 ): FreebetEntity | null {
@@ -161,7 +174,13 @@ export function transferFreebet(
 ): FreebetEntity | null {
 
   const freebetEntityId = freebetContractAddress + "_" + tokenId.toString()
-  const freebetEntity: FreebetEntity = context.Freebet.get(freebetEntityId)
+  const freebetEntity = context.Freebet.get(freebetEntityId)
+
+  // TODO remove later
+  if (!freebetEntity) {
+    context.log.error(`transferFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    return null
+  }
 
   context.Freebet.set({
     ...freebetEntity,
@@ -179,7 +198,6 @@ export function transferFreebet(
     // TODO remove later
     if (!betEntity) {
       context.log.error(`transferFreebet betEntity not found. betEntityId = ${betEntityId}`)
-
       return null
     }
 
@@ -200,21 +218,23 @@ export function resolveFreebet(
   burned: boolean,
   blockTimestamp: number,
   context: FreeBetContract_TransferEvent_handlerContext,
-): void {
+): FreebetEntity | null {
   const freebetEntityId = freebetContractAddress + "_" + tokenId.toString()
   const freebetEntity = context.Freebet.get(freebetEntityId)
+
+  // TODO remove later
+  if (!freebetEntity) {
+    context.log.error(`resolveFreebet freebetEntity not found. freebetEntityId = {freebetEntityId}`)
+    return null
+  }
 
   context.Freebet.set({
     ...freebetEntity,
     isResolved: true,
     _updatedAt: BigInt(blockTimestamp),
+    burned: burned,
   })
-  
-  if (burned) {
-    context.Freebet.set({
-      ...freebetEntity,
-      burned: true,
-    })
-  }
-    
+
+  return freebetEntity
+
 }

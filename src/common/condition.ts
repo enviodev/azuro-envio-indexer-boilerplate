@@ -6,6 +6,7 @@ import { getOdds, toDecimal } from '../utils/math'
 import { calcPayoutV2, calcPayoutV3 } from "./express";
 import { countConditionResolved } from "./pool";
 import { Condition } from "../src/DbFunctions.bs";
+import { getEntityId } from "../utils/schema";
 
 export function createCondition(
   version: string,
@@ -39,7 +40,7 @@ export function createCondition(
     createdTxHash: txHash,
     createdBlockNumber: BigInt(createBlockNumber),
     createdBlockTimestamp: BigInt(createBlockTimestamp),
-    status: "Created",
+    status: CONDITION_STATUS_CREATED,
     margin: margin,
     reinforcement: reinforcement,
     turnover: 0n,
@@ -72,9 +73,9 @@ export function createCondition(
 
     const outcomeId = outcomes[i].toString()
 
-    const outcomeEntityId = conditionEntityId + "_" + outcomeId
+    const outcomeEntityId = getEntityId(conditionEntityId, outcomeId)
 
-    const outcomeEntity: OutcomeEntity = {
+    const outcomeEntity: Mutable<OutcomeEntity> = {
       id: outcomeEntityId, // TODO correct?
       core_id: coreAddress,
       outcomeId: outcomes[i],
@@ -100,6 +101,8 @@ export function createCondition(
   }
 
   conditionEntity._updatedAt = BigInt(createBlockTimestamp)
+
+  context.Condition.set(conditionEntity)
 
   const gameEntity = context.Game.get(gameEntityId)!
 
