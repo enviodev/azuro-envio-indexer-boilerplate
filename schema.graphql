@@ -41,8 +41,7 @@ type LiquidityPoolContract @entity {
 
 type FreebetContract @entity {
   id: ID! # contractAddress-chainId
-  # liquidityPool: LiquidityPoolContract! # todo
-  liquidityPool: String!
+  liquidityPool: LiquidityPoolContract!
   address: String!
   name: String
   affiliate: String
