@@ -1,6 +1,6 @@
 import { zeroPadBytes } from "ethers"
 import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE } from "../constants"
-import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LiveBetEntity } from "../src/Types.gen"
+import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal } from "../utils/math"
 
@@ -318,19 +318,16 @@ export function bettorWin(
   tokenId: bigint,
   amount: bigint,
   txHash: string,
-  block: number,
+  blockNumber: number,
   blockTimestamp: number,
-  context: any,
+  context: LPv2Contract_BettorWinEvent_handlerContext,
 ): void {
   const betEntityId = coreAddress + "_" + tokenId.toString()
 
   const coreContractEntity = context.CoreContract.get(coreAddress)
 
   if (!coreContractEntity) {
-    context.log.error('coreContractEntity not found. coreContractEntityId = {}', [
-      coreAddress,
-    ])
-
+    context.log.error('coreContractEntity not found. coreContractEntityId = {}')
     return
   }
 
@@ -338,10 +335,7 @@ export function bettorWin(
     const liveBetEntity: LiveBetEntity = context.LiveBet.get(betEntityId)
 
     if (!liveBetEntity) {
-      context.log.error('v1 handleBettorWin betEntity not found. betEntity = {}', [
-        betEntityId,
-      ])
-
+      context.log.error(`v1 handleBettorWin betEntity not found. betEntity = ${betEntityId}`)
       return
     }
 
@@ -351,10 +345,10 @@ export function bettorWin(
       isRedeemable: false,
       rawPayout: amount,
       payout: toDecimal(amount, liveBetEntity._tokenDecimals),
-      redeemedBlockNumber: block,
-      redeemedBlockTimestamp: blockTimestamp,
+      redeemedBlockNumber: BigInt(blockNumber),
+      redeemedBlockTimestamp: BigInt(blockTimestamp),
       redeemedTxHash: txHash,
-      _updatedAt: blockTimestamp,
+      _updatedAt: BigInt(blockTimestamp),
     })
   } else {
     const betEntity: BetEntity = context.Bet.get(betEntityId)
@@ -369,11 +363,11 @@ export function bettorWin(
       isRedeemed: true,
       isRedeemable: false,
       rawPayout: amount,
-      payout: toDecimal(amount, betEntity._tokenDecimals),
-      redeemedBlockNumber: block,
-      redeemedBlockTimestamp: blockTimestamp,
+      // payout: toDecimal(amount, betEntity._tokenDecimals),
+      redeemedBlockNumber: BigInt(blockNumber),
+      redeemedBlockTimestamp: BigInt(blockTimestamp),
       redeemedTxHash: txHash,
-      _updatedAt: blockTimestamp,
+      _updatedAt: BigInt(blockTimestamp),
     })
   }
 }

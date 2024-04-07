@@ -1,6 +1,6 @@
 import { ContractCodeNotStoredError } from "web3"
-import { TypedMap } from "../constants"
-import { GameEntity } from "../src/Types.gen"
+import { GAME_STATUS_CANCELED, TypedMap } from "../constants"
+import { GameEntity, LPv2Contract_GameCanceledEvent_handlerContext, LPv2Contract_GameShiftedEvent_handlerContext } from "../src/Types.gen"
 
 
 const DEFAULT_GAME: GameEntity = {
@@ -23,7 +23,7 @@ const DEFAULT_GAME: GameEntity = {
     provider: 0n,
     turnover: 0n,
     createdBlockNumber: 0n,
-    createdBlockTimestamp:0n ,
+    createdBlockTimestamp: 0n,
     createdTxHash: "",
     shiftedBlockNumber: 0n,
     shiftedBlockTimestamp: 0n,
@@ -32,7 +32,7 @@ const DEFAULT_GAME: GameEntity = {
     resolvedBlockTimestamp: 0n,
     resolvedTxHash: "",
     _updatedAt: 0n,
-  }
+}
 
 
 export function createGame(
@@ -131,13 +131,13 @@ export function shiftGame(
     txHash: string,
     shiftedBlockNumber: number,
     shiftedBlockTimestamp: number,
-    context: any,
+    context: LPv2Contract_GameShiftedEvent_handlerContext,
 ): GameEntity | null {
     const gameEntity: GameEntity = context.Game.get(gameEntityId)
 
     // TODO remove later
     if (!gameEntity) {
-        context.log.error(`shiftGame gameEntity not found. gameEntityId = ${gameEntityId}`, [gameEntityId])
+        context.log.error(`shiftGame gameEntity not found. gameEntityId = ${gameEntityId}`)
         return null
     }
 
@@ -145,9 +145,36 @@ export function shiftGame(
         ...gameEntity,
         startsAt: startsAt,
         shiftedTxHash: txHash,
-        shiftedBlockNumber: shiftedBlockNumber,
-        shiftedBlockTimestamp: shiftedBlockTimestamp,
-        _updatedAt: shiftedBlockTimestamp,
+        shiftedBlockNumber: BigInt(shiftedBlockNumber),
+        shiftedBlockTimestamp: BigInt(shiftedBlockTimestamp),
+        _updatedAt: BigInt(shiftedBlockTimestamp),
+    })
+
+    return gameEntity
+}
+
+export function cancelGame(
+    gameEntityId: string, 
+    txHash: string, 
+    resolvedBlockNumber: number,
+    resolvedBlockTimestamp: number,
+    context: LPv2Contract_GameCanceledEvent_handlerContext,
+): GameEntity | null {
+    const gameEntity = context.Game.get(gameEntityId)
+
+    // TODO remove later
+    if (!gameEntity) {
+        context.log.error(`cancelGame gameEntity not found. gameEntityId = ${gameEntityId}`)
+        return null
+    }
+
+    context.Game.set({
+        ...gameEntity,
+        resolvedTxHash: txHash,
+        resolvedBlockNumber: BigInt(resolvedBlockNumber),
+        resolvedBlockTimestamp: BigInt(resolvedBlockTimestamp),
+        status: GAME_STATUS_CANCELED,
+        _updatedAt: BigInt(resolvedBlockTimestamp),
     })
 
     return gameEntity
