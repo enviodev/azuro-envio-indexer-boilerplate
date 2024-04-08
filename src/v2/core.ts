@@ -10,6 +10,7 @@ import {
   Corev2Contract_NewBet_handler,
   Corev2Contract_OddsChanged_loader,
   Corev2Contract_OddsChanged_handler,
+  Corev2Contract_ConditionCreated_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { createCondition, pauseUnpauseCondition, resolveCondition, updateConditionOdds } from "../common/condition";
 import { BET_TYPE_ORDINAR, VERSION_V2 } from "../constants";
@@ -21,16 +22,16 @@ import { getEntityId } from "../utils/schema";
 // TODO: get contract addresses
 
 Corev2Contract_ConditionCreated_loader(({ event, context }) => { });
-Corev2Contract_ConditionCreated_handler(async ({ event, context }) => {
+Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
   const conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId)
 
-  const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
+  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
   const gameEntityId = liquidityPoolAddress + "_" + event.params.gameId.toString()
 
-  const gameEntity = context.Game.get(gameEntityId)
+  const gameEntity = await context.Game.get(gameEntityId)
 
   // TODO remove later
   if (!gameEntity) {

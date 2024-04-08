@@ -4,7 +4,7 @@ import { Cache, CacheCategory } from "../lib/cache";
 
 import { CHAIN_CONSTANTS } from "../constants";
 
-import { Condition } from "../utils/types";
+import { ConditionV1 } from "../utils/types";
 
 type OriginalConditionResult = {
     fundBank: [string, string]; // or [BN, BN] if using BN objects
@@ -30,7 +30,7 @@ export async function getConditionV3FromId(
     chainId: number,
     _conditionId: bigint,
 ): Promise<{
-    readonly condition: Condition;
+    readonly condition: ConditionV1;
 }> {
     console.log("getConditionV3FromId", contractAddress)
 
@@ -55,7 +55,7 @@ export async function getConditionV3FromId(
         const _result = await corev3Contract.methods.getCondition(conditionId).call() as unknown;
         const result = _result as OriginalConditionResult;
 
-        const condition: Condition = {
+        const condition: ConditionV1 = {
             fundBank: [BigInt(result.fundBank[0]), BigInt(result.fundBank[1])],
             payouts: [BigInt(result.payouts[0]), BigInt(result.payouts[1])],
             totalNetBets: [BigInt(result.totalNetBets[0]), BigInt(result.totalNetBets[1])],

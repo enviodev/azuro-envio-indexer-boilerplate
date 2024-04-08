@@ -9,6 +9,7 @@ import {
   CoreContract_ConditionStopped_handler,
   CoreContract_LpChanged_loader,
   CoreContract_LpChanged_handlerAsync,
+  CoreContract_ConditionCreated_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 
 import { getAzuroBetAddress, getTokenForPool } from "../contracts/lpv1";
@@ -19,13 +20,14 @@ import { createCondition, pauseUnpauseCondition, resolveCondition } from "../com
 import { CORE_TYPE_PRE_MATCH, VERSION_V1 } from "../constants";
 import { createAzuroBetEntity } from "../common/azurobet";
 import { createGame, shiftGame } from "../common/games";
-import { getConditionFromId } from "../contracts/corev1";
+import { getConditionV1FromId } from "../contracts/corev1";
+import { getEntityId } from "../utils/schema";
 
-CoreContract_ConditionCreated_loader(({ event, context }) => {
+CoreContract_ConditionCreated_loader(async ({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
 });
-CoreContract_ConditionCreated_handler(async ({ event, context }) => {
-  const coreContractEntity = context.CoreContract.get(event.srcAddress);
+CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
+  const coreContractEntity = await context.CoreContract.get(event.srcAddress);
 
   if (!coreContractEntity) {
     context.log.error(`coreContractEntity not found. coreContractEntityId = ${event.srcAddress}`)
@@ -34,8 +36,7 @@ CoreContract_ConditionCreated_handler(async ({ event, context }) => {
 
   const conditionId = event.params.conditionId
   const startsAt = event.params.timestamp
-
-  const conditionData = await getConditionFromId(event.srcAddress, event.chainId, conditionId) 
+  const conditionData = await getConditionV1FromId(event.srcAddress, event.chainId, conditionId) 
 
   const coreAddress = event.srcAddress
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
@@ -80,17 +81,18 @@ CoreContract_ConditionCreated_handler(async ({ event, context }) => {
 
 CoreContract_ConditionResolved_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
+  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
 });
 CoreContract_ConditionResolved_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionEntityId = coreAddress + "_" + conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v1 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntity}`)
+    context.log.error(`v1 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
     return
   }
 
@@ -115,7 +117,7 @@ CoreContract_ConditionShifted_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionEntityId = coreAddress + "_" + conditionId
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   // TODO remove later
@@ -134,7 +136,9 @@ CoreContract_ConditionShifted_handler(({ event, context }) => {
 
 });
 
-CoreContract_ConditionStopped_loader(({ event, context }) => { });
+CoreContract_ConditionStopped_loader(({ event, context }) => {
+  
+});
 CoreContract_ConditionStopped_handler(({ event, context }) => { 
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
@@ -145,7 +149,6 @@ CoreContract_ConditionStopped_handler(({ event, context }) => {
   // TODO remove later
   if (!conditionEntity) {
     context.log.error(`v1 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-
     return
   }
 
@@ -185,12 +188,11 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.srcAddress);
 
   if (!coreContractEntity) {
-    let coreContract = createCoreEntity(event.srcAddress, 
+    createCoreEntity(event.srcAddress, 
       liquidityPool, 
       CORE_TYPE_PRE_MATCH, 
       context,
     );
-    context.CoreContract.set(coreContract);
   }
 
   const resp = await getAzuroBetAddress(liquidityPoolAddress, event.chainId)

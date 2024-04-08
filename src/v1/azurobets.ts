@@ -3,10 +3,10 @@ import {
   AzurobetsContract_Transfer_handler,
 } from "../../generated/src/Handlers.gen";
 import { transferBet } from "../common/bets";
+import { getEntityId } from "../utils/schema";
 
 AzurobetsContract_Transfer_loader(({ event, context }) => {
-  context.Bet.load(event.srcAddress, {});
-  context.AzuroBetContract.load(event.srcAddress, {}); // correct this
+  context.AzuroBetContract.load(event.srcAddress, {});
 });
 AzurobetsContract_Transfer_handler(({ event, context }) => {
   transferBet(

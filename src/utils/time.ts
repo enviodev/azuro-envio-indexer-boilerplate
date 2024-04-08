@@ -1,3 +1,5 @@
+
+// TODO debug
 export function daysBetweenTimestamps(from: bigint, to: bigint): number {
     const fromTimestamp = new Date((from * BigInt('1000')).toString())
     const toTimestamp = new Date((to * BigInt('1000')).toString())
@@ -9,5 +11,5 @@ export function daysBetweenTimestamps(from: bigint, to: bigint): number {
         return 0
     }
 
-    return Math.ceil(daysDiff)
+    return Math.ceil(daysDiff) ? Math.ceil(daysDiff) : 0
 }

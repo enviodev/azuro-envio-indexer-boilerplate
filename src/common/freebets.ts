@@ -167,7 +167,7 @@ export function withdrawFreebet(
 
 export function transferFreebet(
   freebetContractAddress: string,
-  tokenId: BigInt,
+  tokenId: bigint,
   to: string,
   blockTimestamp: number,
   context: FreeBetContract_TransferEvent_handlerContext,
@@ -214,7 +214,7 @@ export function transferFreebet(
 
 export function resolveFreebet(
   freebetContractAddress: string,
-  tokenId: BigInt,
+  tokenId: bigint,
   burned: boolean,
   blockTimestamp: number,
   context: FreeBetContract_TransferEvent_handlerContext,

@@ -1,9 +1,9 @@
-import { ContractAbi, Web3 } from "web3";
+import { Web3 } from "web3";
 
 import { Cache, CacheCategory } from "../lib/cache";
 
 import { CHAIN_CONSTANTS } from "../constants";
-import { Condition } from "../utils/types";
+import { ConditionV1 } from "../utils/types";
 
 type OriginalConditionResult = {
     fundBank: [string, string]; // or [BN, BN] if using BN objects
@@ -24,15 +24,13 @@ type OriginalConditionResult = {
 const contractABI = require("../../abis/CoreV1.json");
 
 // Function to get ERC20 token address from the liquidity pool contract
-export async function getConditionFromId(
+export async function getConditionV1FromId(
     contractAddress: string,
     chainId: number,
     _conditionId: bigint,
 ): Promise<{
-    readonly condition: Condition;
+    readonly condition: ConditionV1;
 }> {
-    console.log("getConditionFromId", contractAddress)
-
     const conditionId = _conditionId.toString();
     const cache = Cache.init(CacheCategory.ConditionV1, chainId);
     const condition = cache.read(conditionId);
@@ -54,7 +52,7 @@ export async function getConditionFromId(
         const _result = await corev1Contract.methods.getCondition(conditionId).call() as unknown;
         const result = _result as OriginalConditionResult;
 
-        const condition: Condition = {
+        const condition: ConditionV1 = {
             fundBank: [BigInt(result.fundBank[0]), BigInt(result.fundBank[1])],
             payouts: [BigInt(result.payouts[0]), BigInt(result.payouts[1])],
             totalNetBets: [BigInt(result.totalNetBets[0]), BigInt(result.totalNetBets[1])],
