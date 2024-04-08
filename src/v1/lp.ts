@@ -62,29 +62,28 @@ LPContract_LiquidityAdded_handler(({ event, context }) => {
 LPContract_LiquidityRemoved_loader(({ event, context }) => {
 
 });
-// TODO
 LPContract_LiquidityRemoved_handler(({ event, context }) => {
-  // let isFullyWithdrawn = false
+  let isFullyWithdrawn = false
 
-  // const liquidityPoolSC = LPV1Abi.bind(event.srcAddress)
-  // const nodeWithdrawView = liquidityPoolSC.try_nodeWithdrawView(event.params.leaf)
+  const liquidityPoolSC = LPV1Abi.bind(event.srcAddress)
+  const nodeWithdrawView = liquidityPoolSC.try_nodeWithdrawView(event.params.leaf)
 
-  // if (!nodeWithdrawView.reverted && nodeWithdrawView.value === 0n) {
-  //   isFullyWithdrawn = true
-  // }
+  if (!nodeWithdrawView.reverted && nodeWithdrawView.value === 0n) {
+    isFullyWithdrawn = true
+  }
 
-  // withdrawLiquidity(
-  //   event.srcAddress,
-  //   event.params.amount,
-  //   event.params.leaf,
-  //   event.params.account,
-  //   isFullyWithdrawn,
-  //   event.blockNumber,
-  //   event.blockTimestamp,
-  //   event.transactionHash,
-  //   event.chainId,
-  //   context,
-  // )
+  withdrawLiquidity(
+    event.srcAddress,
+    event.params.amount,
+    event.params.leaf,
+    event.params.account,
+    isFullyWithdrawn,
+    event.blockNumber,
+    event.blockTimestamp,
+    event.transactionHash,
+    event.chainId,
+    context,
+  )
 });
 
 LPContract_LiquidityRequested_loader(({ event, context }) => { });

@@ -1,5 +1,5 @@
 import { CoreContractEntity, CoreContract_LpChangedEvent_handlerContextAsync, ExpressPrematchRelationEntity, FactoryContract_NewCoreEvent_handlerContext, LiquidityPoolContractEntity } from "../../generated/src/Types.gen";
-import { CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_PRE_MATCH_V2 } from "../constants";
+import { CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2 } from "../constants";
 import { createAzuroBetEntity } from "./azurobet";
 
 
@@ -71,7 +71,7 @@ export function createExpressPrematchRelationEntity(
 
 
 export function connectCore(coreAddress: string, coreType: string, context: FactoryContract_NewCoreEvent_handlerContext): void {
-  const coreAddressTyped = Address.fromString(coreAddress)
+  const coreAddressTyped = coreAddress
 
   if (coreType === CORE_TYPE_PRE_MATCH) {
     CoreV2.create(coreAddressTyped)

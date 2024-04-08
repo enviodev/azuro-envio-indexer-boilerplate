@@ -18,7 +18,6 @@ import { createCoreEntity } from "../common/factory";
 import { createCondition, pauseUnpauseCondition, resolveCondition } from "../common/condition";
 import { CORE_TYPE_PRE_MATCH, VERSION_V1 } from "../constants";
 import { createAzuroBetEntity } from "../common/azurobet";
-import { ConditionEntity, coreContractEntity } from "../src/Types.gen";
 import { createGame, shiftGame } from "../common/games";
 import { getConditionFromId } from "../contracts/corev1";
 
@@ -36,7 +35,7 @@ CoreContract_ConditionCreated_handler(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const startsAt = event.params.timestamp
 
-  const conditionData = await getConditionFromId(conditionId, event.chainId) // TODO get correct contract address
+  const conditionData = await getConditionFromId(conditionId, event.chainId) 
 
   const coreAddress = event.srcAddress
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
