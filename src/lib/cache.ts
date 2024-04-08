@@ -1,21 +1,7 @@
 import * as fs from "fs";
 import { type } from "os";
 import * as path from "path";
-
-export type Condition = {
-  fundBank: [bigint, bigint];
-  payouts: [bigint, bigint];
-  totalNetBets: [BigInt, bigint];
-  reinforcement: bigint;
-  margin: bigint;
-  ipfsHash: string; // Bytes32 values can be represented as hex strings
-  outcomes: [bigint, bigint]; // Assuming these are meant to be large numbers
-  scopeId: bigint;
-  outcomeWin: bigint;
-  timestamp: bigint; // Using BigInt for timestamps to avoid JavaScript number limitations
-  state: number; // Assuming 'ConditionState' is an enum represented by a number
-  leaf: bigint;
-};
+import { Condition } from "../utils/types";
 
 export const CacheCategory = {
   Token: "token",
@@ -23,6 +9,7 @@ export const CacheCategory = {
   LPv1Bet: "lpv1bet",
   FreebetV1Contract: "freebetv1",
   ConditionV1: "conditionv1",
+  LPv1NodeWithdrawView: "lpv1nodewithdrawview",
 } as const;
 
 export type CacheCategory = (typeof CacheCategory)[keyof typeof CacheCategory];
@@ -44,6 +31,8 @@ type ShapeFreebetV1 = Shape & Record<Address, { name: string; lp: string }>;
 
 type ShapeConditionV1 = Shape & Record<ConditionId, { condition: Condition }>;
 
+type ShapeLpv1NodeWithdrawView = Shape & Record<Address, { withdrawAmount: bigint }>;
+
 export class Cache {
   static init<C = CacheCategory>(
     category: C,
@@ -59,6 +48,8 @@ export class Cache {
       ? ShapeLPv1
       : C extends "lpv1bet"
       ? ShapeLPv1Bet
+      : C extends "lpv1nodewithdrawview"
+      ? ShapeLpv1NodeWithdrawView
       : C extends "conditionv1"
       ? ShapeConditionV1
       : C extends "freebetv1"
