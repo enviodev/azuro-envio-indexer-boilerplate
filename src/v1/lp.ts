@@ -22,6 +22,7 @@ import { depositLiquidity, withdrawLiquidity, transferLiquidity, changeWithdrawa
 
 import { VERSION_V1, BET_TYPE_ORDINAR, ZERO_ADDRESS } from "../constants";
 import { getEntityId } from "../utils/schema";
+import { getNodeWithdrawAmount } from "../contracts/lpv1";
 
 LPContract_BetterWin_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
@@ -62,15 +63,15 @@ LPContract_LiquidityAdded_handler(({ event, context }) => {
 LPContract_LiquidityRemoved_loader(({ event, context }) => {
 
 });
-LPContract_LiquidityRemoved_handler(({ event, context }) => {
-  let isFullyWithdrawn = false
+LPContract_LiquidityRemoved_handler(async ({ event, context }) => {
 
-  const liquidityPoolSC = LPV1Abi.bind(event.srcAddress)
-  const nodeWithdrawView = liquidityPoolSC.try_nodeWithdrawView(event.params.leaf)
+  const nodeWithdrawView = await getNodeWithdrawAmount(
+    event.srcAddress,
+    event.chainId,
+    event.params.leaf
+  )
 
-  if (!nodeWithdrawView.reverted && nodeWithdrawView.value === 0n) {
-    isFullyWithdrawn = true
-  }
+  const isFullyWithdrawn = nodeWithdrawView.withdrawAmount === 0n ? true : false
 
   withdrawLiquidity(
     event.srcAddress,
