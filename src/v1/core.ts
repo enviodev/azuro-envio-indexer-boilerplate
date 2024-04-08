@@ -14,9 +14,9 @@ import {
 import { getAzuroBetAddress, getTokenForPool } from "../contracts/lpv1";
 
 import { createPoolEntity } from "../common/pool";
-import { createCoreContractEntity } from "../common/factory";
+import { createCoreEntity } from "../common/factory";
 import { createCondition, pauseUnpauseCondition, resolveCondition } from "../common/condition";
-import { VERSION_V1 } from "../constants";
+import { CORE_TYPE_PRE_MATCH, VERSION_V1 } from "../constants";
 import { createAzuroBetEntity } from "../common/azurobet";
 import { ConditionEntity, coreContractEntity } from "../src/Types.gen";
 import { createGame, shiftGame } from "../common/games";
@@ -150,7 +150,12 @@ CoreContract_ConditionStopped_handler(({ event, context }) => {
     return
   }
 
-  pauseUnpauseCondition(conditionEntity, event.params.flag, event.blockNumber, event.blockTimestamp, context)
+  pauseUnpauseCondition(
+    conditionEntity, 
+    event.params.flag, 
+    BigInt(event.blockTimestamp), 
+    context
+  )
 });
 
 CoreContract_LpChanged_loader(async ({ event, context }) => {
@@ -173,8 +178,8 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
     coreAddress,
     liquidityPoolAddress,
     token.token,
-    event.blockNumber,
-    event.blockTimestamp,
+    BigInt(event.blockNumber),
+    BigInt(event.blockTimestamp),
     event.chainId,
     context,
   );
@@ -182,7 +187,11 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.srcAddress);
 
   if (!coreContractEntity) {
-    let coreContract = createCoreContractEntity(event.srcAddress, liquidityPoolAddress, "v1");
+    let coreContract = createCoreEntity(event.srcAddress, 
+      liquidityPool, 
+      CORE_TYPE_PRE_MATCH, 
+      context,
+    );
     context.CoreContract.set(coreContract);
   }
 

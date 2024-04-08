@@ -1,11 +1,11 @@
 import { start } from "repl";
-import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionStoppedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContext, Corev2Contract_OddsChangedEvent_handlerContext, Corev3Contract_MarginChangedEvent_handlerContext, Corev3Contract_ReinforcementChangedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity, OutcomeEntity, outcomeLoaderConfig } from "../../generated/src/Types.gen";
+import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionStoppedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContext, Corev2Contract_OddsChangedEvent_handlerContext, Corev3Contract_MarginChangedEvent_handlerContext, Corev3Contract_ReinforcementChangedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity, LiveConditionEntity, LiveCorev1Contract_ConditionCreatedEvent_handlerContext, LiveCorev1Contract_ConditionResolvedEvent_handlerContext, LiveCorev1Contract_ConditionResolvedEvent_loaderContext, LiveOutcomeEntity, OutcomeEntity, outcomeLoaderConfig } from "../../generated/src/Types.gen";
 import { BASES_VERSIONS, BET_RESULT_LOST, BET_RESULT_WON, BET_STATUS_CANCELED, BET_STATUS_RESOLVED, BET_TYPE_EXPRESS, BET_TYPE_ORDINAR, CONDITION_STATUS_CANCELED, CONDITION_STATUS_CREATED, CONDITION_STATUS_PAUSED, CONDITION_STATUS_RESOLVED, GAME_STATUS_CANCELED, GAME_STATUS_CREATED, GAME_STATUS_PAUSED, GAME_STATUS_RESOLVED, SELECTION_RESULT_LOST, SELECTION_RESULT_WON, VERSION_V2, VERSION_V3 } from "../constants";
 import { removeItem } from "../utils/array";
 import { getOdds, toDecimal } from '../utils/math'
 import { calcPayoutV2, calcPayoutV3 } from "./express";
 import { countConditionResolved } from "./pool";
-import { Condition } from "../src/DbFunctions.bs";
+import { Condition, LiveCondition } from "../src/DbFunctions.bs";
 import { getEntityId } from "../utils/schema";
 
 export function createCondition(
@@ -509,8 +509,7 @@ export function resolveCondition(
 export function pauseUnpauseCondition(
   conditionEntity: ConditionEntity,
   flag: boolean,
-  blockNumber: number,
-  blockTimestamp: number,
+  blockTimestamp: bigint,
   context: CoreContract_ConditionStoppedEvent_handlerContext,
 ): ConditionEntity | null {
   if (flag) {
@@ -528,7 +527,7 @@ export function pauseUnpauseCondition(
 
   context.Condition.set({
     ...conditionEntity,
-    _updatedAt: BigInt(blockTimestamp),
+    _updatedAt: blockTimestamp,
   })
 
   const gameEntity: GameEntity = context.Game.get(conditionEntity.game_id)!
@@ -575,10 +574,221 @@ export function pauseUnpauseCondition(
 
   context.Game.set({
     ...gameEntity,
-    _updatedAt: BigInt(blockTimestamp),
+    _updatedAt: blockTimestamp,
   })
 
   return conditionEntity
+}
+
+
+export function resolveLiveCondition(
+  liveConditionEntityId: string,
+  winningOutcomes: bigint[],
+  transactionHash: string,
+  blockNumber: bigint,
+  blockTimestamp: bigint,
+  context: LiveCorev1Contract_ConditionResolvedEvent_handlerContext,
+): LiveConditionEntity | null {
+  const _liveConditionEntity = context.LiveCondition.get(liveConditionEntityId)!
+  const liveConditionEntity = {..._liveConditionEntity}
+
+  const isCanceled = winningOutcomes.length === 0 || winningOutcomes[0].equals(BigInt.zero())
+
+  let betsAmount = 0n
+  let wonBetsAmount = 0n
+
+  if (isCanceled) {
+    liveConditionEntity.status = CONDITION_STATUS_CANCELED
+  }
+  else {
+    let wonOutcomes: string[] = []
+
+    for (let i = 0; i < winningOutcomes.length; i++) {
+      const liveOutcomeEntityId = getEntityId(
+        liveConditionEntity.id,
+        winningOutcomes[i].toString(),
+      )
+      const liveOutcomeEntity = context.LiveOutcome.get(liveOutcomeEntityId)!.id
+
+      wonOutcomes = wonOutcomes.concat([liveOutcomeEntity])
+    }
+
+    // liveConditionEntity.wonOutcomes = wonOutcomes
+    liveConditionEntity.wonOutcomeIds = winningOutcomes
+    liveConditionEntity.status = CONDITION_STATUS_RESOLVED
+  }
+
+  liveConditionEntity.resolvedTxHash = transactionHash
+  liveConditionEntity.resolvedBlockNumber = BigInt(blockNumber)
+  liveConditionEntity.resolvedBlockTimestamp = BigInt(blockTimestamp)
+
+  liveConditionEntity._updatedAt = BigInt(blockTimestamp)
+  context.LiveCondition.set(liveConditionEntity)
+
+  if (!liveConditionEntity.outcomesIds) {
+    context.log.error('resolveCondition outcomesIds is empty.')
+    return null
+  }
+
+  for (let i = 0; i < liveConditionEntity.outcomesIds!.length; i++) {
+    const liveOutcomeEntityId = getEntityId(
+      liveConditionEntity.id,
+      liveConditionEntity.outcomesIds![i].toString(),
+    )
+    const liveOutcomeEntity = context.LiveOutcome.get(liveOutcomeEntityId)!
+
+    if (liveOutcomeEntity._betsEntityIds!.length === 0) {
+      continue
+    }
+
+    for (let j = 0; j < liveOutcomeEntity._betsEntityIds!.length; j++) {
+      const livebetEntityId = liveOutcomeEntity._betsEntityIds![j]
+      const _liveBetEntity = context.LiveBet.get(livebetEntityId)!
+      const liveBetEntity = {..._liveBetEntity}
+
+      betsAmount = betsAmount + liveBetEntity.rawAmount
+
+      const liveSelectionEntityId = getEntityId(
+        livebetEntityId,
+        liveConditionEntity.conditionId.toString(),
+      )
+      const _liveSelectionEntity = context.LiveSelection.get(liveSelectionEntityId)!
+      const liveSelectionEntity = {..._liveSelectionEntity}
+
+      if (!isCanceled) {
+        if (winningOutcomes.indexOf(liveSelectionEntity._outcomeId) !== -1) {
+          liveBetEntity._wonSubBetsCount += 1
+          liveSelectionEntity.result = SELECTION_RESULT_WON
+        }
+        else {
+          liveBetEntity._lostSubBetsCount += 1
+          liveSelectionEntity.result = SELECTION_RESULT_LOST
+        }
+      }
+      else {
+        liveBetEntity._canceledSubBetsCount += 1
+      }
+
+      context.LiveSelection.set(liveSelectionEntity)
+
+      // All subBets is resolved
+      if (
+        liveBetEntity._wonSubBetsCount
+          + liveBetEntity._lostSubBetsCount
+          + liveBetEntity._canceledSubBetsCount
+        === liveBetEntity._subBetsCount
+      ) {
+        liveBetEntity.resolvedBlockTimestamp = BigInt(blockTimestamp)
+        liveBetEntity.resolvedBlockNumber = BigInt(blockNumber)
+        liveBetEntity.resolvedTxHash = transactionHash
+
+        liveBetEntity.rawSettledOdds = liveBetEntity.rawOdds
+        // liveBetEntity.settledOdds = liveBetEntity.odds
+
+        // At least one subBet is lost - customer lost
+        if (liveBetEntity._lostSubBetsCount > 0) {
+          liveBetEntity.result = BET_RESULT_LOST
+          liveBetEntity.status = BET_STATUS_RESOLVED
+          liveBetEntity.rawPayout = 0n
+          // liveBetEntity.payout = BigDecimal.zero()
+        }
+        // At least one subBet is won and no lost subBets - customer won
+        else if (liveBetEntity._wonSubBetsCount > 0) {
+          liveBetEntity.result = BET_RESULT_WON
+          liveBetEntity.status = BET_STATUS_RESOLVED
+          liveBetEntity.isRedeemable = true
+
+          liveBetEntity.rawPayout = liveBetEntity.rawPotentialPayout
+          // liveBetEntity.payout = liveBetEntity.potentialPayout
+          wonBetsAmount = wonBetsAmount + liveBetEntity.rawPayout!
+        }
+
+        // Only canceled subBets - express was canceled
+        else {
+          liveBetEntity.status = BET_STATUS_CANCELED
+          liveBetEntity.isRedeemable = true
+          liveBetEntity.rawPayout = liveBetEntity.rawAmount
+          // liveBetEntity.payout = liveBetEntity.amount
+        }
+      }
+
+      liveBetEntity._updatedAt = blockTimestamp
+      context.LiveBet.set(liveBetEntity)
+    }
+  }
+
+  return liveConditionEntity
+}
+
+export function createLiveCondition(
+  coreAddress: string,
+  liveConditionId: bigint,
+  gameId: bigint,
+  liveOutcomes: bigint[],
+  winningOutcomesCount: number,
+  txHash: string,
+  _createBlockNumber: number,
+  _createBlockTimestamp: number,
+  context: LiveCorev1Contract_ConditionCreatedEvent_handlerContext,
+): LiveConditionEntity | null {
+
+  const createBlockNumber = BigInt(_createBlockNumber)
+  const createBlockTimestamp = BigInt(_createBlockTimestamp)
+
+  const liveConditionEntityId = getEntityId(
+    coreAddress,
+    liveConditionId.toString(),
+  )
+  const liveConditionEntity: Mutable<LiveConditionEntity> = {
+    id: liveConditionEntityId,
+    core_id: coreAddress,
+    coreAddress: coreAddress,
+    conditionId: liveConditionId,
+    gameId: gameId,
+    _winningOutcomesCount: winningOutcomesCount,
+    createdTxHash: txHash,
+    createdBlockNumber: createBlockNumber,
+    createdBlockTimestamp: createBlockTimestamp,
+    status: CONDITION_STATUS_CREATED,
+    turnover: 0n,
+    _updatedAt: BigInt(createBlockTimestamp),
+    resolvedBlockTimestamp: undefined, 
+    wonOutcomeIds: undefined, 
+    resolvedBlockNumber: undefined, 
+    outcomesIds: undefined, 
+    resolvedTxHash: undefined
+  }
+
+  let liveOutcomeIds: bigint[] = []
+
+  for (let i = 0; i < liveOutcomes.length; i++) {
+    liveOutcomeIds = liveOutcomeIds.concat([liveOutcomes[i]])
+
+    const liveOutcomeId = liveOutcomes[i].toString()
+
+    const liveOutcomeEntityId = getEntityId(
+      liveConditionEntityId,
+      liveOutcomeId,
+    )
+
+    const liveOutcomeEntity: LiveOutcomeEntity = {
+      id: liveOutcomeEntityId,
+      core_id: coreAddress,
+      outcomeId: liveOutcomes[i],
+      condition_id: liveConditionEntity.id,
+      sortOrder: i,
+      _betsEntityIds: [],
+      _updatedAt: createBlockTimestamp,
+    } 
+
+    context.LiveOutcome.set(liveOutcomeEntity)
+  }
+
+  liveConditionEntity.outcomesIds = liveOutcomeIds
+  liveConditionEntity._updatedAt = createBlockTimestamp
+  context.LiveCondition.set(liveConditionEntity)
+
+  return liveConditionEntity
 }
 
 

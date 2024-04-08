@@ -61,6 +61,7 @@ export async function getErc20TokenDetails(
   }
 }
 
+// TODO no caching?
 export async function getErc20TokenBalance(
   tokenAddress: string,
   ownerAddress: string,

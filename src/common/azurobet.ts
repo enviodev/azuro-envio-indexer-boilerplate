@@ -6,13 +6,12 @@ export async function createAzuroBetEntity(
     azuroBetAddress: string,
     context: CoreContract_LpChangedEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext,
 ): Promise<typeof azuroBetContractEntity> {
-    const azuroBetContractEntity = await context.AzuroBetContract.get(azuroBetAddress)
-
-    if (!azuroBetContractEntity) {
-        context.log.error(`createAzuroBetEntity azuroBetContractEntity not found. azuroBetAddress = ${azuroBetAddress}`)
-        throw new Error(`createAzuroBetEntity azuroBetContractEntity not found. azuroBetAddress = ${azuroBetAddress}`)
+    const azuroBetContractEntity: AzuroBetContractEntity = {
+        id: azuroBetAddress,
+        core_id: coreAddress,
+        address: azuroBetAddress,
     }
-    
+
     context.AzuroBetContract.set({
         ...azuroBetContractEntity,
         address: azuroBetAddress,

@@ -111,7 +111,12 @@ Corev3Contract_ConditionStopped_handler(({ event, context }) => {
     return
   }
 
-  pauseUnpauseCondition(conditionEntity, event.params.flag, event.blockNumber, event.blockTimestamp, context)
+  pauseUnpauseCondition(
+    conditionEntity, 
+    event.params.flag, 
+    BigInt(event.blockTimestamp), 
+    context,
+  )
 });
 
 Corev3Contract_NewBet_loader(({ event, context }) => {});

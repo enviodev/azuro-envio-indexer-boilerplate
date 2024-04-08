@@ -106,8 +106,7 @@ Corev2Contract_ConditionStopped_handler(({ event, context }) => {
   pauseUnpauseCondition(
     conditionEntity,
     event.params.flag,
-    event.blockNumber,
-    event.blockTimestamp,
+    BigInt(event.blockTimestamp),
     context
   )
 });

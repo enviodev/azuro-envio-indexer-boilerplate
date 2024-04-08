@@ -1,4 +1,4 @@
-import { CoreContractEntity, ExpressPrematchRelationEntity, FactoryContract_NewCoreEvent_handlerContext, LiquidityPoolContractEntity } from "../../generated/src/Types.gen";
+import { CoreContractEntity, CoreContract_LpChangedEvent_handlerContextAsync, ExpressPrematchRelationEntity, FactoryContract_NewCoreEvent_handlerContext, LiquidityPoolContractEntity } from "../../generated/src/Types.gen";
 import { CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_PRE_MATCH_V2 } from "../constants";
 import { createAzuroBetEntity } from "./azurobet";
 
@@ -7,10 +7,10 @@ export function createCoreEntity(
   coreAddress: string,
   liquidityPoolContractEntity: LiquidityPoolContractEntity,
   coreType: string,
-  context: FactoryContract_NewCoreEvent_handlerContext,
+  context: FactoryContract_NewCoreEvent_handlerContext | CoreContract_LpChangedEvent_handlerContextAsync,
 ): CoreContractEntity {
   const coreContractEntity: CoreContractEntity = {
-    id: coreAddress, // TODO correct?
+    id: coreAddress,
     liquidityPool_id: liquidityPoolContractEntity.id,
     address: coreAddress,
     type_: coreType,
