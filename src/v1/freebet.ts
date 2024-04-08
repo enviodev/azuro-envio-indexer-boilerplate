@@ -129,9 +129,7 @@ XYZFreeBetContract_FreeBetMinted_handler(async ({ event, context }) => {
 
 XYZFreeBetContract_FreeBetMintedBatch_loader(({ event, context }) => {
   context.FreebetContract.load(event.srcAddress, {});
-
-  // correct way to do this?
-  context.LiquidityPoolContract.load(event.srcAddress); // how to get?
+  // context.LiquidityPoolContract.load(event.srcAddress); // TODO how to get?
 });
 XYZFreeBetContract_FreeBetMintedBatch_handler(async ({ event, context }) => {
   const freebetContractEntity = await getOrCreateFreebetContract(

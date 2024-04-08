@@ -8,7 +8,7 @@ type LiquidityPoolContract @entity {
   chainId: Int!
   # chainName: String!
   address: String!
-  # cores: [CoreContract!]! @derivedFrom(field: "liquidityPool") # todo
+  cores: [CoreContract!]! @derivedFrom(field: "liquidityPool") # todo
   coreAddresses: [String!]
   type_: LiquidityPoolContractType!
   version: String! # previously "type" but type is a reserved word so going with version
@@ -33,7 +33,7 @@ type LiquidityPoolContract @entity {
   # "(betsAmount - wonBetsAmount) * Xprofit / (depositedAmount - withdrawnAmount) / daysSinceDeployment * 365"
   rawApr: BigInt!
   apr: BigInt! # BigDecimal! will need to handle big decimals
-  # nfts: [LiquidityPoolNft!]! @derivedFrom(field: "liquidityPool")
+  nfts: [LiquidityPoolNft!]! @derivedFrom(field: "liquidityPool")
   liquidityManager: String
   depositedWithStakingAmount: BigInt!
   withdrawnWithStakingAmount: BigInt!
@@ -103,7 +103,7 @@ type Condition @entity {
   coreAddress: String!
   conditionId: BigInt!
   game: Game!
-  # outcomes: [Outcome!]! @derivedFrom(field: "condition")
+  outcomes: [Outcome!]! @derivedFrom(field: "condition")
   outcomesIds: [BigInt!]
   # wonOutcomes: [Outcome!]
   wonOutcomeIds: [BigInt!]
@@ -177,7 +177,7 @@ type Bet @entity {
   # settledOdds: BigDecimal
   "when the last game from all sub bets starts at + 2h"
   approxSettledAt: BigInt!
-  # selections: [Selection!]! @derivedFrom(field: "bet")
+  selections: [Selection!]! @derivedFrom(field: "bet")
   # _games: [Game!]!
   createdBlockNumber: BigInt!
   createdBlockTimestamp: BigInt!
@@ -218,8 +218,8 @@ type Game @entity {
   league: League!
   sport: Sport!
   status: GameStatus!
-  # participants: [Participant!]! @derivedFrom(field: "game")
-  # conditions: [Condition!]! @derivedFrom(field: "game")
+  participants: [Participant!]! @derivedFrom(field: "game")
+  conditions: [Condition!]! @derivedFrom(field: "game")
   hasActiveConditions: Boolean!
   _activeConditionsEntityIds: [String!]
   _resolvedConditionsEntityIds: [String!]
@@ -256,7 +256,7 @@ type Outcome @entity {
   # currentOdds: BigDecimal!
   sortOrder: Int!
   _betsEntityIds: [String!]
-  # selections: [Selection!]! @derivedFrom(field: "outcome")
+  selections: [Selection!]! @derivedFrom(field: "outcome")
   _updatedAt: BigInt!
 }
 
@@ -275,15 +275,15 @@ type Sport @entity {
   name: String!
   slug: String!
   sporthub: SportHub!
-  # countries: [Country!]! @derivedFrom(field: "sport")
-  # games: [Game!]! @derivedFrom(field: "sport")
+  countries: [Country!]! @derivedFrom(field: "sport")
+  games: [Game!]! @derivedFrom(field: "sport")
 }
 
 type SportHub @entity {
   id: ID!
   name: String!
   slug: String!
-  # sports: [Sport!] @derivedFrom(field: "sporthub")
+  sports: [Sport!]! @derivedFrom(field: "sporthub")
 }
 
 type League @entity {
@@ -291,7 +291,7 @@ type League @entity {
   name: String!
   slug: String!
   country: Country!
-  # games: [Game!]! @derivedFrom(field: "league")
+  games: [Game!]! @derivedFrom(field: "league")
   hasActiveGames: Boolean!
   activeGamesEntityIds: [String!]
   turnover: BigInt!
@@ -302,7 +302,7 @@ type Country @entity {
   name: String!
   slug: String!
   sport: Sport!
-  # leagues: [League!]! @derivedFrom(field: "country")
+  leagues: [League!]! @derivedFrom(field: "country")
   hasActiveLeagues: Boolean!
   activeLeaguesEntityIds: [String!]
   turnover: BigInt!
@@ -392,7 +392,7 @@ type LiveCondition @entity {
   coreAddress: String!
   conditionId: BigInt!
   gameId: BigInt!
-  # outcomes: [LiveOutcome!]! @derivedFrom(field: "condition")
+  outcomes: [LiveOutcome!]! @derivedFrom(field: "condition")
   outcomesIds: [BigInt!]
   # wonOutcomes: [LiveOutcome!]
   wonOutcomeIds: [BigInt!]

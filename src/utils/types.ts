@@ -3,10 +3,10 @@ export type Mutable<T> = {
 };
 
 
-export type Condition = {
+export type ConditionV1 = {
   fundBank: [bigint, bigint];
   payouts: [bigint, bigint];
-  totalNetBets: [BigInt, bigint];
+  totalNetBets: [bigint, bigint];
   reinforcement: bigint;
   margin: bigint;
   ipfsHash: string; // Bytes32 values can be represented as hex strings

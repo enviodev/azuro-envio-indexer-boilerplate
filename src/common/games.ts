@@ -37,10 +37,10 @@ const DEFAULT_GAME: GameEntity = {
 
 export function createGame(
     liquidityPoolAddress: string,
-    rawGameId: BigInt | null,
+    rawGameId: bigint | null,
     ipfsHashBytes: string | null,
     dataBytes: string | null,
-    startsAt: BigInt,
+    startsAt: bigint,
     network: string | null,
     txHash: string,
     createBlock: number,

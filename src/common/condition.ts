@@ -1,5 +1,5 @@
 import { start } from "repl";
-import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionStoppedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContext, Corev2Contract_OddsChangedEvent_handlerContext, Corev3Contract_MarginChangedEvent_handlerContext, Corev3Contract_ReinforcementChangedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity, LiveConditionEntity, LiveCorev1Contract_ConditionCreatedEvent_handlerContext, LiveCorev1Contract_ConditionResolvedEvent_handlerContext, LiveCorev1Contract_ConditionResolvedEvent_loaderContext, LiveOutcomeEntity, OutcomeEntity, outcomeLoaderConfig } from "../../generated/src/Types.gen";
+import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionCreatedEvent_handlerContextAsync, CoreContract_ConditionStoppedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContextAsync, Corev2Contract_OddsChangedEvent_handlerContext, Corev3Contract_MarginChangedEvent_handlerContext, Corev3Contract_ReinforcementChangedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity, LiveConditionEntity, LiveCorev1Contract_ConditionCreatedEvent_handlerContext, LiveCorev1Contract_ConditionResolvedEvent_handlerContext, LiveCorev1Contract_ConditionResolvedEvent_loaderContext, LiveOutcomeEntity, OutcomeEntity, outcomeLoaderConfig } from "../../generated/src/Types.gen";
 import { BASES_VERSIONS, BET_RESULT_LOST, BET_RESULT_WON, BET_STATUS_CANCELED, BET_STATUS_RESOLVED, BET_TYPE_EXPRESS, BET_TYPE_ORDINAR, CONDITION_STATUS_CANCELED, CONDITION_STATUS_CREATED, CONDITION_STATUS_PAUSED, CONDITION_STATUS_RESOLVED, GAME_STATUS_CANCELED, GAME_STATUS_CREATED, GAME_STATUS_PAUSED, GAME_STATUS_RESOLVED, SELECTION_RESULT_LOST, SELECTION_RESULT_WON, VERSION_V2, VERSION_V3 } from "../constants";
 import { removeItem } from "../utils/array";
 import { getOdds, toDecimal } from '../utils/math'
@@ -24,7 +24,7 @@ export function createCondition(
   txHash: string,
   createBlockNumber: number,  // number?
   createBlockTimestamp: number,
-  context: Corev2Contract_ConditionCreatedEvent_handlerContext,
+  context: CoreContract_ConditionCreatedEvent_handlerContextAsync | Corev2Contract_ConditionCreatedEvent_handlerContextAsync,
   startsAt: bigint | null = null,
 ): ConditionEntity | null {
 
@@ -104,37 +104,38 @@ export function createCondition(
   conditionEntity._updatedAt = BigInt(createBlockTimestamp)
 
   context.Condition.set(conditionEntity)
+  context.log.debug(`createCondition conditionEntity created. conditionEntityId = ${conditionEntityId}`)
 
   const gameEntity = context.Game.get(gameEntityId)!
 
-  context.Game.set({
-    ...gameEntity,
-    _activeConditionsEntityIds: gameEntity._activeConditionsEntityIds!.concat([conditionEntityId]),
-    hasActiveConditions: true,
-    status: GAME_STATUS_CREATED,
-    _updatedAt: BigInt(createBlockTimestamp),
-  })
+  // context.Game.set({
+  //   ...gameEntity,
+  //   _activeConditionsEntityIds: gameEntity._activeConditionsEntityIds!.concat([conditionEntityId]),
+  //   hasActiveConditions: true,
+  //   status: GAME_STATUS_CREATED,
+  //   _updatedAt: BigInt(createBlockTimestamp),
+  // })
 
-  const leagueEntity = context.League.get(gameEntity.league_id)!
+  // const leagueEntity = context.League.get(gameEntity.league_id)!
 
-  if (!leagueEntity.activeGamesEntityIds!.includes(gameEntityId)) {
-    context.League.set({
-      ...leagueEntity,
-      activeGamesEntityIds: leagueEntity.activeGamesEntityIds!.concat([gameEntityId]),
-      hasActiveGames: true,
-    })
+  // if (!leagueEntity.activeGamesEntityIds!.includes(gameEntityId)) {
+  //   context.League.set({
+  //     ...leagueEntity,
+  //     activeGamesEntityIds: leagueEntity.activeGamesEntityIds!.concat([gameEntityId]),
+  //     hasActiveGames: true,
+  //   })
 
-    const countryEntity = context.Country.get(leagueEntity.country_id)!
+  //   const countryEntity = context.Country.get(leagueEntity.country_id)!
 
-    if (!countryEntity.activeLeaguesEntityIds!.includes(leagueEntity.id)) {
-      context.Country.set({
-        ...countryEntity,
-        activeLeaguesEntityIds: countryEntity.activeLeaguesEntityIds!.concat([leagueEntity.id]),
-        hasActiveLeagues: true,
-      })
-    }
+  //   if (!countryEntity.activeLeaguesEntityIds!.includes(leagueEntity.id)) {
+  //     context.Country.set({
+  //       ...countryEntity,
+  //       activeLeaguesEntityIds: countryEntity.activeLeaguesEntityIds!.concat([leagueEntity.id]),
+  //       hasActiveLeagues: true,
+  //     })
+  //   }
 
-  }
+  // }
   return conditionEntity
 }
 

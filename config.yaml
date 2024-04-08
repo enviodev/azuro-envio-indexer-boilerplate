@@ -44,6 +44,7 @@ contracts:
     handler: src/v2/core.ts
     events:
       - event: ConditionCreated(uint256 indexed gameId, uint256 indexed conditionId)
+        isAsync: true
       - event: ConditionResolved(uint256 indexed conditionId, uint8 state, uint64 outcomeWin, int128 lpProfit)
       - event: ConditionStopped(uint256 indexed conditionId, bool flag)
       - event: NewBet(address indexed  bettor, address indexed affiliate, uint256 indexed conditionId, uint256 tokenId, uint64 outcomeId, uint128 amount, uint64 odds, uint128[2] funds)

@@ -10,7 +10,7 @@ import { Mutable } from "../utils/types"
 export function transferBet(
   coreAddress: string | null,
   azuroBetAddress: string | null,
-  tokenId: BigInt,
+  tokenId: bigint,
   from: string,
   to: string,
   block: number,
@@ -69,7 +69,7 @@ export function transferBet(
 
 export function linkBetWithFreeBet(
   coreAddress: string,
-  tokenId: BigInt,
+  tokenId: bigint,
   freebetEntityId: string,
   freebetOwner: string,
   blockTimestamp: number,
@@ -328,6 +328,8 @@ export function bettorWin(
   if (!coreContractEntity) {
     context.log.error('coreContractEntity not found. coreContractEntityId = {}')
     return
+  } else {
+    context.log.debug(`coreContractEntity found. coreContractEntityId = ${coreAddress}`)
   }
 
   if (coreContractEntity.type_ === CORE_TYPE_LIVE) {

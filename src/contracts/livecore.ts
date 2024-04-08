@@ -2,7 +2,7 @@ import { ContractAbi, Web3 } from "web3";
 
 import { Cache, CacheCategory } from "../lib/cache";
 
-import { Condition } from "../utils/types";
+import { ConditionV1 } from "../utils/types";
 
 import { CHAIN_CONSTANTS } from "../constants";
 
@@ -30,7 +30,7 @@ export async function getLiveConditionFromId(
     chainId: number,
     _conditionId: bigint,
 ): Promise<{
-    readonly condition: Condition;
+    readonly condition: ConditionV1;
 }> {
     console.log("livecore", contractAddress)
 
@@ -55,7 +55,7 @@ export async function getLiveConditionFromId(
         const _result = await Promise.resolve(liveCoreContract.methods.getCondition(conditionId).call()) as unknown;
         const result = _result as OriginalConditionResult;
 
-        const condition: Condition = {
+        const condition: ConditionV1 = {
             fundBank: [BigInt(result.fundBank[0]), BigInt(result.fundBank[1])],
             payouts: [BigInt(result.payouts[0]), BigInt(result.payouts[1])],
             totalNetBets: [BigInt(result.totalNetBets[0]), BigInt(result.totalNetBets[1])],

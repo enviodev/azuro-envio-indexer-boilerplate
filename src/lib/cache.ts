@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { type } from "os";
 import * as path from "path";
-import { Condition } from "../utils/types";
+import { ConditionV1 } from "../utils/types";
 
 export const CacheCategory = {
   Token: "token",
@@ -29,7 +29,7 @@ type ShapeLPv1Bet = Shape & Record<Address, { azuroBetAddress: string }>;
 
 type ShapeFreebetV1 = Shape & Record<Address, { name: string; lp: string }>;
 
-type ShapeConditionV1 = Shape & Record<ConditionId, { condition: Condition }>;
+type ShapeConditionV1 = Shape & Record<ConditionId, { condition: ConditionV1 }>;
 
 type ShapeLpv1NodeWithdrawView = Shape & Record<Address, { withdrawAmount: bigint }>;
 
