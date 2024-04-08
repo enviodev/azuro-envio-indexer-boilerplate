@@ -17,7 +17,7 @@ LiveCorev1Contract_ConditionCreated_handler(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionData = await getLiveConditionFromId(conditionId, event.chainId)
+  const conditionData = await getLiveConditionFromId(event.srcAddress, event.chainId, conditionId)
   
   createLiveCondition(
     coreAddress,
