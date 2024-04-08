@@ -1,6 +1,6 @@
 import { zeroPadBytes } from "ethers"
-import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE } from "../constants"
-import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity } from "../src/Types.gen"
+import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE, BET_TYPE_EXPRESS } from "../constants"
+import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal } from "../utils/math"
 import { getEntityId } from "../utils/schema"
@@ -54,7 +54,7 @@ export function transferBet(
   if (!betEntity._isFreebet) {
     actor = to
   }
-  
+
   context.Bet.set({
     ...betEntity,
     actor: actor,
@@ -235,7 +235,7 @@ export function createBet(
   }
 
   const betEntity: BetEntity = {
-    id: betEntityId, 
+    id: betEntityId,
     type_: _betType,
     _subBetsCount: betOutcomeEntities.length,
     _wonSubBetsCount: 0,
@@ -262,8 +262,8 @@ export function createBet(
     _conditionIds: conditionIds,
     rawPotentialPayout: potentialPayout,
     // potentialPayout: toDecimal(
-      // potentialPayout,
-      // tokenDecimals,
+    // potentialPayout,
+    // tokenDecimals,
     // ),
     createdTxHash: txHash,
     createdBlockNumber: BigInt(createdBlockNumber),
@@ -273,15 +273,15 @@ export function createBet(
     isRedeemable: false,
     _isFreebet: false,
     _updatedAt: BigInt(createdBlockTimestamp),
-    redeemedBlockTimestamp: undefined, 
-    resolvedBlockTimestamp: undefined, 
-    redeemedBlockNumber: undefined, 
+    redeemedBlockTimestamp: undefined,
+    resolvedBlockTimestamp: undefined,
+    redeemedBlockNumber: undefined,
     redeemedTxHash: undefined,
-    resolvedBlockNumber: undefined, 
-    result: undefined, 
+    resolvedBlockNumber: undefined,
+    result: undefined,
     freebet_id: undefined,
-    rawPayout: undefined, 
-    rawSettledOdds: undefined, 
+    rawPayout: undefined,
+    rawSettledOdds: undefined,
     resolvedTxHash: undefined
   }
 
@@ -291,20 +291,21 @@ export function createBet(
     const betOutcomeEntity: OutcomeEntity = betOutcomeEntities[i]
 
     const selectionEntityId = getEntityId(betEntityId, conditionEntities[i].conditionId.toString())
-
-    context.Selection.set({
+    const selectionEntity: SelectionEntity = {
       id: selectionEntityId,
       rawOdds: conditionOdds[i],
       // odds: toDecimal(
-        // selectionEntity.rawOdds,
-        // betEntity._oddsDecimals,
+      // selectionEntity.rawOdds,
+      // betEntity._oddsDecimals,
       // ),
       _oddsDecimals: betEntity._oddsDecimals,
       outcome_id: betOutcomeEntity.id,
       _outcomeId: betOutcomeEntity.outcomeId,
       bet_id: betEntityId,
       result: undefined,
-    })
+    }
+
+    context.Selection.set(selectionEntity)
   }
 
   return betEntity
@@ -367,4 +368,142 @@ export function bettorWin(
       _updatedAt: BigInt(blockTimestamp),
     })
   }
+}
+
+
+export function createLiveBet(
+  version: string,
+  betType: typeof BET_TYPE_ORDINAR | typeof BET_TYPE_EXPRESS,
+  liveConditionEntities: Mutable<LiveConditionEntity>[],
+  liveOutcomeEntities: LiveOutcomeEntity[],
+  conditionOdds: bigint[],
+  odds: bigint,
+  coreAddress: string,
+  bettor: string,
+  affiliate: string | undefined,
+  tokenId: bigint,
+  tokenDecimals: number,
+  amount: bigint,
+  payoutLimit: bigint,
+  txHash: string,
+  createdBlockNumber: bigint,
+  createdBlockTimestamp: bigint,
+  context: LiveCorev1Contract_NewLiveBetEvent_handlerContext,
+): LiveBetEntity | null {
+  let conditionIds: bigint[] = []
+  let conditionEntitiesIds: string[] = []
+  let gameIds: string[] = []
+
+  for (let i = 0; i < liveConditionEntities.length; i++) {
+    conditionIds[i] = liveConditionEntities[i].conditionId
+    conditionEntitiesIds[i] = liveConditionEntities[i].id
+    gameIds[i] = liveConditionEntities[i].gameId.toString()
+  }
+
+  // update outcomes, condition and game turnover for ordinar bets
+  if (betType === BET_TYPE_ORDINAR) {
+    liveConditionEntities[0].turnover = liveConditionEntities[0].turnover + amount
+    liveConditionEntities[0]._updatedAt = createdBlockTimestamp
+    context.LiveCondition.set(liveConditionEntities[0])
+  }
+
+  const potentialPayout = amount * odds / MULTIPLIERS_VERSIONS.get(version)!
+  const liveBetEntityId = getEntityId(coreAddress, tokenId.toString())
+
+  for (let k = 0; k < liveConditionEntities.length; k++) {
+    const liveConditionEntity = liveConditionEntities[k]
+    const outcomeEntities: Mutable<LiveOutcomeEntity>[] = []
+
+    // double-check of sorting by sortOrder field
+    for (let j = 0; j < liveConditionEntity.outcomesIds!.length; j++) {
+      const outcomeId = liveConditionEntity.outcomesIds![j]
+
+      const outcomeEntityId = getEntityId(
+        liveConditionEntity.id,
+        outcomeId.toString(),
+      )
+      const _liveOutcomeEntity = context.LiveOutcome.get(outcomeEntityId)!
+      const liveOutcomeEntity = { ..._liveOutcomeEntity }
+
+      outcomeEntities[liveOutcomeEntity.sortOrder] = liveOutcomeEntity
+    }
+
+    for (let i = 0; i < outcomeEntities.length; i++) {
+      const liveOutcomeEntity = outcomeEntities[i]
+
+      if (liveOutcomeEntity.outcomeId === outcomeEntities[k].outcomeId) {
+        liveOutcomeEntity._betsEntityIds = liveOutcomeEntity._betsEntityIds!.concat([liveBetEntityId])
+      }
+
+      liveOutcomeEntity._updatedAt = createdBlockTimestamp
+      context.LiveOutcome.set(liveOutcomeEntity)
+    }
+  }
+
+  const liveBetEntity: LiveBetEntity = {
+    id: liveBetEntityId,
+    _subBetsCount: liveOutcomeEntities.length,
+    _wonSubBetsCount: 0,
+    _lostSubBetsCount: 0,
+    _canceledSubBetsCount: 0,
+    rawOdds: odds,
+    // odds: toDecimal(odds, 12),
+    _oddsDecimals: BASES_VERSIONS.mustGetEntry(version).value,
+    // _conditions: conditionEntitiesIds,
+    _gamesIds: gameIds,
+    // TODO: fix game shifted
+    betId: tokenId,
+    core_id: coreAddress,
+    bettor: bettor,
+    owner: bettor,
+    actor: bettor,
+    affiliate: affiliate,
+    rawAmount: amount,
+    // amount: toDecimal(liveBetEntity.rawAmount, tokenDecimals),
+    _tokenDecimals: tokenDecimals,
+    _conditionIds: conditionIds,
+    rawPotentialPayout: potentialPayout,
+    // potentialPayout: toDecimal(potentialPayout, 12),
+    rawPayoutLimit: payoutLimit,
+    // payoutLimit: toDecimal(payoutLimit, 12),
+    createdTxHash: txHash,
+    createdBlockNumber: createdBlockNumber,
+    createdBlockTimestamp: createdBlockTimestamp,
+    status: BET_STATUS_ACCEPTED,
+    isRedeemed: false,
+    isRedeemable: false,
+    _updatedAt: createdBlockTimestamp,
+    redeemedBlockTimestamp: undefined,
+    resolvedBlockNumber: undefined,
+    resolvedBlockTimestamp: undefined,
+    redeemedBlockNumber: undefined,
+    resolvedTxHash: undefined,
+    redeemedTxHash: undefined,
+    result: undefined,
+    rawPayout: undefined,
+    rawSettledOdds: undefined
+  }
+
+  context.LiveBet.set(liveBetEntity)
+
+  for (let i = 0; i < liveOutcomeEntities.length; i++) {
+    const liveOutcomeEntity = liveOutcomeEntities[i]
+
+    const liveSelectionEntityId = getEntityId(
+      liveBetEntityId,
+      liveConditionEntities[i].conditionId.toString(),
+    )
+    const liveSelectionEntity = {
+      id: liveSelectionEntityId,
+      rawOdds: conditionOdds[i],
+      // odds: toDecimal(liveSelectionEntity.rawOdds, liveBetEntity._oddsDecimals),
+      _oddsDecimals: liveBetEntity._oddsDecimals,
+      outcome_id: liveOutcomeEntity.id,
+      _outcomeId: liveOutcomeEntity.outcomeId,
+      bet_id: liveBetEntityId,
+      result: undefined,
+    }
+    context.LiveSelection.set(liveSelectionEntity)
+  }
+  return liveBetEntity
 }

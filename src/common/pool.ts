@@ -64,12 +64,14 @@ export async function createPoolEntity(
   coreAddress: string,
   liquidityPoolAddress: string,
   tokenAddress: string,
-  blockNumber: number,
-  blockTimestamp: number,
+  blockNumber: bigint,
+  blockTimestamp: bigint,
   chainId: number,
   context: CoreContract_LpChangedEvent_handlerContextAsync,
 ): Promise<LiquidityPoolContractEntity> {
-  let { decimals, symbol } = await getErc20TokenDetails(tokenAddress, chainId);
+  const { decimals, symbol } = await getErc20TokenDetails(tokenAddress, chainId);
+
+  const tokenBalance = await getErc20TokenBalance(tokenAddress, liquidityPoolAddress, chainId)
 
   const _version = version as typeof VERSION_V1 | typeof VERSION_V2
 
@@ -89,19 +91,22 @@ export async function createPoolEntity(
     betsCount: 0n,
     wonBetsAmount: 0n,
     wonBetsCount: 0n,
-    rawTvl: 0n,
-    // tvl: 0n,
-    firstCalculatedBlockNumber: BigInt(blockNumber),
-    firstCalculatedBlockTimestamp: BigInt(blockTimestamp),
-    lastCalculatedBlockNumber: BigInt(blockNumber),
-    lastCalculatedBlockTimestamp: BigInt(blockTimestamp),
+    rawTvl: tokenBalance,
+    // tvl: toDecimal(
+    //   liquidityPoolContractEntity.rawTvl,
+    //   liquidityPoolContractEntity.tokenDecimals,
+    // )
+    firstCalculatedBlockNumber: blockNumber,
+    firstCalculatedBlockTimestamp: blockTimestamp,
+    lastCalculatedBlockNumber: blockNumber,
+    lastCalculatedBlockTimestamp: blockTimestamp,
     daysSinceDeployment: 0n,
     depositedAmount: 0n,
     withdrawnAmount: 0n,
     withdrawTimeout: 0n,
     depositedWithStakingAmount: 0n,
     withdrawnWithStakingAmount: 0n,
-    liquidityManager: "",
+    liquidityManager: undefined,
   };
 
   context.LiquidityPoolContract.set(liquidityPoolContractEntity);
