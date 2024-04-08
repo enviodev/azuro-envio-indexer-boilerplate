@@ -20,7 +20,7 @@ type OriginalConditionResult = {
 };
 
 // LPv1 Contract ABI
-const contractABI = require("../../abis/CoreV2.json");
+const contractABI = require("../../abis/LiveCoreV1.json");
 
 // Function to get ERC20 token address from the liquidity pool contract
 export async function getLiveConditionFromId(

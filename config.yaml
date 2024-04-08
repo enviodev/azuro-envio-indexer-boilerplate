@@ -131,7 +131,11 @@ networks:
         address:
           - 0xB425E555492eE36c5A2918481EbbcF04AE73682b
       - name: Corev2
+        address:
+          - 0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e
       - name: Azurobetv2
+        address:
+          - 0xA3A1B460c68dc91c5B3f71f5487A76fac42858bf
       - name: Expressv2
       - name: FreeBetFactory
         address:
@@ -140,3 +144,5 @@ networks:
       - name: Expressv3
       - name: FreeBetv3
       - name: LiveCorev1
+
+# https://docs.bookmaker.xyz/

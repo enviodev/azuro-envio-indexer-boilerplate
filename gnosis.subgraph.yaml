@@ -301,6 +301,7 @@ templates:
     network: gnosis
     source:
       abi: CoreV2
+      address: "0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e"
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -365,6 +366,7 @@ templates:
     network: gnosis
     source:
       abi: AzuroBetV2
+      address: "0xA3A1B460c68dc91c5B3f71f5487A76fac42858bf"
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

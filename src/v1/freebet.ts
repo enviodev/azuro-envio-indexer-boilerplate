@@ -52,7 +52,7 @@ async function getOrCreateFreebetContract(
 }
 
 XYZFreeBetContract_BettorWin_loader(({ event, context }) => { 
-  context.FreebetContract.load(event.srcAddress);
+  context.FreebetContract.load(event.srcAddress, {});
   // context.LiquidityPoolContract.load(event.srcAddress); // TODO check if this is correct // probably not
   // context.Bet.load(event.srcAddress + "_" + event.params.azuroBetId.toString()); // TODO check if this is correct // probably not
 });
@@ -63,7 +63,7 @@ XYZFreeBetContract_BettorWin_handler(async ({ event, context }) => {
     context
   );
 
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool)!;
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id)!;
 
   const coreAddress = liquidityPoolContractEntity.coreAddresses![0]
 
@@ -87,7 +87,7 @@ XYZFreeBetContract_BettorWin_handler(async ({ event, context }) => {
 });
 
 XYZFreeBetContract_FreeBetMinted_loader(({ event, context }) => {
-  context.FreebetContract.load(event.srcAddress);
+  context.FreebetContract.load(event.srcAddress, {});
 });
 XYZFreeBetContract_FreeBetMinted_handler(async ({ event, context }) => {
   const freebetContractEntity = await getOrCreateFreebetContract(
@@ -96,12 +96,10 @@ XYZFreeBetContract_FreeBetMinted_handler(async ({ event, context }) => {
     context
   );
 
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(
-    freebetContractEntity.liquidityPool
-  );
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id);
 
   if (!liquidityPoolContractEntity) {
-    context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${freebetContractEntity.liquidityPool}`)
+    context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${freebetContractEntity.liquidityPool_id}`)
     return null
   }
 
@@ -130,7 +128,7 @@ XYZFreeBetContract_FreeBetMinted_handler(async ({ event, context }) => {
 });
 
 XYZFreeBetContract_FreeBetMintedBatch_loader(({ event, context }) => {
-  context.FreebetContract.load(event.srcAddress);
+  context.FreebetContract.load(event.srcAddress, {});
 
   // correct way to do this?
   context.LiquidityPoolContract.load(event.srcAddress); // how to get?
@@ -143,11 +141,11 @@ XYZFreeBetContract_FreeBetMintedBatch_handler(async ({ event, context }) => {
   );
 
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(
-    freebetContractEntity.liquidityPool
+    freebetContractEntity.liquidityPool_id
   );
 
   if (!liquidityPoolContractEntity) {
-    context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${freebetContractEntity.liquidityPool}`)
+    context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${freebetContractEntity.liquidityPool_id}`)
     return null
   }
 
@@ -176,7 +174,7 @@ XYZFreeBetContract_FreeBetMintedBatch_handler(async ({ event, context }) => {
 });
 
 XYZFreeBetContract_FreeBetRedeemed_loader(({ event, context }) => {
-  context.FreebetContract.load(event.srcAddress);
+  context.FreebetContract.load(event.srcAddress, {});
   context.LiquidityPoolContract.load(event.params.bettor); // TODO check if this is correct // probably not
 });
 XYZFreeBetContract_FreeBetRedeemed_handler(async ({ event, context }) => {
@@ -189,9 +187,7 @@ XYZFreeBetContract_FreeBetRedeemed_handler(async ({ event, context }) => {
     context
   )!
 
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(
-    freebetContractEntity.liquidityPool
-  )!;
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id)!;
 
   // hack for V1
   const coreAddress = liquidityPoolContractEntity.coreAddresses![0]
@@ -222,14 +218,14 @@ XYZFreeBetContract_FreeBetRedeemed_handler(async ({ event, context }) => {
 });
 
 XYZFreeBetContract_FreeBetReissued_loader(({ event, context }) => {
-  context.FreebetContract.load(event.srcAddress);
+  context.FreebetContract.load(event.srcAddress, {});
 });
 XYZFreeBetContract_FreeBetReissued_handler(({ event, context }) => {
   reissueFreebet(event.srcAddress, event.params.id, event.blockNumber, context)
 });
 
 XYZFreeBetContract_Transfer_loader(({ event, context }) => {
-  context.FreebetContract.load(event.srcAddress);
+  context.FreebetContract.load(event.srcAddress, {});
 });
 XYZFreeBetContract_Transfer_handler(({ event, context }) => {
   // create nft

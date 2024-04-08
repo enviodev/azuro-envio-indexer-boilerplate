@@ -314,7 +314,7 @@ export function resolveCondition(
             isRedeemable: true,
           })
 
-          if (betEntity.betType === BET_TYPE_ORDINAR) {
+          if (betEntity.type_ === BET_TYPE_ORDINAR) {
             context.Bet.set({
               ...betEntity,
               rawPayout: betEntity.rawPotentialPayout,
@@ -322,7 +322,7 @@ export function resolveCondition(
             })
           }
           else if (
-            betEntity.betType === BET_TYPE_EXPRESS
+            betEntity.type_ === BET_TYPE_EXPRESS
           ) {
             let payoutSC: bigint | null = null
 
@@ -592,7 +592,7 @@ export function resolveLiveCondition(
   const _liveConditionEntity = context.LiveCondition.get(liveConditionEntityId)!
   const liveConditionEntity = {..._liveConditionEntity}
 
-  const isCanceled = winningOutcomes.length === 0 || winningOutcomes[0].equals(BigInt.zero())
+  const isCanceled = winningOutcomes.length === 0 || winningOutcomes[0] === 0n
 
   let betsAmount = 0n
   let wonBetsAmount = 0n

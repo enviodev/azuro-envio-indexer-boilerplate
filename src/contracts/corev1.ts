@@ -44,7 +44,7 @@ export async function getConditionFromId(
     const web3 = new Web3(rpcURL);
 
     // Create LPv1 contract instance
-    const corev1Contract = new web3.eth.Contract(contractABI, "0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d");
+    const corev1Contract = new web3.eth.Contract(contractABI, "0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d"); // TODO get correct contract address
 
     try {
         const _result = await Promise.resolve(corev1Contract.methods.getCondition(_conditionId).call()) as unknown;
