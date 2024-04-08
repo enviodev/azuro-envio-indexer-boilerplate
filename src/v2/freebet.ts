@@ -23,30 +23,33 @@ function getOrCreateFreebetContract(
   chainId: number,
   context: FreeBetContract_FreeBetMintedEvent_handlerContext,
 ): FreebetContractEntity | null {
-  let freebetContractEntity = context.FreebetContract.get(freebetContractAddress)
+  // let freebetContractEntity = context.FreebetContract.get(freebetContractAddress)
 
-  if (freebetContractEntity) {
-    return freebetContractEntity
-  }
+  // if (freebetContractEntity) {
+  //   return freebetContractEntity
+  // }
 
-  const freebetSC = Freebet.bind(freebetContractAddress)
+  // const freebetSC = Freebet.bind(freebetContractAddress)
 
-  const lp = freebetSC.try_lp()
+  // const lp = freebetSC.try_lp()
 
-  if (lp.reverted) {
-    context.log.error(`v2 getOrCreateFreebetContract lp call reverted.`)
+  // if (lp.reverted) {
+  //   context.log.error(`v2 getOrCreateFreebetContract lp call reverted.`)
 
-    return null
-  }
+  //   return null
+  // }
 
-  const name = freebetSC.try_name()
+  // const name = freebetSC.try_name()
 
-  if (name.reverted) {
-    context.log.error(`v2 getOrCreateFreebetContract name call reverted.`)
-    return null
-  }
+  // if (name.reverted) {
+  //   context.log.error(`v2 getOrCreateFreebetContract name call reverted.`)
+  //   return null
+  // }
 
-  return createFreebetContractEntity(chainId.toString(), freebetContractAddress, lp.value.toHexString(), name.value.toString(), null, null)
+  // return createFreebetContractEntity(chainId.toString(), freebetContractAddress, lp.value.toHexString(), name.value.toString(), null, null)
+  
+  console.log("getOrCreateFreebetContract: ", freebetContractAddress)
+  return null
 }
 
 FreeBetContract_BettorWin_loader(({ event, context }) => { });
@@ -84,7 +87,7 @@ FreeBetContract_FreeBetMinted_handler(({ event, context }) => {
     return
   }
 
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool)!
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id)!
 
   createFreebet(
     VERSION_V2,
@@ -114,7 +117,7 @@ FreeBetContract_FreeBetMintedBatch_handler(({ event, context }) => {
     return
   }
 
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool)!
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id)!
 
   for (let i = 0; i < event.params.ids.length; i++) {
     // parse FreeBetMintedBatch to multiple FreeBetMinted

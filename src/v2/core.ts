@@ -25,7 +25,7 @@ Corev2Contract_ConditionCreated_handler(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionData = await getConditionV2FromId(conditionId, event.chainId)
+  const conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId)
 
   const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
   const gameEntityId = liquidityPoolAddress + "_" + event.params.gameId.toString()
@@ -157,7 +157,7 @@ Corev2Contract_OddsChanged_handler(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionData = await getConditionV2FromId(conditionId, event.chainId)
+  const conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId)
 
   const conditionEntityId = coreAddress + "_" + conditionId.toString()
   const conditionEntity = context.Condition.get(conditionEntityId)

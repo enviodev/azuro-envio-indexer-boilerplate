@@ -35,7 +35,7 @@ CoreContract_ConditionCreated_handler(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const startsAt = event.params.timestamp
 
-  const conditionData = await getConditionFromId(conditionId, event.chainId) 
+  const conditionData = await getConditionFromId(event.srcAddress, event.chainId, conditionId) 
 
   const coreAddress = event.srcAddress
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
@@ -161,9 +161,8 @@ CoreContract_LpChanged_loader(async ({ event, context }) => {
   await context.contractRegistration.addLP(event.params.newLp);
   context.CoreContract.load(event.srcAddress, {});
 
-  const resp = await getAzuroBetAddress(event.srcAddress, event.chainId)
+  const resp = await getAzuroBetAddress(event.params.newLp, event.chainId)
   await context.contractRegistration.addAzurobets(resp.azuroBetAddress)
-
 });
 
 CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
@@ -194,7 +193,7 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
     context.CoreContract.set(coreContract);
   }
 
-  const resp = await getAzuroBetAddress(coreAddress, event.chainId)
+  const resp = await getAzuroBetAddress(liquidityPoolAddress, event.chainId)
 
   createAzuroBetEntity(coreAddress, resp.azuroBetAddress, context)
 });

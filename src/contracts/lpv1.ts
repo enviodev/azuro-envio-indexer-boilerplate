@@ -14,6 +14,8 @@ export async function getTokenForPool(
 ): Promise<{
   readonly token: string;
 }> {
+  console.log("getTokenForPool", contractAddress)
+
   const cache = Cache.init(CacheCategory.LPv1, chainId);
   const lpv1 = cache.read(contractAddress.toLowerCase());
 
@@ -53,6 +55,8 @@ export async function getAzuroBetAddress(
 ): Promise<{
   readonly azuroBetAddress: string;
 }> {
+  // console.log("getAzuroBetAddress", contractAddress)
+
   const cache = Cache.init(CacheCategory.LPv1Bet, chainId);
   const lpv1 = cache.read(contractAddress.toLowerCase());
 
@@ -93,6 +97,9 @@ export async function getNodeWithdrawAmount(
 ): Promise<{
   readonly withdrawAmount: bigint;
 }> {
+  console.log("getNodeWithdrawAmount",contractAddress)
+
+
   const cache = Cache.init(CacheCategory.LPv1NodeWithdrawView, chainId);
   const lpv1 = cache.read(contractAddress.toLowerCase());
 

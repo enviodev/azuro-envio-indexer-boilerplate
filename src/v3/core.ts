@@ -17,21 +17,16 @@ import {
 import { createBet } from "../common/bets";
 import { createCondition, pauseUnpauseCondition, resolveCondition, updateConditionMargin, updateConditionOdds, updateConditionReinforcement } from "../common/condition";
 import { BET_TYPE_ORDINAR, VERSION_V3 } from "../constants";
+import { getConditionV3FromId } from "../contracts/corev3";
 import { OutcomeEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
 Corev3Contract_ConditionCreated_loader(({ event, context }) => {});
-Corev3Contract_ConditionCreated_handler(({ event, context }) => {
+Corev3Contract_ConditionCreated_handler(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const coreSC = Core.bind(event.srcAddress)
-  const conditionData = coreSC.try_getCondition(conditionId)
-
-  if (conditionData.reverted) {
-    context.log.error('getCondition reverted. conditionId = ${conditionId.toString()}')
-    return
-  }
+  const conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
 
   const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
   const gameEntityId = getEntityId(
@@ -47,23 +42,23 @@ Corev3Contract_ConditionCreated_handler(({ event, context }) => {
     return
   }
 
-  createCondition(
-    VERSION_V3,
-    coreAddress,
-    conditionId,
-    gameEntity.id,
-    conditionData.value.margin,
-    conditionData.value.reinforcement,
-    event.params.outcomes,
-    conditionData.value.virtualFunds,
-    conditionData.value.winningOutcomesCount,
-    conditionData.value.isExpressForbidden,
-    gameEntity.provider,
-    event.transactionHash,
-    event.blockNumber,
-    event.blockTimestamp,
-    context,
-  )
+  // createCondition(
+  //   VERSION_V3,
+  //   coreAddress,
+  //   conditionId,
+  //   gameEntity.id,
+  //   conditionData.condition.margin,
+  //   conditionData.condition.reinforcement,
+  //   event.params.outcomes,
+  //   conditionData.condition.virtualFunds,
+  //   conditionData.condition.winningOutcomesCount,
+  //   conditionData.condition.isExpressForbidden,
+  //   gameEntity.provider,
+  //   event.transactionHash,
+  //   event.blockNumber,
+  //   event.blockTimestamp,
+  //   context,
+  // )
 });
 
 Corev3Contract_ConditionResolved_loader(({ event, context }) => {});
@@ -167,17 +162,11 @@ Corev3Contract_NewBet_handler(({ event, context }) => {
 });
 
 Corev3Contract_OddsChanged_loader(({ event, context }) => {});
-Corev3Contract_OddsChanged_handler(({ event, context }) => {
+Corev3Contract_OddsChanged_handler(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const coreSC = Core.bind(event.srcAddress)
-  const conditionData = coreSC.try_getCondition(conditionId)
-
-  if (conditionData.reverted) {
-    context.log.error(`getCondition reverted. conditionId = ${conditionId.toString()}`)
-    return
-  }
+  const conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
 
   const conditionEntityId = getEntityId(
     coreAddress,
@@ -204,14 +193,14 @@ Corev3Contract_OddsChanged_handler(({ event, context }) => {
     outcomesEntities = outcomesEntities.concat([outcomeEntity])
   }
 
-  updateConditionOdds(
-    VERSION_V3,
-    conditionEntity,
-    outcomesEntities,
-    conditionData.value.virtualFunds,
-    event.blockNumber,
-    context,
-  )
+  // updateConditionOdds(
+  //   VERSION_V3,
+  //   conditionEntity,
+  //   outcomesEntities,
+  //   conditionData.condition.virtualFunds,
+  //   event.blockNumber,
+  //   context,
+  // )
 });
 
 Corev3Contract_MarginChanged_loader(({ event, context }) => {});

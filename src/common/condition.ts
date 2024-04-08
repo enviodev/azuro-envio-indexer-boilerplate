@@ -7,6 +7,7 @@ import { calcPayoutV2, calcPayoutV3 } from "./express";
 import { countConditionResolved } from "./pool";
 import { Condition, LiveCondition } from "../src/DbFunctions.bs";
 import { getEntityId } from "../utils/schema";
+import { Mutable } from "../utils/types";
 
 export function createCondition(
   version: string,

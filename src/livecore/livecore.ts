@@ -18,18 +18,19 @@ LiveCorev1Contract_ConditionCreated_handler(async ({ event, context }) => {
   const coreAddress = event.srcAddress
 
   const conditionData = await getLiveConditionFromId(event.srcAddress, event.chainId, conditionId)
-  
-  createLiveCondition(
-    coreAddress,
-    conditionId,
-    event.params.gameId,
-    event.params.outcomes,
-    conditionData.condition.winningOutcomesCount,
-    event.transactionHash,
-    event.blockNumber,
-    event.blockTimestamp,
-    context,
-  )
+
+  console.log("LiveCoreV1 address", event.srcAddress)
+  // createLiveCondition(
+  //   coreAddress,
+  //   conditionId,
+  //   event.params.gameId,
+  //   event.params.outcomes,
+  //   conditionData.condition.winningOutcomesCount,
+  //   event.transactionHash,
+  //   event.blockNumber,
+  //   event.blockTimestamp,
+  //   context,
+  // )
 });
 
 LiveCorev1Contract_ConditionResolved_loader(({ event, context }) => {});

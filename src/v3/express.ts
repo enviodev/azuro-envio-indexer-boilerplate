@@ -11,63 +11,63 @@ import { getEntityId } from "../utils/schema";
 
 Expressv3Contract_NewBet_loader(({ event, context }) => { });
 Expressv3Contract_NewBet_handler(({ event, context }) => {
-  const expressAddress = event.srcAddress
-  const prematchAddress = context.ExpressPrematchRelation.get(expressAddress)!.prematchAddress
+  // const expressAddress = event.srcAddress
+  // const prematchAddress = context.ExpressPrematchRelation.get(expressAddress)!.prematchAddress
 
-  let conditionEntities: ConditionEntity[] = []
-  let outcomeEntities: OutcomeEntity[] = []
-  let conditionOdds: bigint[] = []
+  // let conditionEntities: ConditionEntity[] = []
+  // let outcomeEntities: OutcomeEntity[] = []
+  // let conditionOdds: bigint[] = []
 
-  for (let i = 0; i < event.params.bet.subBets.length; i++) {
-    const bet = event.params.bet.subBets[i]
+  // for (let i = 0; i < event.params.bet.subBets.length; i++) {
+  //   const bet = event.params.bet.subBets[i]
 
-    const conditionEntityId = getEntityId(prematchAddress, bet.conditionId.toString())
-    const conditionEntity = context.Condition.get(conditionEntityId)
+  //   const conditionEntityId = getEntityId(prematchAddress, bet.conditionId.toString())
+  //   const conditionEntity = context.Condition.get(conditionEntityId)
 
-    // TODO remove later
-    if (!conditionEntity) {
-      context.log.error(`v3 handleNewBet express conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-      return
-    }
+  //   // TODO remove later
+  //   if (!conditionEntity) {
+  //     context.log.error(`v3 handleNewBet express conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+  //     return
+  //   }
 
-    conditionEntities[i] = conditionEntity
+  //   conditionEntities[i] = conditionEntity
 
-    const outcomeEntityId = getEntityId(conditionEntityId, bet.outcomeId.toString())
-    const outcomeEntity = context.Outcome.get(outcomeEntityId)
+  //   const outcomeEntityId = getEntityId(conditionEntityId, bet.outcomeId.toString())
+  //   const outcomeEntity = context.Outcome.get(outcomeEntityId)
 
-    // TODO remove later
-    if (!outcomeEntity) {
-      context.log.error(`v3 handleNewBet express outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
-      return
-    }
+  //   // TODO remove later
+  //   if (!outcomeEntity) {
+  //     context.log.error(`v3 handleNewBet express outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
+  //     return
+  //   }
 
-    outcomeEntities[i] = outcomeEntity
+  //   outcomeEntities[i] = outcomeEntity
 
-    conditionOdds[i] = event.params.bet.conditionOdds[i]
-  }
+  //   conditionOdds[i] = event.params.bet.conditionOdds[i]
+  // }
 
-  const lp = context.CoreContract.get(prematchAddress)!.liquidityPool_id
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
+  // const lp = context.CoreContract.get(prematchAddress)!.liquidityPool_id
+  // const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
 
-  createBet(
-    VERSION_V3,
-    BET_TYPE_EXPRESS.toString(),
-    conditionEntities,
-    outcomeEntities,
-    conditionOdds,
-    event.params.bet.odds,
-    expressAddress,
-    event.params.bettor,
-    event.params.affiliate,
-    event.params.betId,
-    liquidityPoolContractEntity.tokenDecimals,
-    event.params.bet.amount,
-    event.transactionHash,
-    event.blockTimestamp,
-    event.blockNumber,
-    null,
-    context,
-  )
+  // createBet(
+  //   VERSION_V3,
+  //   BET_TYPE_EXPRESS.toString(),
+  //   conditionEntities,
+  //   outcomeEntities,
+  //   conditionOdds,
+  //   event.params.bet.odds,
+  //   expressAddress,
+  //   event.params.bettor,
+  //   event.params.affiliate,
+  //   event.params.betId,
+  //   liquidityPoolContractEntity.tokenDecimals,
+  //   event.params.bet.amount,
+  //   event.transactionHash,
+  //   event.blockTimestamp,
+  //   event.blockNumber,
+  //   null,
+  //   context,
+  // )
 });
 
 Expressv3Contract_Transfer_loader(({ event, context }) => { });
