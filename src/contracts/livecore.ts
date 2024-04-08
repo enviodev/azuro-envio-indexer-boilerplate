@@ -24,8 +24,9 @@ const contractABI = require("../../abis/LiveCoreV1.json");
 
 // Function to get ERC20 token address from the liquidity pool contract
 export async function getLiveConditionFromId(
+    contractAddress: string,
+    chainId: number,
     _conditionId: bigint,
-    chainId: number
 ): Promise<{
     readonly condition: Condition;
 }> {
@@ -44,7 +45,7 @@ export async function getLiveConditionFromId(
     const web3 = new Web3(rpcURL);
 
     // Create LPv1 contract instance
-    const corev1Contract = new web3.eth.Contract(contractABI, "0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d"); // TODO get LiveCore address
+    const corev1Contract = new web3.eth.Contract(contractABI, contractAddress);
 
     try {
         const _result = await Promise.resolve(corev1Contract.methods.getCondition(_conditionId).call()) as unknown;
