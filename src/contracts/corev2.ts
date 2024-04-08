@@ -1,8 +1,10 @@
 import { ContractAbi, Web3 } from "web3";
 
-import { Cache, CacheCategory, Condition } from "../lib/cache";
+import { Cache, CacheCategory } from "../lib/cache";
 
 import { CHAIN_CONSTANTS } from "../constants";
+
+import { Condition } from "../utils/types";
 
 type OriginalConditionResult = {
     fundBank: [string, string]; // or [BN, BN] if using BN objects
@@ -24,11 +26,14 @@ const contractABI = require("../../abis/CoreV2.json");
 
 // Function to get ERC20 token address from the liquidity pool contract
 export async function getConditionV2FromId(
+    contractAddress: string,
+    chainId: number,
     _conditionId: bigint,
-    chainId: number
 ): Promise<{
     readonly condition: Condition;
 }> {
+    console.log("getConditionV2FromId", contractAddress)
+
     const conditionId = _conditionId.toString();
     const cache = Cache.init(CacheCategory.ConditionV1, chainId);
     const condition = cache.read(conditionId);
@@ -44,10 +49,10 @@ export async function getConditionV2FromId(
     const web3 = new Web3(rpcURL);
 
     // Create LPv1 contract instance
-    const corev1Contract = new web3.eth.Contract(contractABI, "0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d"); // TODO get Corev2 address
+    const corev2Contract = new web3.eth.Contract(contractABI, contractAddress);
 
     try {
-        const _result = await Promise.resolve(corev1Contract.methods.getCondition(_conditionId).call()) as unknown;
+        const _result = await corev2Contract.methods.getCondition(conditionId).call() as unknown;
         const result = _result as OriginalConditionResult;
 
         const condition: Condition = {

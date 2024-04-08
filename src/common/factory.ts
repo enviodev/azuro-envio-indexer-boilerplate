@@ -26,15 +26,16 @@ export function getPrematchAddressByExpressAddressV2(
   expressAddress: string,
   context: FactoryContract_NewCoreEvent_handlerContext,
 ): string | null {
-  const expressSC = ExpressAbiV2.bind(Address.fromString(expressAddress))
-  const prematchCore = expressSC.try_core()
+  // const expressSC = ExpressAbiV2.bind(Address.fromString(expressAddress))
+  // const prematchCore = expressSC.try_core()
 
-  if (prematchCore.reverted) {
-    context.log.error('core reverted.')
-    return null
-  }
+  // if (prematchCore.reverted) {
+  //   context.log.error('core reverted.')
+  //   return null
+  // }
 
-  return prematchCore.value.toHexString()
+  // return prematchCore.value.toHexString()
+  return ""
 }
 
 
@@ -42,15 +43,17 @@ export function getPrematchAddressByExpressAddressV3(
   expressAddress: string,
   context: FactoryContract_NewCoreEvent_handlerContext,
 ): string | null {
-  const expressSC = ExpressAbiV3.bind(Address.fromString(expressAddress))
-  const prematchCore = expressSC.try_core()
+  // const expressSC = ExpressAbiV3.bind(Address.fromString(expressAddress))
+  // const prematchCore = expressSC.try_core()
 
-  if (prematchCore.reverted) {
-    context.log.error(`core reverted.`)
-    return null
-  }
+  // if (prematchCore.reverted) {
+  //   context.log.error(`core reverted.`)
+  //   return null
+  // }
 
-  return prematchCore.value.toHexString()
+  // return prematchCore.value.toHexString()
+
+  return ""
 }
 
 
@@ -71,60 +74,60 @@ export function createExpressPrematchRelationEntity(
 
 
 export function connectCore(coreAddress: string, coreType: string, context: FactoryContract_NewCoreEvent_handlerContext): void {
-  const coreAddressTyped = coreAddress
+  // const coreAddressTyped = coreAddress
 
-  if (coreType === CORE_TYPE_PRE_MATCH) {
-    CoreV2.create(coreAddressTyped)
+  // if (coreType === CORE_TYPE_PRE_MATCH) {
+  //   CoreV2.create(coreAddressTyped)
 
-    const coreSC = CoreAbiV2.bind(coreAddressTyped)
+  //   const coreSC = CoreAbiV2.bind(coreAddressTyped)
 
-    const azuroBetAddress = coreSC.try_azuroBet()
+  //   const azuroBetAddress = coreSC.try_azuroBet()
 
-    if (azuroBetAddress.reverted) {
-      context.log.error(`handleNewPool call azuroBet reverted`)
-      return
-    }
+  //   if (azuroBetAddress.reverted) {
+  //     context.log.error(`handleNewPool call azuroBet reverted`)
+  //     return
+  //   }
 
-    createAzuroBetEntity(coreAddress, azuroBetAddress.value.toHexString(), context)
+  //   createAzuroBetEntity(coreAddress, azuroBetAddress.value.toHexString(), context)
 
-    AzuroBet.create(azuroBetAddress.value)
-  }
-  else if (coreType === CORE_TYPE_PRE_MATCH_V2) {
-    CoreV3.create(coreAddressTyped)
+  //   AzuroBet.create(azuroBetAddress.value)
+  // }
+  // else if (coreType === CORE_TYPE_PRE_MATCH_V2) {
+  //   CoreV3.create(coreAddressTyped)
 
-    const coreSC = CoreAbiV3.bind(coreAddressTyped)
+  //   const coreSC = CoreAbiV3.bind(coreAddressTyped)
 
-    const azuroBetAddress = coreSC.try_azuroBet()
+  //   const azuroBetAddress = coreSC.try_azuroBet()
 
-    if (azuroBetAddress.reverted) {
-      context.log.error(`handleNewPool call azuroBet reverted`)
-      return
-    }
+  //   if (azuroBetAddress.reverted) {
+  //     context.log.error(`handleNewPool call azuroBet reverted`)
+  //     return
+  //   }
 
-    createAzuroBetEntity(coreAddress, azuroBetAddress.value.toHexString(), context)
+  //   createAzuroBetEntity(coreAddress, azuroBetAddress.value.toHexString(), context)
 
-    AzuroBet.create(azuroBetAddress.value)
-  }
-  else if (coreType === CORE_TYPE_LIVE) {
-    LiveCoreV1.create(coreAddressTyped)
+  //   AzuroBet.create(azuroBetAddress.value)
+  // }
+  // else if (coreType === CORE_TYPE_LIVE) {
+  //   LiveCoreV1.create(coreAddressTyped)
 
-    const coreSC = LiveCoreAbiV1.bind(coreAddressTyped)
+  //   const coreSC = LiveCoreAbiV1.bind(coreAddressTyped)
 
-    const azuroBetAddress = coreSC.try_azuroBet()
+  //   const azuroBetAddress = coreSC.try_azuroBet()
 
-    if (azuroBetAddress.reverted) {
-      context.log.error(`handleNewPool call azuroBet reverted`)
-      return
-    }
+  //   if (azuroBetAddress.reverted) {
+  //     context.log.error(`handleNewPool call azuroBet reverted`)
+  //     return
+  //   }
 
-    createAzuroBetEntity(coreAddress, azuroBetAddress.value.toHexString(), context)
+  //   createAzuroBetEntity(coreAddress, azuroBetAddress.value.toHexString(), context)
 
-    AzuroBet.create(azuroBetAddress.value)
-  }
-  else if (coreType === CORE_TYPE_EXPRESS) {
-    ExpressV2.create(coreAddressTyped)
-  }
-  else if (coreType === CORE_TYPE_EXPRESS_V2) {
-    ExpressV3.create(coreAddressTyped)
-  }
+  //   AzuroBet.create(azuroBetAddress.value)
+  // }
+  // else if (coreType === CORE_TYPE_EXPRESS) {
+  //   ExpressV2.create(coreAddressTyped)
+  // }
+  // else if (coreType === CORE_TYPE_EXPRESS_V2) {
+  //   ExpressV3.create(coreAddressTyped)
+  // }
 }

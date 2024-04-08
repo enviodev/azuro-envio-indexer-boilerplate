@@ -21,7 +21,7 @@ FreeBetv3Contract_NewBet_handler(({ event, context }) => {
   }
 
   const freebetContractEntity = context.FreebetContract.get(event.srcAddress)!
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool)!
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id)!
 
   const freebetEntity = createFreebet(
     VERSION_V3,

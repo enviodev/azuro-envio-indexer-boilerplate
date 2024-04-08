@@ -17,56 +17,58 @@ Expressv2Contract_NewBet_handler(({ event, context }) => {
   let outcomeEntities: OutcomeEntity[] = []
   let conditionOdds: bigint[] = []
 
-  for (let i = 0; i < event.params.bet.subBets.length; i++) {
-    const bet = event.params.bet.subBets[i]
+  console.log("Expressv2Contract_NewBet_handler: ", event.srcAddress)
 
-    const conditionEntityId = prematchAddress + "_" + bet.conditionId.toString()
-    const conditionEntity = context.Condition.get(conditionEntityId)
+  // for (let i = 0; i < event.params.bet.subBets.length; i++) {
+  //   const bet = event.params.bet.subBets[i]
 
-    // TODO remove later
-    if (!conditionEntity) {
-      context.log.error(`v2 handleNewBet express conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-      return
-    }
+  //   const conditionEntityId = prematchAddress + "_" + bet.conditionId.toString()
+  //   const conditionEntity = context.Condition.get(conditionEntityId)
 
-    conditionEntities[i] = conditionEntity
+  //   // TODO remove later
+  //   if (!conditionEntity) {
+  //     context.log.error(`v2 handleNewBet express conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+  //     return
+  //   }
 
-    const outcomeEntityId = conditionEntityId +  bet.outcomeId.toString()
-    const outcomeEntity = context.Outcome.get(outcomeEntityId)
+  //   conditionEntities[i] = conditionEntity
 
-    // TODO remove later
-    if (!outcomeEntity) {
-      context.log.error(`v2 handleNewBet express outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
-      return
-    }
+  //   const outcomeEntityId = conditionEntityId +  bet.outcomeId.toString()
+  //   const outcomeEntity = context.Outcome.get(outcomeEntityId)
 
-    outcomeEntities[i] = outcomeEntity
+  //   // TODO remove later
+  //   if (!outcomeEntity) {
+  //     context.log.error(`v2 handleNewBet express outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
+  //     return
+  //   }
 
-    conditionOdds[i] = event.params.bet.conditionOdds[i]
-  }
+  //   outcomeEntities[i] = outcomeEntity
 
-  const lp = context.CoreContract.get(prematchAddress)!.liquidityPool_id
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
+  //   conditionOdds[i] = event.params.bet.conditionOdds[i]
+  // }
 
-  createBet(
-    VERSION_V2,
-    BET_TYPE_EXPRESS.toString(),
-    conditionEntities,
-    outcomeEntities,
-    conditionOdds,
-    event.params.bet.odds,
-    expressAddress,
-    event.params.bettor,
-    event.params.bet.affiliate,
-    event.params.betId,
-    liquidityPoolContractEntity.tokenDecimals,
-    event.params.bet.amount,
-    event.transactionHash,
-    event.blockTimestamp,
-    event.blockNumber,
-    null,
-    context,
-  )
+  // const lp = context.CoreContract.get(prematchAddress)!.liquidityPool_id
+  // const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
+
+  // createBet(
+  //   VERSION_V2,
+  //   BET_TYPE_EXPRESS.toString(),
+  //   conditionEntities,
+  //   outcomeEntities,
+  //   conditionOdds,
+  //   event.params.bet.odds,
+  //   expressAddress,
+  //   event.params.bettor,
+  //   event.params.bet.affiliate,
+  //   event.params.betId,
+  //   liquidityPoolContractEntity.tokenDecimals,
+  //   event.params.bet.amount,
+  //   event.transactionHash,
+  //   event.blockTimestamp,
+  //   event.blockNumber,
+  //   null,
+  //   context,
+  // )
 });
 
 Expressv2Contract_Transfer_loader(({ event, context }) => { });

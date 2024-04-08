@@ -78,43 +78,45 @@ LPv2Contract_LiquidityManagerChanged_handler(({ event, context }) => {
 
 LPv2Contract_LiquidityRemoved_loader(({ event, context }) => {});
 LPv2Contract_LiquidityRemoved_handler(({ event, context }) => {
-  let isFullyWithdrawn = false
+  // let isFullyWithdrawn = false
 
-  const liquidityPoolSC = LPAbi.bind(event.srcAddress)
-  const nodeWithdrawView = liquidityPoolSC.try_nodeWithdrawView(event.params.depositId)
+  // const liquidityPoolSC = LPAbi.bind(event.srcAddress)
+  // const nodeWithdrawView = liquidityPoolSC.try_nodeWithdrawView(event.params.depositId)
 
-  if (!nodeWithdrawView.reverted && nodeWithdrawView.value.equals(ZERO_ADDRESS)) {
-    isFullyWithdrawn = true
-  }
+  // if (!nodeWithdrawView.reverted && nodeWithdrawView.value.equals(ZERO_ADDRESS)) {
+  //   isFullyWithdrawn = true
+  // }
 
-  withdrawLiquidity(
-    event.srcAddress,
-    event.params.amount,
-    event.params.depositId,
-    event.params.account,
-    isFullyWithdrawn,
-    event.blockNumber,
-    event.blockTimestamp,
-    event.transactionHash,
-    event.chainId,
-    context
-  )
+  // withdrawLiquidity(
+  //   event.srcAddress,
+  //   event.params.amount,
+  //   event.params.depositId,
+  //   event.params.account,
+  //   isFullyWithdrawn,
+  //   event.blockNumber,
+  //   event.blockTimestamp,
+  //   event.transactionHash,
+  //   event.chainId,
+  //   context
+  // )
+
+  console.log("LPv2Contract_LiquidityRemoved_handler: ", event.srcAddress)
 });
 
 LPv2Contract_NewGame_loader(({ event, context }) => {}); // new game v2 vs v3? // assuming v2 for now
 LPv2Contract_NewGame_handler(({ event, context }) => {
-  const network = dataSource.network()
+  // const network = dataSource.network()
 
-  createGame(
-    event.srcAddress,
-    event.params.gameId,
-    event.params.data,
-    null,
-    event.params.startsAt,
-    network,
-    event.transactionHash,
-    event.blockNumber,
-  )
+  // createGame(
+  //   event.srcAddress,
+  //   event.params.gameId,
+  //   event.params.data,
+  //   null,
+  //   event.params.startsAt,
+  //   network,
+  //   event.transactionHash,
+  //   event.blockNumber,
+  // )
 });
 
 LPv2Contract_Transfer_loader(({ event, context }) => {});

@@ -2,9 +2,9 @@ import { ContractAbi, Web3 } from "web3";
 
 import { Cache, CacheCategory } from "../lib/cache";
 
-import { Condition } from "../utils/types";
-
 import { CHAIN_CONSTANTS } from "../constants";
+
+import { Condition } from "../utils/types";
 
 type OriginalConditionResult = {
     fundBank: [string, string]; // or [BN, BN] if using BN objects
@@ -22,17 +22,17 @@ type OriginalConditionResult = {
 };
 
 // LPv1 Contract ABI
-const contractABI = require("../../abis/LiveCoreV1.json");
+const contractABI = require("../../abis/CoreV3.json");
 
 // Function to get ERC20 token address from the liquidity pool contract
-export async function getLiveConditionFromId(
+export async function getConditionV3FromId(
     contractAddress: string,
     chainId: number,
     _conditionId: bigint,
 ): Promise<{
     readonly condition: Condition;
 }> {
-    console.log("livecore", contractAddress)
+    console.log("getConditionV3FromId", contractAddress)
 
     const conditionId = _conditionId.toString();
     const cache = Cache.init(CacheCategory.ConditionV1, chainId);
@@ -49,10 +49,10 @@ export async function getLiveConditionFromId(
     const web3 = new Web3(rpcURL);
 
     // Create LPv1 contract instance
-    const liveCoreContract = new web3.eth.Contract(contractABI, contractAddress);
+    const corev3Contract = new web3.eth.Contract(contractABI, contractAddress);
 
     try {
-        const _result = await Promise.resolve(liveCoreContract.methods.getCondition(conditionId).call()) as unknown;
+        const _result = await corev3Contract.methods.getCondition(conditionId).call() as unknown;
         const result = _result as OriginalConditionResult;
 
         const condition: Condition = {

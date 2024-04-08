@@ -4,6 +4,7 @@ import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal } from "../utils/math"
 import { getEntityId } from "../utils/schema"
+import { Mutable } from "../utils/types"
 
 
 export function transferBet(
