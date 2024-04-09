@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { type } from "os";
 import * as path from "path";
-import { ConditionV1, ConditionV1Response } from "../utils/types";
+import { ConditionV1Response, ConditionV2Response } from "../utils/types";
 
 export const CacheCategory = {
   Token: "token",
@@ -9,6 +9,7 @@ export const CacheCategory = {
   LPv1Bet: "lpv1bet",
   FreebetV1Contract: "freebetv1",
   ConditionV1: "conditionv1",
+  ConditionV2: "conditionv2",
   LPv1NodeWithdrawView: "lpv1nodewithdrawview",
 } as const;
 
@@ -31,7 +32,9 @@ type ShapeFreebetV1 = Shape & Record<Address, { name: string; lp: string }>;
 
 type ShapeConditionV1 = Shape & Record<ConditionId, { condition: ConditionV1Response }>;
 
-type ShapeLpv1NodeWithdrawView = Shape & Record<Address, { withdrawAmount: bigint }>;
+type ShapeConditionV2 = Shape & Record<ConditionId, { condition: ConditionV2Response }>;
+
+type ShapeLpv1NodeWithdrawView = Shape & Record<Address, { withdrawAmount: string }>;
 
 export class Cache {
   static init<C = CacheCategory>(
@@ -52,6 +55,8 @@ export class Cache {
       ? ShapeLpv1NodeWithdrawView
       : C extends "conditionv1"
       ? ShapeConditionV1
+      : C extends "conditionv2"
+      ? ShapeConditionV2
       : C extends "freebetv1"
       ? ShapeFreebetV1
       : ShapeRoot;

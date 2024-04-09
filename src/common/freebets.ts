@@ -1,4 +1,4 @@
-import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreebetContractEntity, FreebetEntity, XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs, eventLog } from "../../generated/src/Types.gen";
+import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContextAsync, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreebetContractEntity, FreebetEntity, XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs, eventLog } from "../../generated/src/Types.gen";
 import { FREEBET_STATUS_CREATED, FREEBET_STATUS_REDEEMED } from "../constants";
 
 export function createFreebetContractEntity(
@@ -37,7 +37,7 @@ export function createFreebet(
   coreAddress: string | undefined,
   azuroBetId: bigint | undefined,
   createBlock: number,
-  context: FreeBetContract_FreeBetMintedEvent_handlerContext,
+  context: FreeBetContract_FreeBetMintedEvent_handlerContextAsync,
 ): FreebetEntity {
   const freebetEntityId = freebetContractAddress + '_' + freebetId.toString()
 

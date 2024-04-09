@@ -9,6 +9,8 @@ import { ConditionV1, ConditionV1Response } from "../utils/types";
 // LPv1 Contract ABI
 const contractABI = require("../../abis/CoreV1.json");
 
+// 0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d
+// https://rpc.ankr.com/gnosis
 export async function getConditionV1FromId(
     contractAddress: string,
     chainId: number,
@@ -38,38 +40,6 @@ export async function getConditionV1FromId(
         const _result = await corev1Contract.methods.getCondition(conditionId).call() as unknown;
         const result = _result as ConditionV1Response;
         
-        // console.log(`result ${result.fundBank[0]}`)
-        // const conditionString = {
-        //     fundBank: [result.fundBank[0].toLowerCase(), result.fundBank[1].toLowerCase()],
-        //     payouts: [result.payouts[0].toLowerCase(), result.payouts[1].toLowerCase()],
-        //     totalNetBets: [result.totalNetBets[0].toLowerCase(), result.totalNetBets[1].toLowerCase()],
-        //     reinforcement: result.reinforcement.toLowerCase(),
-        //     margin: result.margin.toLowerCase(),
-        //     ipfsHash: result.ipfsHash.toLowerCase(),
-        //     outcomes: [result.outcomes[0].toLowerCase(), result.outcomes[1].toLowerCase()],
-        //     scopeId: result.scopeId.toLowerCase(),
-        //     outcomeWin: result.outcomeWin.toLowerCase(),
-        //     timestamp: result.timestamp.toLowerCase(),
-        //     state: result.state.toLowerCase(),
-        //     leaf: result.leaf.toLowerCase(),
-        // };
-
-        // const condition: ConditionV1Response = {
-        //     fundBank: [result.fundBank[0], result.fundBank[1]],
-        //     payouts: [result.payouts[0], result.payouts[1]],
-        //     totalNetBets: [result.totalNetBets[0], result.totalNetBets[1]],
-        //     reinforcement: result.reinforcement,
-        //     margin: result.margin,
-        //     ipfsHash: result.ipfsHash,
-        //     outcomes: [result.outcomes[0], result.outcomes[1]],
-        //     scopeId: result.scopeId,
-        //     outcomeWin: result.outcomeWin,
-        //     timestamp: result.timestamp,
-        //     state: result.state,
-        //     leaf: result.leaf,
-        // };
-
-        // put toString().toLowerCase() on all the values
         const condition: ConditionV1Response = {
             fundBank: [result.fundBank[0].toString().toLowerCase(), result.fundBank[1].toString().toLowerCase()],
             payouts: [result.payouts[0].toString().toLowerCase(), result.payouts[1].toString().toLowerCase()],

@@ -32,3 +32,36 @@ export type ConditionV1Response = {
   state: string; // Solidity enums are returned as strings representing numbers
   leaf: string; // or BN
 };
+
+
+
+export type ConditionV2 = {
+  gameId: bigint;
+  funds: [bigint, bigint];
+  virtualFunds: [bigint, bigint];
+  reinforcement: bigint;
+  affiliatesReward: bigint;
+  outcomes: [bigint, bigint];
+  outcomeWin: bigint;
+  margin: bigint;
+  oracle: string;
+  endsAt: bigint;
+  state: bigint;
+  leaf: bigint;
+};
+
+
+export type ConditionV2Response = {
+  gameId: string;
+  funds: [string, string];
+  virtualFunds: [string, string];
+  reinforcement: string;
+  affiliatesReward: string;
+  outcomes: [string, string];
+  outcomeWin: string;
+  margin: string;
+  oracle: string;
+  endsAt: string;
+  state: string;
+  leaf: string;
+}

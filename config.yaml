@@ -64,6 +64,7 @@ contracts:
       - event: LiquidityDonated(address indexed account, uint48 indexed depositId, uint256 amount)
       - event: LiquidityManagerChanged(address newLiquidityManager)
       - event: LiquidityRemoved(address indexed account, uint48 indexed depositId, uint256 amount)
+        isAsync: true
       - event: NewGame(uint256 indexed gameId, uint64 startsAt, bytes data) # TODO: This only imported v3 not v2 version which seems to be the same contract
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
       - event: WithdrawTimeoutChanged(uint64 newWithdrawTimeout)
@@ -72,12 +73,15 @@ contracts:
     events:
       - event: NewCore(address indexed lp, address indexed core, string indexed coreType)
       - event: NewPool(address indexed lp, address indexed core, string indexed coreType, address access)
+        isAsync: true
   - name: FreeBet
     handler: src/v2/freebet.ts
     events:
       - event: BettorWin(address indexed core, address indexed bettor, uint256 indexed azuroBetId, uint128 amount)
       - event: FreeBetMinted(address indexed receiver, uint256 indexed id, (uint128,uint64,uint64) bet)
+        isAsync: true
       - event: FreeBetMintedBatch(address[] receivers, uint256[] ids, (uint128,uint64,uint64)[] bets)
+        isAsync: true
       - event: FreeBetRedeemed(address indexed core, address indexed bettor, uint256 indexed id, uint256 azuroBetId, uint128 amount)
       - event: FreeBetReissued(address indexed receiver, uint256 indexed id, (uint128,uint64,uint64) bet)
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)

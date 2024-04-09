@@ -19,11 +19,13 @@ import {
   LPv2Contract_Transfer_handler,
   LPv2Contract_WithdrawTimeoutChanged_loader,
   LPv2Contract_WithdrawTimeoutChanged_handler,
+  LPv2Contract_LiquidityRemoved_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { bettorWin } from "../common/bets";
 import { cancelGame, createGame, shiftGame } from "../common/games";
 import { changeWithdrawalTimeout, depositLiquidity, transferLiquidity, updateLiquidityManager, withdrawLiquidity } from "../common/pool";
 import { ZERO_ADDRESS } from "../constants";
+import { getNodeWithdrawAmount } from "../contracts/lpv1";
 
 LPv2Contract_BettorWin_loader(({ event, context }) => {});
 LPv2Contract_BettorWin_handler(({ event, context }) => {
@@ -77,46 +79,45 @@ LPv2Contract_LiquidityManagerChanged_handler(({ event, context }) => {
 });
 
 LPv2Contract_LiquidityRemoved_loader(({ event, context }) => {});
-LPv2Contract_LiquidityRemoved_handler(({ event, context }) => {
-  // let isFullyWithdrawn = false
+LPv2Contract_LiquidityRemoved_handlerAsync(async ({ event, context }) => {
+  let isFullyWithdrawn = false
+  
+  const { withdrawAmount } = await getNodeWithdrawAmount(event.srcAddress, event.chainId, event.params.depositId)
 
-  // const liquidityPoolSC = LPAbi.bind(event.srcAddress)
-  // const nodeWithdrawView = liquidityPoolSC.try_nodeWithdrawView(event.params.depositId)
+  if (BigInt(withdrawAmount) === 0n) {
+    isFullyWithdrawn = true
+  }
 
-  // if (!nodeWithdrawView.reverted && nodeWithdrawView.value.equals(ZERO_ADDRESS)) {
-  //   isFullyWithdrawn = true
-  // }
-
-  // withdrawLiquidity(
-  //   event.srcAddress,
-  //   event.params.amount,
-  //   event.params.depositId,
-  //   event.params.account,
-  //   isFullyWithdrawn,
-  //   event.blockNumber,
-  //   event.blockTimestamp,
-  //   event.transactionHash,
-  //   event.chainId,
-  //   context
-  // )
-
-  console.log("LPv2Contract_LiquidityRemoved_handler: ", event.srcAddress)
+  withdrawLiquidity(
+    event.srcAddress,
+    event.params.amount,
+    event.params.depositId,
+    event.params.account,
+    isFullyWithdrawn,
+    event.blockNumber,
+    event.blockTimestamp,
+    event.transactionHash,
+    event.chainId,
+    context
+  )
 });
 
 LPv2Contract_NewGame_loader(({ event, context }) => {}); // new game v2 vs v3? // assuming v2 for now
 LPv2Contract_NewGame_handler(({ event, context }) => {
   // const network = dataSource.network()
 
-  // createGame(
-  //   event.srcAddress,
-  //   event.params.gameId,
-  //   event.params.data,
-  //   null,
-  //   event.params.startsAt,
-  //   network,
-  //   event.transactionHash,
-  //   event.blockNumber,
-  // )
+  createGame(
+    event.srcAddress,
+    event.params.gameId,
+    event.params.data,
+    null,
+    event.params.startsAt,
+    null, // network,
+    event.transactionHash,
+    BigInt(event.blockNumber),
+    BigInt(event.blockTimestamp),
+    context,
+  )
 });
 
 LPv2Contract_Transfer_loader(({ event, context }) => {});

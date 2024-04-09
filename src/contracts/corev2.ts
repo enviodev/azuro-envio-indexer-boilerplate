@@ -4,42 +4,26 @@ import { Cache, CacheCategory } from "../lib/cache";
 
 import { CHAIN_CONSTANTS } from "../constants";
 
-import { ConditionV1 } from "../utils/types";
+import { ConditionV2, ConditionV2Response } from "../utils/types";
 
-type OriginalConditionResult = {
-    fundBank: [string, string]; // or [BN, BN] if using BN objects
-    payouts: [string, string];
-    totalNetBets: [string, string];
-    reinforcement: string; // or BN
-    margin: string; // or BN
-    ipfsHash: string;
-    outcomes: [string, string];
-    scopeId: string; // or BN
-    outcomeWin: string; // or BN
-    timestamp: string; // or BN
-    state: string; // Solidity enums are returned as strings representing numbers
-    leaf: string; // or BN
-};
 
 // LPv1 Contract ABI
 const contractABI = require("../../abis/CoreV2.json");
 
-// Function to get ERC20 token address from the liquidity pool contract
+// 0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e
 export async function getConditionV2FromId(
     contractAddress: string,
     chainId: number,
     _conditionId: bigint,
 ): Promise<{
-    readonly condition: ConditionV1;
+    readonly condition: ConditionV2Response;
 }> {
-    console.log("getConditionV2FromId", contractAddress)
-
     const conditionId = _conditionId.toString();
-    const cache = Cache.init(CacheCategory.ConditionV1, chainId);
-    const condition = cache.read(conditionId);
+    const cache = Cache.init(CacheCategory.ConditionV2, chainId);
+    const _condition = cache.read(conditionId);
 
-    if (condition) {
-        return condition;
+    if (_condition) {
+        return _condition;
     }
 
     // RPC URL
@@ -50,24 +34,25 @@ export async function getConditionV2FromId(
 
     // Create LPv1 contract instance
     const corev2Contract = new web3.eth.Contract(contractABI, contractAddress);
+    console.log("contractAddress getCondtionv2", contractAddress)
 
     try {
         const _result = await corev2Contract.methods.getCondition(conditionId).call() as unknown;
-        const result = _result as OriginalConditionResult;
+        const result = _result as ConditionV2;
 
-        const condition: ConditionV1 = {
-            fundBank: [BigInt(result.fundBank[0]), BigInt(result.fundBank[1])],
-            payouts: [BigInt(result.payouts[0]), BigInt(result.payouts[1])],
-            totalNetBets: [BigInt(result.totalNetBets[0]), BigInt(result.totalNetBets[1])],
-            reinforcement: BigInt(result.reinforcement),
-            margin: BigInt(result.margin),
-            ipfsHash: result.ipfsHash,
-            outcomes: [BigInt(result.outcomes[0]), BigInt(result.outcomes[1])],
-            scopeId: BigInt(result.scopeId),
-            outcomeWin: BigInt(result.outcomeWin),
-            timestamp: BigInt(result.timestamp),
-            state: Number(result.state),
-            leaf: BigInt(result.leaf),
+        const condition: ConditionV2Response = {
+            gameId: result.gameId.toString().toLowerCase(),
+            funds: [result.funds[0].toString().toLowerCase(), result.funds[1].toString().toLowerCase()],
+            virtualFunds: [result.virtualFunds[0].toString().toLowerCase(), result.virtualFunds[1].toString().toLowerCase()],
+            reinforcement: result.reinforcement.toString().toLowerCase(),
+            affiliatesReward: result.affiliatesReward.toString().toLowerCase(),
+            outcomes: [result.outcomes[0].toString().toLowerCase(), result.outcomes[1].toString().toLowerCase()],
+            outcomeWin: result.outcomeWin.toString().toLowerCase(),
+            margin: result.margin.toString().toLowerCase(),
+            oracle: result.oracle.toString().toLowerCase(),
+            endsAt: result.endsAt.toString().toLowerCase(),
+            state: result.state.toString().toLowerCase(),
+            leaf: result.leaf.toString().toLowerCase(),
         };
 
         const entry = {
@@ -81,4 +66,23 @@ export async function getConditionV2FromId(
         console.error("An error occurred", err);
         throw err;
     }
+}
+
+
+export function deserialiseConditionV2Result(response: ConditionV2Response): ConditionV2 {
+    const condition: ConditionV2 = {
+        gameId: BigInt(response.gameId),
+        funds: [BigInt(response.funds[0]), BigInt(response.funds[1])],
+        virtualFunds: [BigInt(response.virtualFunds[0]), BigInt(response.virtualFunds[1])],
+        reinforcement: BigInt(response.reinforcement),
+        affiliatesReward: BigInt(response.affiliatesReward),
+        outcomes: [BigInt(response.outcomes[0]), BigInt(response.outcomes[1])],
+        outcomeWin: BigInt(response.outcomeWin),
+        margin: BigInt(response.margin),
+        oracle: response.oracle,
+        endsAt: BigInt(response.endsAt),
+        state: BigInt(response.state),
+        leaf: BigInt(response.leaf),
+    };
+    return condition;
 }

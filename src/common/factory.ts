@@ -1,4 +1,4 @@
-import { CoreContractEntity, CoreContract_LpChangedEvent_handlerContextAsync, ExpressPrematchRelationEntity, FactoryContract_NewCoreEvent_handlerContext, LiquidityPoolContractEntity } from "../../generated/src/Types.gen";
+import { CoreContractEntity, CoreContract_LpChangedEvent_handlerContextAsync, ExpressPrematchRelationEntity, FactoryContract_NewCoreEvent_handlerContext, FactoryContract_NewPoolEvent_handlerContextAsync, LiquidityPoolContractEntity } from "../../generated/src/Types.gen";
 import { CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2 } from "../constants";
 import { createAzuroBetEntity } from "./azurobet";
 
@@ -7,7 +7,7 @@ export function createCoreEntity(
   coreAddress: string,
   liquidityPoolContractEntity: LiquidityPoolContractEntity,
   coreType: string,
-  context: FactoryContract_NewCoreEvent_handlerContext | CoreContract_LpChangedEvent_handlerContextAsync,
+  context: FactoryContract_NewPoolEvent_handlerContextAsync | CoreContract_LpChangedEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext,
 ): CoreContractEntity {
   const coreContractEntity: CoreContractEntity = {
     id: coreAddress,
@@ -15,17 +15,17 @@ export function createCoreEntity(
     address: coreAddress,
     type_: coreType,
   }
-
   context.CoreContract.set(coreContractEntity)
-
   return coreContractEntity
 }
 
 
 export function getPrematchAddressByExpressAddressV2(
   expressAddress: string,
-  context: FactoryContract_NewCoreEvent_handlerContext,
+  context: FactoryContract_NewPoolEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext,
 ): string | null {
+  context.log.error(`getPrematchAddressByExpressAddressV2 expressAddress = ${expressAddress}`)
+  throw new Error("Method not implemented.")
   // const expressSC = ExpressAbiV2.bind(Address.fromString(expressAddress))
   // const prematchCore = expressSC.try_core()
 
@@ -59,25 +59,29 @@ export function getPrematchAddressByExpressAddressV3(
 
 export function createExpressPrematchRelationEntity(
   expressAddress: string,
-  prematchAddress: string,
-  context: FactoryContract_NewCoreEvent_handlerContext,
+  coreContractId: string,
+  context: FactoryContract_NewPoolEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext,
 ): ExpressPrematchRelationEntity {
   const expressPrematchRelationEntity: ExpressPrematchRelationEntity = {
     id: expressAddress,
-    prematchAddress: context.CoreContract.get(prematchAddress)!.id,
+    prematchAddress: coreContractId,
   }
-
   context.ExpressPrematchRelation.set(expressPrematchRelationEntity)
-
   return expressPrematchRelationEntity
 }
 
 
-export function connectCore(coreAddress: string, coreType: string, context: FactoryContract_NewCoreEvent_handlerContext): void {
+export function connectCore(
+  coreAddress: string, 
+  coreType: string, 
+  context: FactoryContract_NewPoolEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext
+): void {
+  console.log(coreAddress)
+  context.log.error(`connectCore coreAddress = ${coreAddress}`)
+  throw new Error("Method not implemented.")
   // const coreAddressTyped = coreAddress
 
   // if (coreType === CORE_TYPE_PRE_MATCH) {
-  //   CoreV2.create(coreAddressTyped)
 
   //   const coreSC = CoreAbiV2.bind(coreAddressTyped)
 

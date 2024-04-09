@@ -14,19 +14,22 @@ import {
 } from "../../generated/src/Handlers.gen";
 import { createCondition, pauseUnpauseCondition, resolveCondition, updateConditionOdds } from "../common/condition";
 import { BET_TYPE_ORDINAR, VERSION_V2 } from "../constants";
-import { getConditionV2FromId } from "../contracts/corev2";
+import { deserialiseConditionV2Result, getConditionV2FromId } from "../contracts/corev2";
 import { createBet } from "../common/bets";
 import { OutcomeEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
 // TODO: get contract addresses
 
-Corev2Contract_ConditionCreated_loader(({ event, context }) => { });
+Corev2Contract_ConditionCreated_loader(async ({ event, context }) => { 
+  context.CoreContract.load(event.srcAddress, {})
+});
 Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId)
+  const _conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId)
+  const conditionData = deserialiseConditionV2Result(_conditionData.condition)
 
   const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
   const gameEntityId = liquidityPoolAddress + "_" + event.params.gameId.toString()
@@ -44,10 +47,10 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     coreAddress,
     conditionId,
     gameEntity.id,
-    conditionData.condition.margin,
-    conditionData.condition.reinforcement,
-    conditionData.condition.outcomes,
-    conditionData.condition.fundBank, // TODO virtualFunds
+    conditionData.margin,
+    conditionData.reinforcement,
+    conditionData.outcomes,
+    conditionData.virtualFunds,
     1,
     false,
     gameEntity.provider,
@@ -60,7 +63,8 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 });
 
 Corev2Contract_ConditionResolved_loader(({ event, context }) => {
-
+  context.CoreContract.load(event.srcAddress, {})
+  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
 });
 Corev2Contract_ConditionResolved_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
@@ -90,7 +94,10 @@ Corev2Contract_ConditionResolved_handler(({ event, context }) => {
   )
 });
 
-Corev2Contract_ConditionStopped_loader(({ event, context }) => { });
+Corev2Contract_ConditionStopped_loader(({ event, context }) => {
+  context.CoreContract.load(event.srcAddress, {})
+  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+ });
 Corev2Contract_ConditionStopped_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
@@ -112,7 +119,10 @@ Corev2Contract_ConditionStopped_handler(({ event, context }) => {
   )
 });
 
-Corev2Contract_NewBet_loader(({ event, context }) => { });
+Corev2Contract_NewBet_loader(({ event, context }) => {
+  context.CoreContract.load(event.srcAddress, {})
+  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+ });
 Corev2Contract_NewBet_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
@@ -153,12 +163,16 @@ Corev2Contract_NewBet_handler(({ event, context }) => {
   )
  });
 
-Corev2Contract_OddsChanged_loader(({ event, context }) => { });
+Corev2Contract_OddsChanged_loader(({ event, context }) => {
+  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+  context.CoreContract.load(event.srcAddress, {})
+ });
 Corev2Contract_OddsChanged_handler(async ({ event, context }) => { 
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId)
+  const _conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId)
+  const conditionData = deserialiseConditionV2Result(_conditionData.condition)
 
   const conditionEntityId = coreAddress + "_" + conditionId.toString()
   const conditionEntity = context.Condition.get(conditionEntityId)
@@ -181,7 +195,7 @@ Corev2Contract_OddsChanged_handler(async ({ event, context }) => {
     VERSION_V2, 
     conditionEntity, 
     outcomesEntities, 
-    conditionData.condition.fundBank, // TODO virtualFunds 
+    conditionData.virtualFunds,
     event.blockNumber,
     context,
   )

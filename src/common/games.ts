@@ -1,6 +1,6 @@
 import { ContractCodeNotStoredError } from "web3"
 import { GAME_STATUS_CANCELED, GAME_STATUS_CREATED, TypedMap } from "../constants"
-import { CoreContract_ConditionCreatedEvent_handlerContextAsync, CountryEntity, GameEntity, LPv2Contract_GameCanceledEvent_handlerContext, LPv2Contract_GameShiftedEvent_handlerContext, LeagueEntity, SportEntity, SportHubEntity, participantEntity } from "../src/Types.gen"
+import { CoreContract_ConditionCreatedEvent_handlerContextAsync, CountryEntity, GameEntity, LPv2Contract_GameCanceledEvent_handlerContext, LPv2Contract_GameShiftedEvent_handlerContext, LPv2Contract_NewGameEvent_handlerContext, LPv2Contract_NewGameEvent_handlerContextAsync, LeagueEntity, SportEntity, SportHubEntity, participantEntity } from "../src/Types.gen"
 
 
 const DEFAULT_GAME: GameEntity = {
@@ -45,7 +45,7 @@ export function createGame(
     txHash: string,
     createBlockNumber: bigint,
     createBlockTimestamp: bigint,
-    context: CoreContract_ConditionCreatedEvent_handlerContextAsync,
+    context: CoreContract_ConditionCreatedEvent_handlerContextAsync | LPv2Contract_NewGameEvent_handlerContext,
 ): GameEntity {
 
     // let data: TypedMap<string, JSONValue> | null = null
