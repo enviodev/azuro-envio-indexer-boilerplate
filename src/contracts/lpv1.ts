@@ -89,17 +89,14 @@ export async function getAzuroBetAddress(
   }
 }
 
-
+// 0x204e7371Ade792c5C006fb52711c50a7efC843ed
 export async function getNodeWithdrawAmount(
   contractAddress: string,
   chainId: number,
   leaf: bigint,
 ): Promise<{
-  readonly withdrawAmount: bigint;
+  readonly withdrawAmount: string;
 }> {
-  console.log("getNodeWithdrawAmount",contractAddress)
-
-
   const cache = Cache.init(CacheCategory.LPv1NodeWithdrawView, chainId);
   const lpv1 = cache.read(contractAddress.toLowerCase());
 
@@ -119,9 +116,9 @@ export async function getNodeWithdrawAmount(
   try {
     const _withdrawAmount = await _lpv1.methods.nodeWithdrawView(leaf.toString()).call() as unknown;
     const withdrawAmount = _withdrawAmount as bigint;
-
+    
     const entry = {
-      withdrawAmount: withdrawAmount,
+      withdrawAmount: withdrawAmount.toString(),
     } as const;
 
     cache.add({ [contractAddress.toLowerCase()]: entry as any });

@@ -17,7 +17,7 @@ Expressv2Contract_NewBet_handler(({ event, context }) => {
   let outcomeEntities: OutcomeEntity[] = []
   let conditionOdds: bigint[] = []
 
-  console.log("Expressv2Contract_NewBet_handler: ", event.srcAddress)
+  context.log.debug(`Expressv2Contract_NewBet_handler: ${event.srcAddress}`)
 
   // for (let i = 0; i < event.params.bet.subBets.length; i++) {
   //   const bet = event.params.bet.subBets[i]

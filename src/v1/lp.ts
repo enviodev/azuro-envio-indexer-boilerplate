@@ -47,17 +47,17 @@ LPContract_LiquidityAdded_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
 });
 LPContract_LiquidityAdded_handler(({ event, context }) => {
-  depositLiquidity(
-    event.srcAddress,
-    event.params.amount,
-    event.params.leaf,
-    event.params.account,
-    event.blockNumber,
-    event.blockTimestamp,
-    event.transactionHash,
-    event.chainId,
-    context,
-  )
+  // depositLiquidity(
+  //   event.srcAddress,
+  //   event.params.amount,
+  //   event.params.leaf,
+  //   event.params.account,
+  //   event.blockNumber,
+  //   event.blockTimestamp,
+  //   event.transactionHash,
+  //   event.chainId,
+  //   context,
+  // )
 });
 
 LPContract_LiquidityRemoved_loader(({ event, context }) => {
@@ -65,25 +65,25 @@ LPContract_LiquidityRemoved_loader(({ event, context }) => {
 });
 LPContract_LiquidityRemoved_handler(async ({ event, context }) => {
 
-  const nodeWithdrawView = await getNodeWithdrawAmount(
-    event.srcAddress,
-    event.chainId,
-    event.params.leaf
-  )
-  const isFullyWithdrawn = nodeWithdrawView.withdrawAmount === 0n ? true : false
+  // const nodeWithdrawView = await getNodeWithdrawAmount(
+  //   event.srcAddress,
+  //   event.chainId,
+  //   event.params.leaf
+  // )
+  // const isFullyWithdrawn = nodeWithdrawView.withdrawAmount === 0n ? true : false
 
-  withdrawLiquidity(
-    event.srcAddress,
-    event.params.amount,
-    event.params.leaf,
-    event.params.account,
-    isFullyWithdrawn,
-    event.blockNumber,
-    event.blockTimestamp,
-    event.transactionHash,
-    event.chainId,
-    context,
-  )
+  // withdrawLiquidity(
+  //   event.srcAddress,
+  //   event.params.amount,
+  //   event.params.leaf,
+  //   event.params.account,
+  //   isFullyWithdrawn,
+  //   event.blockNumber,
+  //   event.blockTimestamp,
+  //   event.transactionHash,
+  //   event.chainId,
+  //   context,
+  // )
 });
 
 LPContract_LiquidityRequested_loader(({ event, context }) => { });
@@ -93,63 +93,63 @@ LPContract_NewBet_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
 });
 LPContract_NewBet_handler(({ event, context }) => {
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
+  // const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
 
-  if (!liquidityPoolContractEntity) {
-    context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${event.srcAddress}`);
-  }
+  // if (!liquidityPoolContractEntity) {
+  //   context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${event.srcAddress}`);
+  // }
 
-  const coreAddress = liquidityPoolContractEntity?.coreAddresses![0]
+  // const coreAddress = liquidityPoolContractEntity?.coreAddresses![0]
 
-  const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
-  const conditionEntity = context.Condition.get(conditionEntityId)
+  // const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
+  // const conditionEntity = context.Condition.get(conditionEntityId)
 
-  if (!conditionEntity) {
-    context.log.error(`v1 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
-  }
+  // if (!conditionEntity) {
+  //   context.log.error(`v1 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+  //   return
+  // }
 
-  const outcomeEntityId = getEntityId(conditionEntity.id,event.params.outcomeId.toString())
-  const outcomeEntity = context.Outcome.get(outcomeEntityId)!
+  // const outcomeEntityId = getEntityId(conditionEntity.id,event.params.outcomeId.toString())
+  // const outcomeEntity = context.Outcome.get(outcomeEntityId)!
 
-  createBet(
-    VERSION_V1,
-    BET_TYPE_ORDINAR.toString(),
-    [conditionEntity],
-    [outcomeEntity],
-    [event.params.odds],
-    event.params.odds,
-    conditionEntity.coreAddress,
-    event.params.owner,
-    null,
-    event.params.betId,
-    liquidityPoolContractEntity.tokenDecimals,
-    event.params.amount,
-    event.transactionHash,
-    event.blockTimestamp,
-    event.blockNumber,
-    [event.params.fund1, event.params.fund2],
-    context,
-  )
+  // createBet(
+  //   VERSION_V1,
+  //   BET_TYPE_ORDINAR.toString(),
+  //   [conditionEntity],
+  //   [outcomeEntity],
+  //   [event.params.odds],
+  //   event.params.odds,
+  //   conditionEntity.coreAddress,
+  //   event.params.owner,
+  //   null,
+  //   event.params.betId,
+  //   liquidityPoolContractEntity.tokenDecimals,
+  //   event.params.amount,
+  //   event.transactionHash,
+  //   event.blockTimestamp,
+  //   event.blockNumber,
+  //   [event.params.fund1, event.params.fund2],
+  //   context,
+  // )
 });
 
 LPContract_Transfer_loader(({ event, context }) => {
   context.LiquidityPoolNft.load(getEntityId(event.srcAddress, event.params.tokenId.toString()), {})
 });
 LPContract_Transfer_handler(({ event, context }) => {
-  if (event.params.from === ZERO_ADDRESS) {
-    return
-  }
+  // if (event.params.from === ZERO_ADDRESS) {
+  //   return
+  // }
 
-  transferLiquidity(
-    event.srcAddress,
-    event.params.tokenId,
-    event.params.to,
-    context,
-  )
+  // transferLiquidity(
+  //   event.srcAddress,
+  //   event.params.tokenId,
+  //   event.params.to,
+  //   context,
+  // )
 });
 
 LPContract_WithdrawTimeoutChanged_loader(({ event, context }) => { });
 LPContract_WithdrawTimeoutChanged_handler(({ event, context }) => { 
-  changeWithdrawalTimeout(event.srcAddress, event.params.newWithdrawTimeout, context)
+  // changeWithdrawalTimeout(event.srcAddress, event.params.newWithdrawTimeout, context)
 });

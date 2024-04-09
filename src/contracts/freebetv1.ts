@@ -7,7 +7,8 @@ import { CHAIN_CONSTANTS } from "../constants";
 // ERC20 Contract ABI
 const contractABI = require("../../abis/FreebetV1.json");
 
-// Function to get ERC20 token details
+// Should work for both FreebetV1 and FreebetV2
+// since they have the same functions for name and LP
 export async function getLPAndNameOfFreebetV1Details(
   contractAddress: string,
   chainId: number

@@ -1,4 +1,4 @@
-import { CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_LpChangedEvent_handlerContextAsync, LPv2Contract_LiquidityAddedEvent_handlerContext, LPv2Contract_LiquidityManagerChangedEvent_handlerContext, LPv2Contract_LiquidityRemovedEvent_handlerContext, LPv2Contract_TransferEvent_handlerContext, LPv2Contract_WithdrawTimeoutChangedEvent_handlerContext, LiquidityPoolContractEntity, LiquidityPoolNftEntity, LiquidityPoolTransactionEntity } from "../../generated/src/Types.gen";
+import { CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_LpChangedEvent_handlerContextAsync, LPv2Contract_LiquidityAddedEvent_handlerContext, LPv2Contract_LiquidityManagerChangedEvent_handlerContext, LPv2Contract_LiquidityRemovedEvent_handlerContext, LPv2Contract_LiquidityRemovedEvent_handlerContextAsync, LPv2Contract_TransferEvent_handlerContext, LPv2Contract_WithdrawTimeoutChangedEvent_handlerContext, LiquidityPoolContractEntity, LiquidityPoolNftEntity, LiquidityPoolTransactionEntity } from "../../generated/src/Types.gen";
 
 import { getErc20TokenDetails, getErc20TokenBalance } from "../contracts/erc20";
 
@@ -15,9 +15,9 @@ async function updatePoolOnCommonEvents(
   blockNumber: number,
   blockTimestamp: number,
   chainId: number,
-  context: LPv2Contract_LiquidityAddedEvent_handlerContext,
+  context: LPv2Contract_LiquidityAddedEvent_handlerContext | LPv2Contract_LiquidityRemovedEvent_handlerContextAsync,
 ) {
-  const liquidityPoolContractEntity: LiquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress)!;
+  const liquidityPoolContractEntity: LiquidityPoolContractEntity = (await context.LiquidityPoolContract.get(liquidityPoolAddress))!;
 
   context.LiquidityPoolContract.set({
     ...liquidityPoolContractEntity,
@@ -60,7 +60,7 @@ async function updatePoolOnCommonEvents(
 }
 
 export async function createPoolEntity(
-  version: string,
+  version: typeof VERSION_V1 | typeof VERSION_V2,
   coreAddress: string,
   liquidityPoolAddress: string,
   tokenAddress: string,
@@ -70,16 +70,13 @@ export async function createPoolEntity(
   context: CoreContract_LpChangedEvent_handlerContextAsync,
 ): Promise<LiquidityPoolContractEntity> {
   const { decimals, symbol } = await getErc20TokenDetails(tokenAddress, chainId);
-
-  const tokenBalance = await getErc20TokenBalance(tokenAddress, liquidityPoolAddress, chainId)
-
-  const _version = version as typeof VERSION_V1 | typeof VERSION_V2
+  const tokenBalance = await getErc20TokenBalance(tokenAddress, liquidityPoolAddress, chainId);
 
   const liquidityPoolContractEntity: LiquidityPoolContractEntity = {
     id: liquidityPoolAddress,
     address: liquidityPoolAddress,
     coreAddresses: [coreAddress],
-    type_: _version,
+    type_: version,
     token: tokenAddress,
     version: version,
     chainId: chainId,
@@ -183,7 +180,7 @@ export function depositLiquidity(
 }
 
 
-export function withdrawLiquidity(
+export async function withdrawLiquidity(
   liquidityPoolAddress: string,
   amount: bigint,
   leaf: bigint,
@@ -193,9 +190,9 @@ export function withdrawLiquidity(
   blockTimestamp: number,
   txHash: string,
   chainId: number,
-  context: LPv2Contract_LiquidityRemovedEvent_handlerContext,
-): LiquidityPoolTransactionEntity | null {
-  const liquidityPoolContractEntity: LiquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress)!;
+  context: LPv2Contract_LiquidityRemovedEvent_handlerContextAsync,
+): Promise<LiquidityPoolTransactionEntity | null> {
+  const liquidityPoolContractEntity: LiquidityPoolContractEntity = (await context.LiquidityPoolContract.get(liquidityPoolAddress))!;
 
   // TODO remove later
   if (!liquidityPoolContractEntity) {
@@ -218,7 +215,7 @@ export function withdrawLiquidity(
   updatePoolOnCommonEvents(liquidityPoolAddress, blockNumber, blockTimestamp, chainId, context)
 
   const liquidityPoolNftEntityId = liquidityPoolAddress + "_" + leaf.toString()
-  const liquidityPoolNftEntity = context.LiquidityPoolNft.get(liquidityPoolNftEntityId)
+  const liquidityPoolNftEntity = await context.LiquidityPoolNft.get(liquidityPoolNftEntityId)
 
   // TODO remove later
   if (!liquidityPoolNftEntity) {

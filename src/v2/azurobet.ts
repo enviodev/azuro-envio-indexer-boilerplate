@@ -6,7 +6,7 @@ import {
   
   Azurobetv2Contract_Transfer_loader(({ event, context }) => {
     context.Bet.load(event.srcAddress, {});
-    context.AzuroBetContract.load(event.srcAddress, {}); // correct this
+    // context.AzuroBetContract.load(event.srcAddress, {}); // correct this
   });
   Azurobetv2Contract_Transfer_handler(({ event, context }) => {
     transferBet(

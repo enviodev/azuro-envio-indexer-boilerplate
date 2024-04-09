@@ -11,48 +11,39 @@ import {
   FreeBetContract_FreeBetReissued_handler,
   FreeBetContract_Transfer_loader,
   FreeBetContract_Transfer_handler,
+  FreeBetContract_FreeBetMinted_handlerAsync,
+  FreeBetContract_FreeBetMintedBatch_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { linkBetWithFreeBet } from "../common/bets";
 import { createFreebet, createFreebetContractEntity, redeemFreebet, reissueFreebet, resolveFreebet, transferFreebet, withdrawFreebet } from "../common/freebets";
 import { VERSION_V2, ZERO_ADDRESS } from "../constants";
-import { FreeBetContract_FreeBetMintedEvent_handlerContext, FreebetContractEntity } from "../src/Types.gen";
+import { getLPAndNameOfFreebetV1Details } from "../contracts/freebetv1";
+import { FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContextAsync, FreebetContractEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
-function getOrCreateFreebetContract(
+async function getOrCreateFreebetContract(
   freebetContractAddress: string,
   chainId: number,
-  context: FreeBetContract_FreeBetMintedEvent_handlerContext,
-): FreebetContractEntity | null {
-  // let freebetContractEntity = context.FreebetContract.get(freebetContractAddress)
+  context: FreeBetContract_FreeBetMintedEvent_handlerContextAsync,
+): Promise<FreebetContractEntity | null> {
+  context.log.debug(`v2 getOrCreateFreebetContract freebetContractAddress = ${freebetContractAddress}`)
+  let freebetContractEntity = await context.FreebetContract.get(freebetContractAddress)
 
-  // if (freebetContractEntity) {
-  //   return freebetContractEntity
-  // }
+  if (freebetContractEntity) {
+    return freebetContractEntity
+  }
 
-  // const freebetSC = Freebet.bind(freebetContractAddress)
+  const { lp, name } = await getLPAndNameOfFreebetV1Details(
+    freebetContractAddress,
+    chainId
+  );
 
-  // const lp = freebetSC.try_lp()
-
-  // if (lp.reverted) {
-  //   context.log.error(`v2 getOrCreateFreebetContract lp call reverted.`)
-
-  //   return null
-  // }
-
-  // const name = freebetSC.try_name()
-
-  // if (name.reverted) {
-  //   context.log.error(`v2 getOrCreateFreebetContract name call reverted.`)
-  //   return null
-  // }
-
-  // return createFreebetContractEntity(chainId.toString(), freebetContractAddress, lp.value.toHexString(), name.value.toString(), null, null)
-  
-  console.log("getOrCreateFreebetContract: ", freebetContractAddress)
-  return null
+  return createFreebetContractEntity(chainId.toString(), freebetContractAddress, lp, name, null, null)
 }
 
-FreeBetContract_BettorWin_loader(({ event, context }) => { });
+FreeBetContract_BettorWin_loader(({ event, context }) => { 
+  context.CoreContract.load(event.params.core, {});
+});
 FreeBetContract_BettorWin_handler(({ event, context }) => {
   const coreContractEntity = context.CoreContract.get(event.params.core)
 
@@ -80,14 +71,14 @@ FreeBetContract_BettorWin_handler(({ event, context }) => {
 });
 
 FreeBetContract_FreeBetMinted_loader(({ event, context }) => { });
-FreeBetContract_FreeBetMinted_handler(({ event, context }) => {
-  const freebetContractEntity = getOrCreateFreebetContract(event.srcAddress, event.chainId, context)
+FreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
+  const freebetContractEntity = await getOrCreateFreebetContract(event.srcAddress, event.chainId, context)
 
   if (!freebetContractEntity) {
     return
   }
 
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id)!
+  const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id))!
 
   createFreebet(
     VERSION_V2,
@@ -110,14 +101,14 @@ FreeBetContract_FreeBetMinted_handler(({ event, context }) => {
 });
 
 FreeBetContract_FreeBetMintedBatch_loader(({ event, context }) => { });
-FreeBetContract_FreeBetMintedBatch_handler(({ event, context }) => {
-  const freebetContractEntity = getOrCreateFreebetContract(event.srcAddress, event.chainId, context)
+FreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
+  const freebetContractEntity = await getOrCreateFreebetContract(event.srcAddress, event.chainId, context)
 
   if (!freebetContractEntity) {
     return
   }
 
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id)!
+  const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id))!
 
   for (let i = 0; i < event.params.ids.length; i++) {
     // parse FreeBetMintedBatch to multiple FreeBetMinted
