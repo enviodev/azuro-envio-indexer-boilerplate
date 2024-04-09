@@ -65,3 +65,35 @@ export type ConditionV2Response = {
   state: string;
   leaf: string;
 }
+
+
+// TODO
+export type ConditionV3 = {
+  gameId: bigint;
+  funds: [bigint, bigint];
+  virtualFunds: [bigint, bigint];
+  reinforcement: bigint;
+  affiliatesReward: bigint;
+  outcomes: [bigint, bigint];
+  outcomeWin: bigint;
+  margin: bigint;
+  oracle: string;
+  endsAt: bigint;
+  state: bigint;
+  leaf: bigint;
+};
+
+export type ConditionV3Response = {
+  gameId: string;
+  funds: [string, string];
+  virtualFunds: [string, string];
+  reinforcement: string;
+  affiliatesReward: string;
+  outcomes: [string, string];
+  outcomeWin: string;
+  margin: string;
+  oracle: string;
+  endsAt: string;
+  state: string;
+  leaf: string;
+}
