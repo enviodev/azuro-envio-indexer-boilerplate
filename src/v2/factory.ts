@@ -15,7 +15,7 @@ FactoryContract_NewCore_loader(({ event, context }) => { });
 FactoryContract_NewCore_handler(({ event, context }) => {
   const liquidityPoolAddress = event.params.lp
 
-  if (LP_WHITELIST.indexOf(liquidityPoolAddress) === -1) {
+  if (LP_WHITELIST.indexOf(liquidityPoolAddress.toLowerCase()) === -1) {
     context.log.warn(`v2 handleNewPool skip ${liquidityPoolAddress} because it isn\'t whitelisted`)
     return
   }
@@ -58,17 +58,15 @@ FactoryContract_NewPool_loader(({ event, context }) => {
   context.contractRegistration.addCorev2(event.params.core);
 });
 FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
-  console.log("FactoryContract_NewPool_handler: ", event.srcAddress)
-  
   const liquidityPoolAddress = event.params.lp
 
-  if (LP_WHITELIST.indexOf(liquidityPoolAddress) === -1) {
+  if (LP_WHITELIST.indexOf(liquidityPoolAddress.toLowerCase()) === -1) {
     context.log.warn(`v2 handleNewPool skip ${liquidityPoolAddress} because it isn\'t whitelisted`)
     return
   }
 
   const coreAddress = event.params.core
-
+  
   const coreType = CORE_TYPES.get(event.params.coreType)
 
   if (coreType === null) {
