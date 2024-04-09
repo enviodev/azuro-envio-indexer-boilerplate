@@ -65,8 +65,12 @@ export async function getErc20TokenDetails(
 export async function getErc20TokenBalance(
   tokenAddress: string,
   ownerAddress: string,
-  chainId: number,
+  chainId: number
 ): Promise<bigint> {
+  // if blockNumber is = rpc call for latest blockNumber
+  // if atHead return
+  // else return 0n
+
   // RPC URL
   const rpcURL = CHAIN_CONSTANTS[chainId].rpcURL;
 
@@ -78,9 +82,11 @@ export async function getErc20TokenBalance(
 
   try {
     // Use Promise.all to execute all calls in parallel and wait for all of them to resolve
-    const _balance = await erc20token.methods.balanceOf(ownerAddress).call() as unknown;
+    const _balance = (await erc20token.methods
+      .balanceOf(ownerAddress)
+      .call()) as unknown;
     const balance = _balance as bigint;
-    
+
     return BigInt(balance);
   } catch (err) {
     console.error("An error occurred", err);
