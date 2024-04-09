@@ -13,28 +13,30 @@ import {
   Corev3Contract_MarginChanged_handler,
   Corev3Contract_ReinforcementChanged_loader,
   Corev3Contract_ReinforcementChanged_handler,
+  Corev3Contract_ConditionCreated_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { createBet } from "../common/bets";
 import { createCondition, pauseUnpauseCondition, resolveCondition, updateConditionMargin, updateConditionOdds, updateConditionReinforcement } from "../common/condition";
 import { BET_TYPE_ORDINAR, VERSION_V3 } from "../constants";
-import { getConditionV3FromId } from "../contracts/corev3";
+import { deserialiseConditionV3Result, getConditionV3FromId } from "../contracts/corev3";
 import { OutcomeEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
 Corev3Contract_ConditionCreated_loader(({ event, context }) => {});
-Corev3Contract_ConditionCreated_handler(async ({ event, context }) => {
+Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
+  const _conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
+  const conditionData = deserialiseConditionV3Result(_conditionData.condition)
 
-  const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
+  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
   const gameEntityId = getEntityId(
     liquidityPoolAddress,
     event.params.gameId.toString(),
   )
 
-  const gameEntity = context.Game.get(gameEntityId)
+  const gameEntity = await context.Game.get(gameEntityId)
 
   // TODO remove later
   if (!gameEntity) {
@@ -47,12 +49,12 @@ Corev3Contract_ConditionCreated_handler(async ({ event, context }) => {
   //   coreAddress,
   //   conditionId,
   //   gameEntity.id,
-  //   conditionData.condition.margin,
-  //   conditionData.condition.reinforcement,
+  //   conditionData.margin,
+  //   conditionData.reinforcement,
   //   event.params.outcomes,
-  //   conditionData.condition.virtualFunds,
-  //   conditionData.condition.winningOutcomesCount,
-  //   conditionData.condition.isExpressForbidden,
+  //   conditionData.virtualFunds,
+  //   conditionData.winningOutcomesCount,
+  //   conditionData.isExpressForbidden,
   //   gameEntity.provider,
   //   event.transactionHash,
   //   event.blockNumber,
