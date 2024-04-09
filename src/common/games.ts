@@ -1,6 +1,12 @@
-import { ContractCodeNotStoredError } from "web3"
-import { GAME_STATUS_CANCELED, GAME_STATUS_CREATED, TypedMap } from "../constants"
-import { CoreContract_ConditionCreatedEvent_handlerContextAsync, CountryEntity, GameEntity, LPv2Contract_GameCanceledEvent_handlerContext, LPv2Contract_GameShiftedEvent_handlerContext, LPv2Contract_NewGameEvent_handlerContext, LPv2Contract_NewGameEvent_handlerContextAsync, LeagueEntity, SportEntity, SportHubEntity, participantEntity } from "../src/Types.gen"
+import { DEFAULT_COUNTRY, GAME_STATUS_CANCELED, GAME_STATUS_CREATED } from "../constants"
+import { CoreContract_ConditionCreatedEvent_handlerContextAsync, CountryEntity, GameEntity, LPv2Contract_GameCanceledEvent_handlerContext, LPv2Contract_GameShiftedEvent_handlerContext, LPv2Contract_NewGameEvent_handlerContext, LPv2Contract_NewGameEvent_handlerContextAsync, LeagueEntity, ParticipantEntity, SportEntity, SportHubEntity, participantEntity } from "../src/Types.gen"
+import { JSONValue, JSONValueKind, TypedMap } from "../utils/mapping"
+import { encodeBase58 } from "ethers"
+import { sportHubs } from "../dictionaries/sportHubs"
+import { toSlug } from "../utils/text"
+import { sports } from "../dictionaries/sports"
+import { getEntityId } from "../utils/schema"
+import { getImageUrl } from "../utils/images"
 
 
 const DEFAULT_GAME: GameEntity = {
@@ -35,7 +41,7 @@ const DEFAULT_GAME: GameEntity = {
 }
 
 
-export function createGame(
+export async function createGame(
     liquidityPoolAddress: string,
     rawGameId: bigint | null,
     ipfsHashBytes: string | null,
@@ -46,169 +52,424 @@ export function createGame(
     createBlockNumber: bigint,
     createBlockTimestamp: bigint,
     context: CoreContract_ConditionCreatedEvent_handlerContextAsync | LPv2Contract_NewGameEvent_handlerContext,
-): GameEntity {
+): Promise<GameEntity | null> {
 
-    // let data: TypedMap<string, JSONValue> | null = null
+    let data: TypedMap<string, JSONValue> | null = null
 
-    // // V2
-    // if (ipfsHashBytes !== null) {
-    //     const ipfsHashHex = ipfsHashBytes.toHexString()
-    //     const bytesArr = ByteArray.fromHexString(`0x1220${ipfsHashHex.slice(2)}`)
+    // V2
+    if (ipfsHashBytes !== null) {
+        const ipfsHashHex = ipfsHashBytes
+        const bytesHex = (`0x1220${ipfsHashHex.slice(2)}`)
+        const bytesBuffer = Buffer.from(bytesHex, 'hex')
 
-    //     const ipfsHash = bytesArr.toBase58()
+        const ipfsHash = encodeBase58(bytesBuffer);
 
-    //     const ipfsJson = getIPFSJson(ipfsHash)
+        const ipfsJson = getIPFSJson(ipfsHash)
 
-    //     if (!ipfsJson) {
-    //         log.error('createGame IPFS failed to get JSON. Hash: {}', [ipfsHash.toString()])
+        if (!ipfsJson) {
+            context.log.error(`createGame IPFS failed to get JSON. Hash: ${ipfsHash.toString()}`)
+            return null
+        }
 
-    //         return null
-    //     }
+        data = ipfsJson.toObject() // deserialize
 
-    //     data = ipfsJson.toObject()
+        if (data === null) {
+            context.log.error(`createGame IPFS failed to convert to object. Hash: ${ipfsHash.toString()}`)
+            return null
+        }
 
-    //     if (data === null) {
-    //         log.error('createGame IPFS failed to convert to object. Hash: {}', [ipfsHash.toString()])
+    }
 
-    //         return null
-    //     }
+    // V3
 
-    // }
+    if (dataBytes !== null) {
+        let data;
+        try {
+            data = JSON.parse(dataBytes);
+        } catch (error) {
+            context.log.error(`createGame bytes data failed to parse json. data: ${dataBytes}. \n${error}`,);
+            return null;
+        }
 
-    // // V3
+        if (data === null) {
+            context.log.error(`createGame bytes data failed to convert to object. data: ${dataBytes}`);
+            return null;
+        }
 
-    // if (dataBytes !== null) {
+        // Proceed with using 'data' as a JavaScript object
+    }
 
-    //     const dataJson = json.try_fromBytes(dataBytes)
+    data = data!
 
-    //     if (!dataJson.isOk) {
-    //         log.error('createGame bytes data failed to parse json. data: {}', [dataBytes.toString()])
-
-    //         return null
-    //     }
-
-    //     data = dataJson.value.toObject()
-
-    //     if (data === null) {
-    //         log.error('createGame bytes data failed to convert to object. data: {}', [dataBytes.toString()])
-
-    //         return null
-    //     }
-
-    // }
-
-    // data = data!
-
-    // let sportId: bigint | null = null
+    let sportId: bigint | null = null
 
     // V1
-    // const sportTypeIdField = data.get('sportTypeId')
+    const sportTypeIdField = data.get('sportTypeId')
 
-    // if (sportTypeIdField && sportTypeIdField.kind === JSONValueKind.NUMBER) {
-    //     sportId = sportTypeIdField.toBigInt()
-    // }
-
-    // // V2
-    // const sportIdField = data.get('sportId')
-
-    // if (sportIdField && sportIdField.kind === JSONValueKind.NUMBER) {
-    //     sportId = sportIdField.toBigInt()
-    // }
-
-    // if (sportId === null) {
-    //     log.error('createGame sportId is null', [])
-
-    //     return null
-    // }
-
-    // let countryName = DEFAULT_COUNTRY.toString()
-
-
-    // mock data
-    const sportHubEntity: SportHubEntity = {
-        id: "1",
-        name: "Football",
-        slug: "football",
+    if (sportTypeIdField && sportTypeIdField.kind === JSONValueKind.NUMBER) {
+        sportId = sportTypeIdField.toBigInt()
     }
-    context.SportHub.set(sportHubEntity)
 
-    const sportEntity: SportEntity = {
-        id: "1",
-        sportId: 1n,
-        name: "Football",
-        slug: "football",
-        sporthub_id: "1",
-    }
-    context.Sport.set(sportEntity)
+    // V2
+    const sportIdField = data.get('sportId')
 
-    const countryEntity: CountryEntity = {
-        id: "1",
-        name: "Football",
-        sport_id: "1",
-        turnover: 0n,
-        slug: "football",
-        hasActiveLeagues: false,
-        activeLeaguesEntityIds: [],
+    if (sportIdField && sportIdField.kind === JSONValueKind.NUMBER) {
+        sportId = sportIdField.toBigInt()
     }
-    context.Country.set(countryEntity)
 
-    const leagueEntity: LeagueEntity = {
-        id: "1",
-        name: "Football",
-        country_id: "1",
-        turnover: 0n,
-        slug: "football",
-        hasActiveGames: false,
-        activeGamesEntityIds: [],
+    if (sportId === null) {
+        context.log.error('createGame sportId is null')
+        return null
     }
-    context.League.set(leagueEntity)
 
-    const gameEntity: GameEntity = {
-        id: "1",
-        liquidityPool_id: liquidityPoolAddress,
-        gameId: 0n,
-        title: "",
-        slug: "",
-        league_id: leagueEntity.id,
-        sport_id: sportEntity.id,
-        status: GAME_STATUS_CREATED,
-        // # participants: [Participant!]! @derivedFrom(field: "game"),
-        // # conditions: [Condition!]! @derivedFrom(field: "game"),
-        hasActiveConditions: false,
-        _activeConditionsEntityIds: [],
-        _resolvedConditionsEntityIds: [],
-        _canceledConditionsEntityIds: [],
-        _pausedConditionsEntityIds: [],
-        startsAt: startsAt,
-        provider: 0n,
-        turnover: 0n,
-        createdBlockNumber: createBlockNumber,
-        createdBlockTimestamp: createBlockTimestamp,
-        createdTxHash: txHash,
-        shiftedBlockNumber: undefined,
-        shiftedBlockTimestamp: undefined,
-        shiftedTxHash: undefined,
-        resolvedBlockNumber: undefined,
-        resolvedBlockTimestamp: undefined,
-        resolvedTxHash: undefined,
-        _updatedAt: createBlockTimestamp,
-    }
-    context.Game.set(gameEntity)
 
-    const participantEntity: participantEntity = {
-        id: "1",
-        name: "",
-        image: "",
-        sortOrder: 0,
-        game_id: gameEntity.id,
+    let countryName = DEFAULT_COUNTRY
+
+    // V1
+    const titleCountryField = data.get('titleCountry')
+
+    if (titleCountryField && titleCountryField.kind === JSONValueKind.STRING) {
+        countryName = titleCountryField.toString()
     }
-    context.Participant.set(participantEntity)
+
+    // V2
+    const countryObjectField = data.get('country')
+
+    if (countryObjectField && countryObjectField.kind === JSONValueKind.OBJECT) {
+        const countryObject = countryObjectField.toObject()
+        const countryObjectNameField = countryObject.get('name')
+
+        if (countryObjectNameField && countryObjectNameField.kind === JSONValueKind.STRING) {
+            countryName = countryObjectNameField.toString()
+        }
+    }
+
+    let leagueName: string | null = null
+
+    // V1
+    const titleLeagueField = data.get('titleLeague')
+
+    if (titleLeagueField && titleLeagueField.kind === JSONValueKind.STRING) {
+        leagueName = titleLeagueField.toString()
+    }
+
+    // V2
+    const leagueObjectField = data.get('league')
+
+    if (leagueObjectField && leagueObjectField.kind === JSONValueKind.OBJECT) {
+        const leagueObject = leagueObjectField.toObject()
+
+        const leagueObjectNameField = leagueObject.get('name')
+
+        if (leagueObjectNameField && leagueObjectNameField.kind === JSONValueKind.STRING) {
+            leagueName = leagueObjectNameField.toString()
+        }
+    }
+
+    if (leagueName === null) {
+        context.log.error('createGame leagueName is null')
+        return null
+    }
+
+    const sportHubName = sportHubs.get(sportId)
+
+    if (!sportHubName) {
+        context.log.error('createGame sportHubName is null')
+        return null
+    }
+
+    let sportHubEntity = await context.SportHub.get(sportHubName!)
+
+    if (!sportHubEntity) {
+        sportHubEntity = {
+            id: sportHubName,
+            name: sportHubName,
+            slug: toSlug(sportHubName),
+        } as SportHubEntity
+        context.SportHub.set(sportHubEntity)
+    }
+
+    let sportEntity = await context.Sport.get(sportId.toString())
+
+    if (!sportEntity) {
+        const sportName = sports.get(sportId)
+        if (!sportName) {
+            context.log.error('createGame sportName is null')
+            return null
+        }
+
+        sportEntity = {
+            id: sportId.toString(),
+            sportId: sportId,
+            name: sportName,
+            slug: toSlug(sportName),
+            sporthub_id: sportHubEntity.id,
+        } as SportEntity
+        context.Sport.set(sportEntity)
+
+    }
+
+    const countryEntityId = sportId.toString().concat('_').concat(countryName)
+
+    let countryEntity = await context.Country.get(countryEntityId)
+
+    if (!countryEntity) {
+        countryEntity = {
+            id: countryEntityId,
+            name: countryName,
+            sport_id: sportEntity.id,
+            turnover: 0n,
+            slug: toSlug(countryName),
+            hasActiveLeagues: false,
+            activeLeaguesEntityIds: [],
+        } as CountryEntity
+    }
+
+    let leagueEntityId = getEntityId(sportId, countryName, leagueName)
+
+    let leagueEntity = await context.League.get(leagueEntityId)
+
+    if (!leagueEntity) {
+        leagueEntity = {
+            id: leagueEntityId,
+            name: leagueName,
+            country_id: countryEntity.id,
+            turnover: 0n,
+            slug: toSlug(leagueName),
+            hasActiveGames: false,
+            activeGamesEntityIds: [],
+        } as LeagueEntity
+        context.League.set(leagueEntity)
+    }
+
+    // V1 - gameId from ipfs
+    let gameId = rawGameId
+
+    if (gameId === null) {
+        const gameIdObjectField = data.get('gameId')
+        if (!gameIdObjectField || gameIdObjectField.kind !== JSONValueKind.NUMBER) {
+            context.log.error('createGame gameIdObjectField is null')
+            return null
+        }
+        gameId = gameIdObjectField.toBigInt()
+    }
+    // end V1 - gameId from ipfs
+
+    // V2
+    const extraObjectField = data.get('extra')
+    let provider = BigInt('1')
+
+    if (extraObjectField && extraObjectField.kind === JSONValueKind.OBJECT) {
+        const extraObject = extraObjectField.toObject()
+
+        const extraObjectProviderField = extraObject.get('provider')
+
+        if (extraObjectProviderField && extraObjectProviderField.kind === JSONValueKind.NUMBER) {
+            provider = extraObjectProviderField.toBigInt()
+        }
+    }
+
+    const gameEntityId = getEntityId(liquidityPoolAddress, gameId.toString())
+
+    let gameEntity = await context.Game.get(gameEntityId)
+
+    if (!gameEntity) {
+        gameEntity = {
+            id: gameEntityId,
+            liquidityPool_id: liquidityPoolAddress,
+            gameId: gameId,
+            title: "",
+            slug: "",
+            league_id: leagueEntity.id,
+            sport_id: sportEntity.id,
+            status: GAME_STATUS_CREATED,
+            hasActiveConditions: false,
+            _activeConditionsEntityIds: [],
+            _resolvedConditionsEntityIds: [],
+            _canceledConditionsEntityIds: [],
+            _pausedConditionsEntityIds: [],
+            startsAt: startsAt,
+            provider: provider,
+            turnover: 0n,
+            createdBlockNumber: createBlockNumber,
+            createdBlockTimestamp: createBlockTimestamp,
+            createdTxHash: txHash,
+            shiftedBlockNumber: 0n,
+            shiftedBlockTimestamp: 0n,
+            shiftedTxHash: "",
+            resolvedBlockNumber: 0n,
+            resolvedBlockTimestamp: 0n,
+            resolvedTxHash: "",
+            _updatedAt: createBlockTimestamp,
+        } as GameEntity
+        context.Game.set(gameEntity)
+    }
+
+    let participantsNames: string[] = []
+
+    // V1
+    for (let i = 0; i <= 1; i++) {
+        let participantEntityId = getEntityId(gameEntity.id, BigInt(i).toString())
+
+        let participantNameKey = 'entity'.concat((i + 1).toString()).concat('Name')
+        let participantNameValue = data.get(participantNameKey)
+
+        if (!participantNameValue) {
+            continue
+        }
+        const participantName = participantNameValue.toString()
+
+        participantsNames = participantsNames.concat([participantName])
+
+        let participantImageKey = 'entity'.concat((i + 1).toString()).concat('Image')
+        let participantImageValue = data.get(participantImageKey)
+        const participantImage = participantImageValue && participantImageValue.kind === JSONValueKind.STRING
+            ? participantImageValue.toString()
+            : null
+
+        let participantEntity = await context.Participant.get(participantEntityId)
+
+        if (!participantEntity) {
+            participantEntity = {
+                id: participantEntityId,
+                game_id: gameEntity.id,
+                name: participantName,
+                image: participantImage,
+                sortOrder: i,
+            } as participantEntity
+        }
+    }
+
+    // V2
+    let participants = data.get('participants')
+
+    if (participants && participants.kind === JSONValueKind.ARRAY) {
+        const participantsArray = participants.toArray()
+
+        for (let i = 0; i < participantsArray.length; i++) {
+            let participantEntityId = getEntityId(gameEntity.id, BigInt(i).toString())
+
+            const mappedParticipant = participantsArray[i].toObject()
+
+            const participantNameValue = mappedParticipant.get('name')
+
+            if (!participantNameValue) {
+                continue
+            }
+
+            const participantName = participantNameValue.toString()
+            participantsNames = participantsNames.concat([participantName])
+
+            const participantImageValue = mappedParticipant.get('image')
+            const participantImage = participantImageValue && participantImageValue.kind === JSONValueKind.STRING
+                ? participantImageValue.toString()
+                : getImageUrl(network, sportId, gameId, participantName)
+
+            const participantEntity: ParticipantEntity = {
+                id: participantEntityId,
+                game_id: gameEntity.id,
+                name: participantName,
+                image: participantImage,
+                sortOrder: i,
+            }
+            context.Participant.set(participantEntity)
+        }
+    }
+
+    context.Game.set({
+        ...gameEntity,
+        title: participantsNames[0].concat(' - ').concat(participantsNames[1]),
+        slug: toSlug(gameSlug),
+        _updatedAt: createBlock.timestamp,
+    })
 
     return gameEntity
 
+    // TODO delete
+    // // mock data
+    // const sportHubEntity: SportHubEntity = {
+    //     id: "1",
+    //     name: "Football",
+    //     slug: "football",
+    // }
+    // context.SportHub.set(sportHubEntity)
+
+    // const sportEntity: SportEntity = {
+    //     id: "1",
+    //     sportId: 1n,
+    //     name: "Football",
+    //     slug: "football",
+    //     sporthub_id: "1",
+    // }
+    // context.Sport.set(sportEntity)
+
+    // const countryEntity: CountryEntity = {
+    //     id: "1",
+    //     name: "Football",
+    //     sport_id: "1",
+    //     turnover: 0n,
+    //     slug: "football",
+    //     hasActiveLeagues: false,
+    //     activeLeaguesEntityIds: [],
+    // }
+    // context.Country.set(countryEntity)
+
+    // const leagueEntity: LeagueEntity = {
+    //     id: "1",
+    //     name: "Football",
+    //     country_id: "1",
+    //     turnover: 0n,
+    //     slug: "football",
+    //     hasActiveGames: false,
+    //     activeGamesEntityIds: [],
+    // }
+    // context.League.set(leagueEntity)
+
+    // const gameEntity: GameEntity = {
+    //     id: "1",
+    //     liquidityPool_id: liquidityPoolAddress,
+    //     gameId: 0n,
+    //     title: "",
+    //     slug: "",
+    //     league_id: leagueEntity.id,
+    //     sport_id: sportEntity.id,
+    //     status: GAME_STATUS_CREATED,
+    //     // # participants: [Participant!]! @derivedFrom(field: "game"),
+    //     // # conditions: [Condition!]! @derivedFrom(field: "game"),
+    //     hasActiveConditions: false,
+    //     _activeConditionsEntityIds: [],
+    //     _resolvedConditionsEntityIds: [],
+    //     _canceledConditionsEntityIds: [],
+    //     _pausedConditionsEntityIds: [],
+    //     startsAt: startsAt,
+    //     provider: 0n,
+    //     turnover: 0n,
+    //     createdBlockNumber: createBlockNumber,
+    //     createdBlockTimestamp: createBlockTimestamp,
+    //     createdTxHash: txHash,
+    //     shiftedBlockNumber: undefined,
+    //     shiftedBlockTimestamp: undefined,
+    //     shiftedTxHash: undefined,
+    //     resolvedBlockNumber: undefined,
+    //     resolvedBlockTimestamp: undefined,
+    //     resolvedTxHash: undefined,
+    //     _updatedAt: createBlockTimestamp,
+    // }
+    // context.Game.set(gameEntity)
+
+    // const participantEntity: participantEntity = {
+    //     id: "1",
+    //     name: "",
+    //     image: "",
+    //     sortOrder: 0,
+    //     game_id: gameEntity.id,
+    // }
+    // context.Participant.set(participantEntity)
+
+    // return gameEntity
+
     // context.Game.set(DEFAULT_GAME)
     // return DEFAULT_GAME
-
 }
 
 export function shiftGame(

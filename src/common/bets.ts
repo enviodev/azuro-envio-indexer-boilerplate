@@ -128,7 +128,7 @@ export function createBet(
     gameEntitiesIds[i] = conditionEntities[i].game_id
 
     const gameEntity: GameEntity = context.Game.get(gameEntitiesIds[i])!
-
+    
     if (gameEntity.startsAt > approxSettledAt) {
       approxSettledAt = gameEntity.startsAt + BigInt("7200")
     }

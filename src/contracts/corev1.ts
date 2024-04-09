@@ -39,7 +39,7 @@ export async function getConditionV1FromId(
     try {
         const _result = await corev1Contract.methods.getCondition(conditionId).call() as unknown;
         const result = _result as ConditionV1Response;
-        
+
         const condition: ConditionV1Response = {
             fundBank: [result.fundBank[0].toString().toLowerCase(), result.fundBank[1].toString().toLowerCase()],
             payouts: [result.payouts[0].toString().toLowerCase(), result.payouts[1].toString().toLowerCase()],
