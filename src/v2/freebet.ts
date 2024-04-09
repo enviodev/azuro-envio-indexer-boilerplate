@@ -41,7 +41,7 @@ async function getOrCreateFreebetContract(
   return createFreebetContractEntity(chainId.toString(), freebetContractAddress, lp, name, null, null)
 }
 
-FreeBetContract_BettorWin_loader(({ event, context }) => { 
+FreeBetContract_BettorWin_loader(({ event, context }) => {
   context.CoreContract.load(event.params.core, {});
 });
 FreeBetContract_BettorWin_handler(({ event, context }) => {
@@ -70,7 +70,9 @@ FreeBetContract_BettorWin_handler(({ event, context }) => {
   }
 });
 
-FreeBetContract_FreeBetMinted_loader(({ event, context }) => { });
+FreeBetContract_FreeBetMinted_loader(({ event, context }) => {
+  context.FreebetContract.load(event.srcAddress, {});
+});
 FreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
   const freebetContractEntity = await getOrCreateFreebetContract(event.srcAddress, event.chainId, context)
 
@@ -100,7 +102,9 @@ FreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
   )
 });
 
-FreeBetContract_FreeBetMintedBatch_loader(({ event, context }) => { });
+FreeBetContract_FreeBetMintedBatch_loader(({ event, context }) => {
+  context.FreebetContract.load(event.srcAddress, {});
+ });
 FreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
   const freebetContractEntity = await getOrCreateFreebetContract(event.srcAddress, event.chainId, context)
 
@@ -134,7 +138,9 @@ FreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
   }
 });
 
-FreeBetContract_FreeBetRedeemed_loader(({ event, context }) => { });
+FreeBetContract_FreeBetRedeemed_loader(({ event, context }) => {
+  context.CoreContract.load(event.params.core, {});
+ });
 FreeBetContract_FreeBetRedeemed_handler(({ event, context }) => {
   const coreContractEntity = context.CoreContract.get(event.params.core)
 
@@ -167,7 +173,9 @@ FreeBetContract_FreeBetRedeemed_handler(({ event, context }) => {
   )
 });
 
-FreeBetContract_FreeBetReissued_loader(({ event, context }) => { });
+FreeBetContract_FreeBetReissued_loader(({ event, context }) => { 
+  context.Freebet.load(getEntityId(event.srcAddress, event.params.id.toString()), {});
+});
 FreeBetContract_FreeBetReissued_handler(({ event, context }) => {
   reissueFreebet(event.srcAddress, event.params.id, event.blockNumber, context)
 });

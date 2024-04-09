@@ -91,7 +91,7 @@ export function reissueFreebet(
 
   const freebetEntityId = freebetContractAddress + "_" + freebetId.toString()
 
-  const freebetEntity = context.Freebet.get(freebetContractAddress)
+  const freebetEntity = context.Freebet.get(freebetEntityId)
 
   if (!freebetEntity) {
     context.log.error(`freebetEntity not found. freebetentityId = ${freebetEntityId}`)
