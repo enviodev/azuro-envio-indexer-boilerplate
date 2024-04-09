@@ -24,9 +24,11 @@ import { depositLiquidity, withdrawLiquidity, transferLiquidity, changeWithdrawa
 import { VERSION_V1, BET_TYPE_ORDINAR, ZERO_ADDRESS } from "../constants";
 import { getEntityId } from "../utils/schema";
 import { getNodeWithdrawAmount } from "../contracts/lpv1";
+import { get } from "http";
 
 LPContract_BetterWin_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
+  context.Bet.load(getEntityId(event.srcAddress, event.params.tokenId.toString()), {});
 });
 LPContract_BetterWin_handler(({ event, context }) => {
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
