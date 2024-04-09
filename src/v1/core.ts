@@ -114,6 +114,7 @@ CoreContract_ConditionResolved_handler(({ event, context }) => {
 });
 
 CoreContract_ConditionShifted_loader(({ event, context }) => {
+  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
 });
 CoreContract_ConditionShifted_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
@@ -139,7 +140,7 @@ CoreContract_ConditionShifted_handler(({ event, context }) => {
 });
 
 CoreContract_ConditionStopped_loader(({ event, context }) => {
-  
+  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
 });
 CoreContract_ConditionStopped_handler(({ event, context }) => { 
   const conditionId = event.params.conditionId
