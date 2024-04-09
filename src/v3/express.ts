@@ -72,14 +72,14 @@ Expressv3Contract_NewBet_handler(({ event, context }) => {
 
 Expressv3Contract_Transfer_loader(({ event, context }) => { });
 Expressv3Contract_Transfer_handler(({ event, context }) => {
-  transferBet(
-    event.srcAddress,
-    null,
-    event.params.tokenId,
-    event.params.from,
-    event.params.to,
-    event.blockNumber,
-    context,
-  )
+  // transferBet(
+  //   event.srcAddress,
+  //   null,
+  //   event.params.tokenId,
+  //   event.params.from,
+  //   event.params.to,
+  //   event.blockNumber,
+  //   context,
+  // )
 
 });
