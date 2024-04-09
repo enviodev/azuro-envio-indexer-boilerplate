@@ -122,7 +122,7 @@ export function depositLiquidity(
   chainId: number,
   context: LPv2Contract_LiquidityAddedEvent_handlerContext,
 ): LiquidityPoolTransactionEntity | null {
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress)!;
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress);
 
   // TODO remove later
   if (!liquidityPoolContractEntity) {

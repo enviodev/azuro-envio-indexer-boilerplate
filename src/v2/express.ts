@@ -18,6 +18,7 @@ Expressv2Contract_NewBet_handler(({ event, context }) => {
   let conditionOdds: bigint[] = []
 
   context.log.debug(`Expressv2Contract_NewBet_handler: ${event.srcAddress}`)
+  throw new Error("Expressv2Contract_NewBet_handler not implemented")
 
   // for (let i = 0; i < event.params.bet.subBets.length; i++) {
   //   const bet = event.params.bet.subBets[i]

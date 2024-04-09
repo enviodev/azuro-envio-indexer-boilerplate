@@ -26,6 +26,7 @@ import { cancelGame, createGame, shiftGame } from "../common/games";
 import { changeWithdrawalTimeout, depositLiquidity, transferLiquidity, updateLiquidityManager, withdrawLiquidity } from "../common/pool";
 import { ZERO_ADDRESS } from "../constants";
 import { getNodeWithdrawAmount } from "../contracts/lpv1";
+import { getEntityId } from "../utils/schema";
 
 LPv2Contract_BettorWin_loader(({ event, context }) => {});
 LPv2Contract_BettorWin_handler(({ event, context }) => {
@@ -45,7 +46,9 @@ LPv2Contract_GameShifted_handler(({ event, context }) => {
   shiftGame(gameEntityId, event.params.newStart, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
 });
 
-LPv2Contract_LiquidityAdded_loader(({ event, context }) => {});
+LPv2Contract_LiquidityAdded_loader(({ event, context }) => {
+  context.LiquidityPoolContract.load(event.srcAddress)
+});
 LPv2Contract_LiquidityAdded_handler(({ event, context }) => {
   depositLiquidity(
     event.srcAddress,
@@ -120,7 +123,9 @@ LPv2Contract_NewGame_handler(({ event, context }) => {
   )
 });
 
-LPv2Contract_Transfer_loader(({ event, context }) => {});
+LPv2Contract_Transfer_loader(({ event, context }) => {
+  context.LiquidityPoolNft.load(getEntityId(event.srcAddress, event.params.tokenId.toString()), {})
+});
 LPv2Contract_Transfer_handler(({ event, context }) => {
   if (event.params.from != ZERO_ADDRESS) {
     return
@@ -129,7 +134,9 @@ LPv2Contract_Transfer_handler(({ event, context }) => {
   transferLiquidity(event.srcAddress, event.params.tokenId, event.params.to, context)
 });
 
-LPv2Contract_WithdrawTimeoutChanged_loader(({ event, context }) => {});
+LPv2Contract_WithdrawTimeoutChanged_loader(({ event, context }) => {
+  context.LiquidityPoolContract.load(event.srcAddress)
+});
 LPv2Contract_WithdrawTimeoutChanged_handler(({ event, context }) => {
   changeWithdrawalTimeout(event.srcAddress, event.params.newWithdrawTimeout, context)
 });
