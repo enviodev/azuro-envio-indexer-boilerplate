@@ -65,11 +65,13 @@ export async function getErc20TokenDetails(
 export async function getErc20TokenBalance(
   tokenAddress: string,
   ownerAddress: string,
-  chainId: number
+  chainId: number,
+  blockNumber: number,
 ): Promise<bigint> {
   // if blockNumber is = rpc call for latest blockNumber
   // if atHead return
   // else return 0n
+  return 0n
 
   // RPC URL
   const rpcURL = CHAIN_CONSTANTS[chainId].rpcURL;

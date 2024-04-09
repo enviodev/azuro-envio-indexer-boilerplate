@@ -79,12 +79,12 @@ async function updatePoolOnCommonEvents(
     });
   }
 
-  const balance = 0n;
-  // const balance = await getErc20TokenBalance(
-  //   liquidityPoolContractEntity.token,
-  //   liquidityPoolContractEntity.address,
-  //   chainId
-  // );
+  const balance = await getErc20TokenBalance(
+    liquidityPoolContractEntity.token,
+    liquidityPoolContractEntity.address,
+    chainId,
+    blockNumber,
+  );
 
   if (balance && balance != 0n) {
     context.LiquidityPoolContract.set({
@@ -111,8 +111,7 @@ export async function createPoolEntity(
     tokenAddress,
     chainId
   );
-  const tokenBalance = 0n;
-  // const tokenBalance = await getErc20TokenBalance(tokenAddress, liquidityPoolAddress, chainId);
+  const tokenBalance = await getErc20TokenBalance(tokenAddress, liquidityPoolAddress, chainId, Number(blockNumber));
 
   const liquidityPoolContractEntity: LiquidityPoolContractEntity = {
     id: liquidityPoolAddress,

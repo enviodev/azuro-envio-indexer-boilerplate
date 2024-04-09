@@ -1,3 +1,5 @@
+import { TypedMap } from "./utils/mapping";
+
 type chainConstants = {
   readonly rpcURL: string;
 };
@@ -57,88 +59,12 @@ export const CORE_TYPE_PRE_MATCH_V2 = "pre-match-v2";
 export const CORE_TYPE_EXPRESS = "express";
 export const CORE_TYPE_EXPRESS_V2 = "express-v2";
 export const CORE_TYPE_LIVE = "live";
+export const CORE_TYPES = new TypedMap<string, string>();
 
 export const X_PROFIT = BigInt(75);
 export const X_PROFIT_DIVIDER = BigInt(100);
 
-/**
- * TypedMap entry.
- */
-export class TypedMapEntry<K, V> {
-  key: K;
-  value: V;
-
-  constructor(key: K, value: V) {
-    this.key = key;
-    this.value = value;
-  }
-}
-
-/** Typed map */
-export class TypedMap<K, V> {
-  entries: Array<TypedMapEntry<K, V>>;
-
-  constructor() {
-    this.entries = new Array<TypedMapEntry<K, V>>(0);
-    // this.entries = []
-  }
-
-  set(key: K, value: V): void {
-    let entry = this.getEntry(key);
-    if (entry !== null) {
-      entry.value = value;
-    } else {
-      let entry = new TypedMapEntry<K, V>(key, value);
-      this.entries.push(entry);
-    }
-  }
-
-  getEntry(key: K): TypedMapEntry<K, V> | null {
-    for (let i: number = 0; i < this.entries.length; i++) {
-      if (this.entries[i].key == key) {
-        return this.entries[i];
-      }
-    }
-    return null;
-  }
-
-  mustGetEntry(key: K): TypedMapEntry<K, V> {
-    const entry = this.getEntry(key);
-    if (entry === null) {
-      throw new Error(`Entry for key ${key} does not exist in TypedMap`);
-    }
-    return entry!;
-  }
-
-  get(key: K): V | null {
-    for (let i: number = 0; i < this.entries.length; i++) {
-      if (this.entries[i].key == key) {
-        return this.entries[i].value;
-      }
-    }
-    return null;
-  }
-
-  mustGet(key: K): V {
-    const value = this.get(key);
-    if (value === null) {
-      throw new Error(`Entry for key ${key} does not exist in TypedMap`);
-    }
-    return value!;
-  }
-
-  isSet(key: K): boolean {
-    for (let i: number = 0; i < this.entries.length; i++) {
-      if (this.entries[i].key == key) {
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
 export const MULTIPLIERS_VERSIONS = new TypedMap<string, bigint>();
-
 MULTIPLIERS_VERSIONS.set(VERSION_V1, C1e9);
 MULTIPLIERS_VERSIONS.set(VERSION_V2, C1e12);
 MULTIPLIERS_VERSIONS.set(VERSION_V3, C1e12);
@@ -148,9 +74,35 @@ const V2_BASE = 12;
 const V3_BASE = 12;
 
 export const BASES_VERSIONS = new TypedMap<string, number>();
-
 BASES_VERSIONS.set(VERSION_V1, V1_BASE);
 BASES_VERSIONS.set(VERSION_V2, V2_BASE);
 BASES_VERSIONS.set(VERSION_V3, V3_BASE);
 
-export const CORE_TYPES = new TypedMap<string, string>();
+
+export const DEFAULT_COUNTRY = 'International Tournaments'
+
+export const CHAINS_IDS = new TypedMap<string, string>()
+CHAINS_IDS.set('gnosis', '100')
+CHAINS_IDS.set('matic', '137')
+CHAINS_IDS.set('mumbai', '80001')
+CHAINS_IDS.set('arbitrum-one', '42161')
+CHAINS_IDS.set('arbitrum-goerli', '421613')
+
+// tmp hack for linea
+CHAINS_IDS.set('polygon-zkevm-testnet', '59140')
+CHAINS_IDS.set('polygon-zkevm', '59144')
+
+const AVATARS_PROVIDER_BASE_URL_DEV = 'https://dev-avatars.azuro.org/images/'
+const AVATARS_PROVIDER_BASE_URL_PROD = 'https://avatars.azuro.org/images/'
+
+// chainId -> avatars base url
+export const AVATARS_PROVIDER_BASE_URLS = new TypedMap<string, string>()
+
+AVATARS_PROVIDER_BASE_URLS.set('100', AVATARS_PROVIDER_BASE_URL_PROD)
+AVATARS_PROVIDER_BASE_URLS.set('137', AVATARS_PROVIDER_BASE_URL_PROD)
+AVATARS_PROVIDER_BASE_URLS.set('42161', AVATARS_PROVIDER_BASE_URL_PROD)
+AVATARS_PROVIDER_BASE_URLS.set('59144', AVATARS_PROVIDER_BASE_URL_PROD)
+
+AVATARS_PROVIDER_BASE_URLS.set('80001', AVATARS_PROVIDER_BASE_URL_DEV)
+AVATARS_PROVIDER_BASE_URLS.set('421613', AVATARS_PROVIDER_BASE_URL_DEV)
+AVATARS_PROVIDER_BASE_URLS.set('59144', AVATARS_PROVIDER_BASE_URL_DEV)
