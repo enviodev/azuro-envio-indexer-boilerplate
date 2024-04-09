@@ -20,7 +20,7 @@ import { createCondition, pauseUnpauseCondition, resolveCondition } from "../com
 import { CORE_TYPE_PRE_MATCH, VERSION_V1 } from "../constants";
 import { createAzuroBetEntity } from "../common/azurobet";
 import { createGame, shiftGame } from "../common/games";
-import { getConditionV1FromId } from "../contracts/corev1";
+import { deserialiseConditionV1Result, getConditionV1FromId } from "../contracts/corev1";
 import { getEntityId } from "../utils/schema";
 
 CoreContract_ConditionCreated_loader(async ({ event, context }) => {
@@ -36,7 +36,9 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 
   const conditionId = event.params.conditionId
   const startsAt = event.params.timestamp
-  const conditionData = await getConditionV1FromId(event.srcAddress, event.chainId, conditionId) 
+  const _conditionData = await getConditionV1FromId(event.srcAddress, event.chainId, conditionId, context)
+  // context.log.debug(`_conditionData ${JSON.stringify(_conditionData.condition)}`)
+  const conditionData = deserialiseConditionV1Result(_conditionData.condition)
 
   const coreAddress = event.srcAddress
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
@@ -49,25 +51,25 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     startsAt,
     null,
     event.transactionHash,
-    event.blockNumber,
+    BigInt(event.blockNumber),
+    BigInt(event.blockTimestamp),
+    context,
   )
-
-  context.Game.set(gameEntity)
 
   if (!gameEntity) {
     context.log.error(`v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`)
     return
   }
-  
+
   createCondition(
     VERSION_V1,
     coreAddress,
     conditionId,
     gameEntity.id,
-    conditionData.condition.margin,
-    conditionData.condition.reinforcement,
-    conditionData.condition.outcomes,
-    conditionData.condition.fundBank,
+    conditionData.margin,
+    conditionData.reinforcement,
+    conditionData.outcomes,
+    conditionData.fundBank,
     1,
     false,
     gameEntity.provider,

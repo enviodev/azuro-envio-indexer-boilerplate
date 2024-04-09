@@ -1,6 +1,6 @@
 import { ContractCodeNotStoredError } from "web3"
-import { GAME_STATUS_CANCELED, TypedMap } from "../constants"
-import { GameEntity, LPv2Contract_GameCanceledEvent_handlerContext, LPv2Contract_GameShiftedEvent_handlerContext } from "../src/Types.gen"
+import { GAME_STATUS_CANCELED, GAME_STATUS_CREATED, TypedMap } from "../constants"
+import { CoreContract_ConditionCreatedEvent_handlerContextAsync, CountryEntity, GameEntity, LPv2Contract_GameCanceledEvent_handlerContext, LPv2Contract_GameShiftedEvent_handlerContext, LeagueEntity, SportEntity, SportHubEntity, participantEntity } from "../src/Types.gen"
 
 
 const DEFAULT_GAME: GameEntity = {
@@ -9,13 +9,13 @@ const DEFAULT_GAME: GameEntity = {
     gameId: 0n,
     title: "",
     slug: "",
-    league_id: "",
+    league_id: "1",
     sport_id: "",
     status: "Created",
     // # participants: [Participant!]! @derivedFrom(field: "game"),
     // # conditions: [Condition!]! @derivedFrom(field: "game"),
     hasActiveConditions: false,
-    _activeConditionsEntityIds: [""],
+    _activeConditionsEntityIds: ["1"],
     _resolvedConditionsEntityIds: [""],
     _canceledConditionsEntityIds: [""],
     _pausedConditionsEntityIds: [""],
@@ -43,7 +43,9 @@ export function createGame(
     startsAt: bigint,
     network: string | null,
     txHash: string,
-    createBlock: number,
+    createBlockNumber: bigint,
+    createBlockTimestamp: bigint,
+    context: CoreContract_ConditionCreatedEvent_handlerContextAsync,
 ): GameEntity {
 
     // let data: TypedMap<string, JSONValue> | null = null
@@ -99,7 +101,7 @@ export function createGame(
 
     // let sportId: bigint | null = null
 
-    // // V1
+    // V1
     // const sportTypeIdField = data.get('sportTypeId')
 
     // if (sportTypeIdField && sportTypeIdField.kind === JSONValueKind.NUMBER) {
@@ -121,7 +123,91 @@ export function createGame(
 
     // let countryName = DEFAULT_COUNTRY.toString()
 
-    return DEFAULT_GAME
+
+    // mock data
+    const sportHubEntity: SportHubEntity = {
+        id: "1",
+        name: "Football",
+        slug: "football",
+    }
+    context.SportHub.set(sportHubEntity)
+
+    const sportEntity: SportEntity = {
+        id: "1",
+        sportId: 1n,
+        name: "Football",
+        slug: "football",
+        sporthub_id: "1",
+    }
+    context.Sport.set(sportEntity)
+
+    const countryEntity: CountryEntity = {
+        id: "1",
+        name: "Football",
+        sport_id: "1",
+        turnover: 0n,
+        slug: "football",
+        hasActiveLeagues: false,
+        activeLeaguesEntityIds: [],
+    }
+    context.Country.set(countryEntity)
+
+    const leagueEntity: LeagueEntity = {
+        id: "1",
+        name: "Football",
+        country_id: "1",
+        turnover: 0n,
+        slug: "football",
+        hasActiveGames: false,
+        activeGamesEntityIds: [],
+    }
+    context.League.set(leagueEntity)
+
+    const gameEntity: GameEntity = {
+        id: "1",
+        liquidityPool_id: liquidityPoolAddress,
+        gameId: 0n,
+        title: "",
+        slug: "",
+        league_id: leagueEntity.id,
+        sport_id: sportEntity.id,
+        status: GAME_STATUS_CREATED,
+        // # participants: [Participant!]! @derivedFrom(field: "game"),
+        // # conditions: [Condition!]! @derivedFrom(field: "game"),
+        hasActiveConditions: false,
+        _activeConditionsEntityIds: [],
+        _resolvedConditionsEntityIds: [],
+        _canceledConditionsEntityIds: [],
+        _pausedConditionsEntityIds: [],
+        startsAt: startsAt,
+        provider: 0n,
+        turnover: 0n,
+        createdBlockNumber: createBlockNumber,
+        createdBlockTimestamp: createBlockTimestamp,
+        createdTxHash: txHash,
+        shiftedBlockNumber: undefined,
+        shiftedBlockTimestamp: undefined,
+        shiftedTxHash: undefined,
+        resolvedBlockNumber: undefined,
+        resolvedBlockTimestamp: undefined,
+        resolvedTxHash: undefined,
+        _updatedAt: createBlockTimestamp,
+    }
+    context.Game.set(gameEntity)
+
+    const participantEntity: participantEntity = {
+        id: "1",
+        name: "",
+        image: "",
+        sortOrder: 0,
+        game_id: gameEntity.id,
+    }
+    context.Participant.set(participantEntity)
+
+    return gameEntity
+
+    // context.Game.set(DEFAULT_GAME)
+    // return DEFAULT_GAME
 
 }
 
@@ -154,8 +240,8 @@ export function shiftGame(
 }
 
 export function cancelGame(
-    gameEntityId: string, 
-    txHash: string, 
+    gameEntityId: string,
+    txHash: string,
     resolvedBlockNumber: number,
     resolvedBlockTimestamp: number,
     context: LPv2Contract_GameCanceledEvent_handlerContext,

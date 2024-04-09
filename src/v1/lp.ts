@@ -93,48 +93,44 @@ LPContract_NewBet_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
 });
 LPContract_NewBet_handler(({ event, context }) => {
-  // const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
 
-  // if (!liquidityPoolContractEntity) {
-  //   context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${event.srcAddress}`);
-  // } else {
-  //   context.log.debug(`liquidityPoolContractEntity found. liquidityPoolContractEntityId = ${event.srcAddress}`);
-  // }
+  if (!liquidityPoolContractEntity) {
+    context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${event.srcAddress}`);
+  }
 
-  // const coreAddress = liquidityPoolContractEntity?.coreAddresses![0]
+  const coreAddress = liquidityPoolContractEntity?.coreAddresses![0]
 
-  // const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
-  // const conditionEntity = context.Condition.get(conditionEntityId)
+  const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
+  const conditionEntity = context.Condition.get(conditionEntityId)
 
-  // if (!conditionEntity) {
-  //   context.log.error(`v1 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-  //   return
-  // } else {
-  //   context.log.debug(`v1 handleNewBet conditionEntity found. conditionEntityId = ${conditionEntityId}`)
-  // }
+  if (!conditionEntity) {
+    context.log.error(`v1 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+    return
+  }
 
-  // const outcomeEntityId = getEntityId(conditionEntity.id,event.params.outcomeId.toString())
-  // const outcomeEntity = context.Outcome.get(outcomeEntityId)!
+  const outcomeEntityId = getEntityId(conditionEntity.id,event.params.outcomeId.toString())
+  const outcomeEntity = context.Outcome.get(outcomeEntityId)!
 
-  // createBet(
-  //   VERSION_V1,
-  //   BET_TYPE_ORDINAR.toString(),
-  //   [conditionEntity],
-  //   [outcomeEntity],
-  //   [event.params.odds],
-  //   event.params.odds,
-  //   conditionEntity.coreAddress,
-  //   event.params.owner,
-  //   null,
-  //   event.params.betId,
-  //   liquidityPoolContractEntity.tokenDecimals,
-  //   event.params.amount,
-  //   event.transactionHash,
-  //   event.blockTimestamp,
-  //   event.blockNumber,
-  //   [event.params.fund1, event.params.fund2],
-  //   context,
-  // )
+  createBet(
+    VERSION_V1,
+    BET_TYPE_ORDINAR.toString(),
+    [conditionEntity],
+    [outcomeEntity],
+    [event.params.odds],
+    event.params.odds,
+    conditionEntity.coreAddress,
+    event.params.owner,
+    null,
+    event.params.betId,
+    liquidityPoolContractEntity.tokenDecimals,
+    event.params.amount,
+    event.transactionHash,
+    event.blockTimestamp,
+    event.blockNumber,
+    [event.params.fund1, event.params.fund2],
+    context,
+  )
 });
 
 LPContract_Transfer_loader(({ event, context }) => {
