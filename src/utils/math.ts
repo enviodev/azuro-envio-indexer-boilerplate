@@ -1,5 +1,17 @@
 import { C1e9, C1e12, VERSION_V2, VERSION_V3 } from '../constants'
 
+function safeDiv(numerator: bigint, divisor: bigint): bigint {
+  const bigNumerator = BigInt(numerator);
+  const bigDivisor = BigInt(divisor);
+
+  if (bigDivisor === 0n) {
+    return 0n;
+  } else {
+    return bigNumerator / bigDivisor;
+  }
+}
+
+
 function sqrtBigInt(n: bigint): bigint {
   if (n < 0n) {
     throw 'Square root of negative numbers is not supported.';
@@ -23,14 +35,14 @@ function sqrtBigInt(n: bigint): bigint {
 
 
 function addMargin(odds: bigint, margin: bigint, decimals: bigint): bigint {
-  const revertedOdds = decimals ** BigInt(2) / (decimals - (decimals ** BigInt(2) / (odds)))
+  const revertedOdds = safeDiv(decimals ** BigInt(2), (decimals - (safeDiv(decimals ** BigInt(2), odds))))
   const marginEUR = decimals + (margin)
-  const a = marginEUR * (revertedOdds - decimals) / (odds - decimals)
+  const a = safeDiv(marginEUR * (revertedOdds - decimals), (odds - decimals))
 
-  const b = (revertedOdds - (decimals)) * (decimals) / ((odds - decimals) * margin) + (decimals * (margin)) / decimals
+  const b = safeDiv(safeDiv((revertedOdds - (decimals)) * (decimals), ((odds - decimals) * margin) + (decimals * (margin))), decimals)
   const c = decimals * 2n - (marginEUR)
 
-  const newOdds = (BigInt(sqrtBigInt((b ** BigInt(2)) + (BigInt('4') * (a) * (c)))) - b) * decimals / (2n * (a)) + decimals
+  const newOdds = safeDiv((BigInt(sqrtBigInt((b ** BigInt(2)) + (BigInt('4') * (a) * (c)))) - b) * decimals, (2n * (a)) + decimals)
 
   return newOdds
 }
@@ -65,7 +77,8 @@ function v1(fund1: bigint, fund2: bigint, outcomeIndex: number, margin: bigint, 
     const cAmount = ceil(amount * (decimals) / (fund1 / (BigInt('100'))), decimals, decimals) / (decimals)
 
     if (cAmount === (BigInt('1'))) {
-      return addMargin(decimals ** BigInt(2) / (ps1), margin, decimals)
+      const left = (ps1 === 0n) ? 0n : decimals ** BigInt(2) / ps1;
+      return addMargin(left, margin, decimals)
     }
 
     const odds = (decimals ** BigInt(3)) / (

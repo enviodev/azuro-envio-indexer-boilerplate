@@ -3,40 +3,26 @@ import { Web3 } from "web3";
 import { Cache, CacheCategory } from "../lib/cache";
 
 import { CHAIN_CONSTANTS } from "../constants";
-import { ConditionV1 } from "../utils/types";
+import { ConditionV1, ConditionV1Response } from "../utils/types";
 
-type OriginalConditionResult = {
-    fundBank: [string, string]; // or [BN, BN] if using BN objects
-    payouts: [string, string];
-    totalNetBets: [string, string];
-    reinforcement: string; // or BN
-    margin: string; // or BN
-    ipfsHash: string;
-    outcomes: [string, string];
-    scopeId: string; // or BN
-    outcomeWin: string; // or BN
-    timestamp: string; // or BN
-    state: string; // Solidity enums are returned as strings representing numbers
-    leaf: string; // or BN
-};
 
 // LPv1 Contract ABI
 const contractABI = require("../../abis/CoreV1.json");
 
-// Function to get ERC20 token address from the liquidity pool contract
 export async function getConditionV1FromId(
     contractAddress: string,
     chainId: number,
     _conditionId: bigint,
+    context: any,
 ): Promise<{
-    readonly condition: ConditionV1;
+    readonly condition: ConditionV1Response;
 }> {
     const conditionId = _conditionId.toString();
     const cache = Cache.init(CacheCategory.ConditionV1, chainId);
-    const condition = cache.read(conditionId);
+    const _condition = cache.read(conditionId);
 
-    if (condition) {
-        return condition;
+    if (_condition) {
+        return _condition;
     }
 
     // RPC URL
@@ -50,21 +36,53 @@ export async function getConditionV1FromId(
 
     try {
         const _result = await corev1Contract.methods.getCondition(conditionId).call() as unknown;
-        const result = _result as OriginalConditionResult;
+        const result = _result as ConditionV1Response;
+        
+        // console.log(`result ${result.fundBank[0]}`)
+        // const conditionString = {
+        //     fundBank: [result.fundBank[0].toLowerCase(), result.fundBank[1].toLowerCase()],
+        //     payouts: [result.payouts[0].toLowerCase(), result.payouts[1].toLowerCase()],
+        //     totalNetBets: [result.totalNetBets[0].toLowerCase(), result.totalNetBets[1].toLowerCase()],
+        //     reinforcement: result.reinforcement.toLowerCase(),
+        //     margin: result.margin.toLowerCase(),
+        //     ipfsHash: result.ipfsHash.toLowerCase(),
+        //     outcomes: [result.outcomes[0].toLowerCase(), result.outcomes[1].toLowerCase()],
+        //     scopeId: result.scopeId.toLowerCase(),
+        //     outcomeWin: result.outcomeWin.toLowerCase(),
+        //     timestamp: result.timestamp.toLowerCase(),
+        //     state: result.state.toLowerCase(),
+        //     leaf: result.leaf.toLowerCase(),
+        // };
 
-        const condition: ConditionV1 = {
-            fundBank: [BigInt(result.fundBank[0]), BigInt(result.fundBank[1])],
-            payouts: [BigInt(result.payouts[0]), BigInt(result.payouts[1])],
-            totalNetBets: [BigInt(result.totalNetBets[0]), BigInt(result.totalNetBets[1])],
-            reinforcement: BigInt(result.reinforcement),
-            margin: BigInt(result.margin),
-            ipfsHash: result.ipfsHash,
-            outcomes: [BigInt(result.outcomes[0]), BigInt(result.outcomes[1])],
-            scopeId: BigInt(result.scopeId),
-            outcomeWin: BigInt(result.outcomeWin),
-            timestamp: BigInt(result.timestamp),
-            state: Number(result.state),
-            leaf: BigInt(result.leaf),
+        // const condition: ConditionV1Response = {
+        //     fundBank: [result.fundBank[0], result.fundBank[1]],
+        //     payouts: [result.payouts[0], result.payouts[1]],
+        //     totalNetBets: [result.totalNetBets[0], result.totalNetBets[1]],
+        //     reinforcement: result.reinforcement,
+        //     margin: result.margin,
+        //     ipfsHash: result.ipfsHash,
+        //     outcomes: [result.outcomes[0], result.outcomes[1]],
+        //     scopeId: result.scopeId,
+        //     outcomeWin: result.outcomeWin,
+        //     timestamp: result.timestamp,
+        //     state: result.state,
+        //     leaf: result.leaf,
+        // };
+
+        // put toString().toLowerCase() on all the values
+        const condition: ConditionV1Response = {
+            fundBank: [result.fundBank[0].toString().toLowerCase(), result.fundBank[1].toString().toLowerCase()],
+            payouts: [result.payouts[0].toString().toLowerCase(), result.payouts[1].toString().toLowerCase()],
+            totalNetBets: [result.totalNetBets[0].toString().toLowerCase(), result.totalNetBets[1].toString().toLowerCase()],
+            reinforcement: result.reinforcement.toString().toLowerCase(),
+            margin: result.margin.toString().toLowerCase(),
+            ipfsHash: result.ipfsHash.toString().toLowerCase(),
+            outcomes: [result.outcomes[0].toString().toLowerCase(), result.outcomes[1].toString().toLowerCase()],
+            scopeId: result.scopeId.toString().toLowerCase(),
+            outcomeWin: result.outcomeWin.toString().toLowerCase(),
+            timestamp: result.timestamp.toString().toLowerCase(),
+            state: result.state.toString().toLowerCase(),
+            leaf: result.leaf.toString().toLowerCase(),
         };
 
         const entry = {
@@ -78,4 +96,23 @@ export async function getConditionV1FromId(
         console.error("An error occurred", err);
         throw err; // or handle the error as needed
     }
+}
+
+
+export function deserialiseConditionV1Result(result: ConditionV1Response): ConditionV1 {
+    const condition: ConditionV1 = {
+        fundBank: [BigInt(result.fundBank[0]), BigInt(result.fundBank[1])],
+        payouts: [BigInt(result.payouts[0]), BigInt(result.payouts[1])],
+        totalNetBets: [BigInt(result.totalNetBets[0]), BigInt(result.totalNetBets[1])],
+        reinforcement: BigInt(result.reinforcement),
+        margin: BigInt(result.margin),
+        ipfsHash: result.ipfsHash,
+        outcomes: [BigInt(result.outcomes[0]), BigInt(result.outcomes[1])],
+        scopeId: BigInt(result.scopeId),
+        outcomeWin: BigInt(result.outcomeWin),
+        timestamp: BigInt(result.timestamp),
+        state: Number(result.state),
+        leaf: BigInt(result.leaf),
+    }
+    return condition
 }

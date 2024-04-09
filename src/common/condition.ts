@@ -9,7 +9,7 @@ import { Condition, LiveCondition } from "../src/DbFunctions.bs";
 import { getEntityId } from "../utils/schema";
 import { Mutable } from "../utils/types";
 
-export function createCondition(
+export async function createCondition(
   version: string,
   coreAddress: string,
   conditionId: bigint,
@@ -18,15 +18,15 @@ export function createCondition(
   reinforcement: bigint,
   outcomes: bigint[],
   funds: bigint[],
-  winningOutcomesCount: number,  // number?
+  winningOutcomesCount: number,
   isExpressForbidden: boolean,
   provider: bigint,
   txHash: string,
-  createBlockNumber: number,  // number?
+  createBlockNumber: number,
   createBlockTimestamp: number,
   context: CoreContract_ConditionCreatedEvent_handlerContextAsync | Corev2Contract_ConditionCreatedEvent_handlerContextAsync,
   startsAt: bigint | null = null,
-): ConditionEntity | null {
+): Promise<Mutable<typeof conditionEntity> | null> {
 
   const conditionEntityId = coreAddress + "_" + conditionId.toString()
 
@@ -77,7 +77,7 @@ export function createCondition(
     const outcomeEntityId = getEntityId(conditionEntityId, outcomeId)
 
     const outcomeEntity: Mutable<OutcomeEntity> = {
-      id: outcomeEntityId, // TODO correct?
+      id: outcomeEntityId,
       core_id: coreAddress,
       outcomeId: outcomes[i],
       condition_id: conditionEntity.id,
@@ -104,38 +104,38 @@ export function createCondition(
   conditionEntity._updatedAt = BigInt(createBlockTimestamp)
 
   context.Condition.set(conditionEntity)
-  context.log.debug(`createCondition conditionEntity created. conditionEntityId = ${conditionEntityId}`)
 
-  const gameEntity = context.Game.get(gameEntityId)!
+  const gameEntity = (await context.Game.get(gameEntityId))!
 
-  // context.Game.set({
-  //   ...gameEntity,
-  //   _activeConditionsEntityIds: gameEntity._activeConditionsEntityIds!.concat([conditionEntityId]),
-  //   hasActiveConditions: true,
-  //   status: GAME_STATUS_CREATED,
-  //   _updatedAt: BigInt(createBlockTimestamp),
-  // })
+  context.Game.set({
+    ...gameEntity,
+    _activeConditionsEntityIds: gameEntity._activeConditionsEntityIds!.concat([conditionEntityId]),
+    hasActiveConditions: true,
+    status: GAME_STATUS_CREATED,
+    _updatedAt: BigInt(createBlockTimestamp),
+  })
 
-  // const leagueEntity = context.League.get(gameEntity.league_id)!
+  const leagueEntity = (await context.League.get(gameEntity.league_id))!
+  // context.log.debug(`leagueEntity ${JSON.stringify(leagueEntity)}`)
 
-  // if (!leagueEntity.activeGamesEntityIds!.includes(gameEntityId)) {
-  //   context.League.set({
-  //     ...leagueEntity,
-  //     activeGamesEntityIds: leagueEntity.activeGamesEntityIds!.concat([gameEntityId]),
-  //     hasActiveGames: true,
-  //   })
+  if (!leagueEntity.activeGamesEntityIds!.includes(gameEntityId)) {
+    context.League.set({
+      ...leagueEntity,
+      activeGamesEntityIds: leagueEntity.activeGamesEntityIds!.concat([gameEntityId]),
+      hasActiveGames: true,
+    })
 
-  //   const countryEntity = context.Country.get(leagueEntity.country_id)!
+    const countryEntity = (await context.Country.get(leagueEntity.country_id))!
 
-  //   if (!countryEntity.activeLeaguesEntityIds!.includes(leagueEntity.id)) {
-  //     context.Country.set({
-  //       ...countryEntity,
-  //       activeLeaguesEntityIds: countryEntity.activeLeaguesEntityIds!.concat([leagueEntity.id]),
-  //       hasActiveLeagues: true,
-  //     })
-  //   }
+    if (!countryEntity.activeLeaguesEntityIds!.includes(leagueEntity.id)) {
+      context.Country.set({
+        ...countryEntity,
+        activeLeaguesEntityIds: countryEntity.activeLeaguesEntityIds!.concat([leagueEntity.id]),
+        hasActiveLeagues: true,
+      })
+    }
 
-  // }
+  }
   return conditionEntity
 }
 
