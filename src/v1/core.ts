@@ -37,7 +37,6 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const startsAt = event.params.timestamp
   const _conditionData = await getConditionV1FromId(event.srcAddress, event.chainId, conditionId, context)
-  // context.log.debug(`_conditionData ${JSON.stringify(_conditionData.condition)}`)
   const conditionData = deserialiseConditionV1Result(_conditionData.condition)
 
   const coreAddress = event.srcAddress
@@ -53,6 +52,7 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     event.transactionHash,
     BigInt(event.blockNumber),
     BigInt(event.blockTimestamp),
+    event.chainId,
     context,
   )
 
@@ -85,7 +85,7 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 
 CoreContract_ConditionResolved_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
-  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
 });
 CoreContract_ConditionResolved_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
@@ -116,7 +116,7 @@ CoreContract_ConditionResolved_handler(({ event, context }) => {
 });
 
 CoreContract_ConditionShifted_loader(({ event, context }) => {
-  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
 });
 CoreContract_ConditionShifted_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
@@ -142,13 +142,13 @@ CoreContract_ConditionShifted_handler(({ event, context }) => {
 });
 
 CoreContract_ConditionStopped_loader(({ event, context }) => {
-  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
 });
 CoreContract_ConditionStopped_handler(({ event, context }) => { 
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionEntityId = coreAddress + "_" + conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   // TODO remove later
