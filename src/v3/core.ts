@@ -144,7 +144,7 @@ Corev3Contract_NewBet_handler(({ event, context }) => {
 
   // createBet(
   //   VERSION_V3,
-  //   BET_TYPE_ORDINAR.toString(),
+  //   BET_TYPE_ORDINAR,
   //   [conditionEntity],
   //   [outcomeEntity],
   //   [event.params.odds],

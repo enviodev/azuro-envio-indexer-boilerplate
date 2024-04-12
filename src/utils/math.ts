@@ -1,6 +1,6 @@
 import { C1e9, C1e12, VERSION_V2, VERSION_V3 } from '../constants'
 
-function safeDiv(numerator: bigint, divisor: bigint): bigint {
+export function safeDiv(numerator: bigint, divisor: bigint): bigint {
   const bigNumerator = BigInt(numerator);
   const bigDivisor = BigInt(divisor);
 
@@ -12,7 +12,7 @@ function safeDiv(numerator: bigint, divisor: bigint): bigint {
 }
 
 
-function sqrtBigInt(n: bigint): bigint {
+export function sqrtBigInt(n: bigint): bigint {
   if (n < 0n) {
     throw 'Square root of negative numbers is not supported.';
   }

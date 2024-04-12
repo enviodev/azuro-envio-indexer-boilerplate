@@ -43,10 +43,10 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const coreAddress = event.srcAddress
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
 
-  const gameEntity = createGame(
-    liquidityPoolAddress,
+  const gameEntity = await createGame(
+  liquidityPoolAddress,
     null,
-    "", //conditionData.value.ipfsHash,
+    conditionData.ipfsHash,
     null,
     startsAt,
     null,
@@ -59,6 +59,8 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   if (!gameEntity) {
     context.log.error(`v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`)
     return
+  } else {
+    context.log.debug(`v1 ConditionCreated created game. gameEntityId = ${gameEntity.id}`)
   }
 
   createCondition(

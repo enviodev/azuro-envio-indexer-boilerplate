@@ -2,6 +2,20 @@ export type Mutable<T> = {
   -readonly [P in keyof T]: T[P];
 };
 
+export type IPFSMatchDetails = {
+  titleLeague: string;
+  titleCountry: string;
+  entity1Name: string;
+  entity2Name: string;
+  entity1Image: string;
+  entity2Image: string;
+  sportTypeId: number;
+  scopeId: number;
+  gameId: number;
+  leagueId: number;
+  countryId: number;
+}
+
 
 export type ConditionV1 = {
   fundBank: [bigint, bigint];

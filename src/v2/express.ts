@@ -53,7 +53,7 @@
 
 //   // createBet(
 //   //   VERSION_V2,
-//   //   BET_TYPE_EXPRESS.toString(),
+//   //   BET_TYPE_EXPRESS,
 //   //   conditionEntities,
 //   //   outcomeEntities,
 //   //   conditionOdds,
