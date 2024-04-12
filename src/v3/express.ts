@@ -51,7 +51,7 @@ Expressv3Contract_NewBet_handler(({ event, context }) => {
 
   // createBet(
   //   VERSION_V3,
-  //   BET_TYPE_EXPRESS.toString(),
+  //   BET_TYPE_EXPRESS,
   //   conditionEntities,
   //   outcomeEntities,
   //   conditionOdds,

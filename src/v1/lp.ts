@@ -94,6 +94,8 @@ LPContract_LiquidityRequested_handler(({ event, context }) => { });
 
 LPContract_NewBet_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
+  const conditionEntityId = getEntityId('0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d',event.params.conditionId.toString())
+  context.Condition.load(conditionEntityId, {});
 });
 LPContract_NewBet_handler(({ event, context }) => {
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
@@ -117,7 +119,7 @@ LPContract_NewBet_handler(({ event, context }) => {
 
   createBet(
     VERSION_V1,
-    BET_TYPE_ORDINAR.toString(),
+    BET_TYPE_ORDINAR,
     [conditionEntity],
     [outcomeEntity],
     [event.params.odds],
@@ -129,8 +131,8 @@ LPContract_NewBet_handler(({ event, context }) => {
     liquidityPoolContractEntity.tokenDecimals,
     event.params.amount,
     event.transactionHash,
-    event.blockTimestamp,
-    event.blockNumber,
+    BigInt(event.blockTimestamp),
+    BigInt(event.blockNumber),
     [event.params.fund1, event.params.fund2],
     context,
   )

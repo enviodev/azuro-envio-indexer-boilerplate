@@ -144,7 +144,7 @@
 
 //   createBet(
 //     VERSION_V2,
-//     BET_TYPE_ORDINAR.toString(),
+//     BET_TYPE_ORDINAR,
 //     [conditionEntity],
 //     [outcomeEntity],
 //     [event.params.odds],

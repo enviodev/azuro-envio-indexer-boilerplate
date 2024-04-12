@@ -7,6 +7,7 @@ import { toSlug } from "../utils/text"
 import { sports } from "../dictionaries/sports"
 import { getEntityId } from "../utils/schema"
 import { getImageUrl } from "../utils/images"
+import { byte32ToIPFSCIDv0, tryFetchIpfsFile } from "../utils/ipfs"
 
 
 const DEFAULT_GAME: GameEntity = {
@@ -54,35 +55,22 @@ export async function createGame(
     context: CoreContract_ConditionCreatedEvent_handlerContextAsync | LPv2Contract_NewGameEvent_handlerContext,
 ): Promise<GameEntity | null> {
 
-    let data: TypedMap<string, JSONValue> | null = null
+    let data: any = null
 
     // V2
     if (ipfsHashBytes !== null) {
-        const ipfsHashHex = ipfsHashBytes
-        const bytesHex = (`0x1220${ipfsHashHex.slice(2)}`)
-        const bytesBuffer = Buffer.from(bytesHex, 'hex')
-
-        const ipfsHash = encodeBase58(bytesBuffer);
-
-        const ipfsJson = getIPFSJson(ipfsHash)
-
-        if (!ipfsJson) {
-            context.log.error(`createGame IPFS failed to get JSON. Hash: ${ipfsHash.toString()}`)
-            return null
-        }
-
-        data = ipfsJson.toObject() // deserialize
-
+        const ipfsHash = byte32ToIPFSCIDv0(ipfsHashBytes.slice(2))
+        const data = await tryFetchIpfsFile(ipfsHash, context)
         if (data === null) {
-            context.log.error(`createGame IPFS failed to convert to object. Hash: ${ipfsHash.toString()}`)
+            context.log.error(`createGame IPFS failed to convert to object. Hash: ${ipfsHash}`)
             return null
         }
-
     }
 
     // V3
 
     if (dataBytes !== null) {
+        context.log.debug(`v3 createGame bytes data: ${dataBytes}`)
         let data;
         try {
             data = JSON.parse(dataBytes);
@@ -104,17 +92,17 @@ export async function createGame(
     let sportId: bigint | null = null
 
     // V1
-    const sportTypeIdField = data.get('sportTypeId')
+    const sportTypeIdField = data.sportTypeId
 
     if (sportTypeIdField && sportTypeIdField.kind === JSONValueKind.NUMBER) {
-        sportId = sportTypeIdField.toBigInt()
+        sportId = BigInt(sportTypeIdField)
     }
 
-    // V2
-    const sportIdField = data.get('sportId')
+    // 
+    const sportIdField = data.sportId
 
     if (sportIdField && sportIdField.kind === JSONValueKind.NUMBER) {
-        sportId = sportIdField.toBigInt()
+        sportId = BigInt(sportIdField)
     }
 
     if (sportId === null) {
@@ -126,18 +114,18 @@ export async function createGame(
     let countryName = DEFAULT_COUNTRY
 
     // V1
-    const titleCountryField = data.get('titleCountry')
+    const titleCountryField = data.titleCountry
 
     if (titleCountryField && titleCountryField.kind === JSONValueKind.STRING) {
         countryName = titleCountryField.toString()
     }
 
     // V2
-    const countryObjectField = data.get('country')
+    const countryObjectField = data.country
 
     if (countryObjectField && countryObjectField.kind === JSONValueKind.OBJECT) {
-        const countryObject = countryObjectField.toObject()
-        const countryObjectNameField = countryObject.get('name')
+        const countryObject = JSON.parse(countryObjectField)
+        const countryObjectNameField = countryObject.name
 
         if (countryObjectNameField && countryObjectNameField.kind === JSONValueKind.STRING) {
             countryName = countryObjectNameField.toString()
@@ -147,19 +135,19 @@ export async function createGame(
     let leagueName: string | null = null
 
     // V1
-    const titleLeagueField = data.get('titleLeague')
+    const titleLeagueField = data.titleLeague
 
     if (titleLeagueField && titleLeagueField.kind === JSONValueKind.STRING) {
         leagueName = titleLeagueField.toString()
     }
 
     // V2
-    const leagueObjectField = data.get('league')
+    const leagueObjectField = data.league
 
     if (leagueObjectField && leagueObjectField.kind === JSONValueKind.OBJECT) {
-        const leagueObject = leagueObjectField.toObject()
+        const leagueObject = JSON.parse(leagueObjectField)
 
-        const leagueObjectNameField = leagueObject.get('name')
+        const leagueObjectNameField = leagueObject.name
 
         if (leagueObjectNameField && leagueObjectNameField.kind === JSONValueKind.STRING) {
             leagueName = leagueObjectNameField.toString()
@@ -209,7 +197,7 @@ export async function createGame(
 
     }
 
-    const countryEntityId = sportId.toString().concat('_').concat(countryName)
+    const countryEntityId = getEntityId(sportId.toString(), countryName)
 
     let countryEntity = await context.Country.get(countryEntityId)
 
@@ -225,7 +213,7 @@ export async function createGame(
         } as CountryEntity
     }
 
-    let leagueEntityId = getEntityId(sportId, countryName, leagueName)
+    let leagueEntityId = getEntityId(sportId.toString(), countryName, leagueName)
 
     let leagueEntity = await context.League.get(leagueEntityId)
 
@@ -246,21 +234,21 @@ export async function createGame(
     let gameId = rawGameId
 
     if (gameId === null) {
-        const gameIdObjectField = data.get('gameId')
+        const gameIdObjectField = data.gameId
         if (!gameIdObjectField || gameIdObjectField.kind !== JSONValueKind.NUMBER) {
             context.log.error('createGame gameIdObjectField is null')
             return null
         }
-        gameId = gameIdObjectField.toBigInt()
+        gameId = BigInt(gameIdObjectField)
     }
     // end V1 - gameId from ipfs
 
     // V2
-    const extraObjectField = data.get('extra')
+    const extraObjectField = data.extra
     let provider = BigInt('1')
 
     if (extraObjectField && extraObjectField.kind === JSONValueKind.OBJECT) {
-        const extraObject = extraObjectField.toObject()
+        const extraObject = JSON.parse(extraObjectField)
 
         const extraObjectProviderField = extraObject.get('provider')
 
@@ -312,7 +300,7 @@ export async function createGame(
         let participantEntityId = getEntityId(gameEntity.id, BigInt(i).toString())
 
         let participantNameKey = 'entity'.concat((i + 1).toString()).concat('Name')
-        let participantNameValue = data.get(participantNameKey)
+        let participantNameValue = data[participantNameKey]
 
         if (!participantNameValue) {
             continue
@@ -349,7 +337,7 @@ export async function createGame(
         for (let i = 0; i < participantsArray.length; i++) {
             let participantEntityId = getEntityId(gameEntity.id, BigInt(i).toString())
 
-            const mappedParticipant = participantsArray[i].toObject()
+            const mappedParticipant = JSON.parse(participantsArray[i])
 
             const participantNameValue = mappedParticipant.get('name')
 
@@ -376,11 +364,13 @@ export async function createGame(
         }
     }
 
+    const gameSlug = participantsNames[0].concat('-').concat(participantsNames[1])
+
     context.Game.set({
         ...gameEntity,
-        title: participantsNames[0].concat(' - ').concat(participantsNames[1]),
+        title: gameSlug,
         slug: toSlug(gameSlug),
-        _updatedAt: createBlock.timestamp,
+        _updatedAt: createBlockTimestamp,
     })
 
     return gameEntity

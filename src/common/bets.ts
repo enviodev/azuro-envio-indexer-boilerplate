@@ -2,9 +2,10 @@ import { zeroPadBytes } from "ethers"
 import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE, BET_TYPE_EXPRESS } from "../constants"
 import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
-import { getOdds, toDecimal } from "../utils/math"
+import { getOdds, toDecimal, safeDiv } from "../utils/math"
 import { getEntityId } from "../utils/schema"
 import { Mutable } from "../utils/types"
+import { deepCopy } from "../utils/mapping"
 
 
 export function transferBet(
@@ -99,7 +100,7 @@ export function linkBetWithFreeBet(
 
 export function createBet(
   version: string,
-  betType: string,
+  betType: typeof BET_TYPE_ORDINAR | typeof BET_TYPE_EXPRESS,
   conditionEntities: ConditionEntity[],
   betOutcomeEntities: OutcomeEntity[],
   conditionOdds: bigint[],
@@ -111,8 +112,8 @@ export function createBet(
   tokenDecimals: number,
   amount: bigint,
   txHash: string,
-  createdBlockTimestamp: number,
-  createdBlockNumber: number,
+  createdBlockTimestamp: bigint,
+  createdBlockNumber: bigint,
   funds: bigint[] | null,
   context: LPContract_NewBetEvent_handlerContext | Corev2Contract_NewBetEvent_handlerContext,
 ): BetEntity | null {
@@ -128,7 +129,7 @@ export function createBet(
     gameEntitiesIds[i] = conditionEntities[i].game_id
 
     const gameEntity: GameEntity = context.Game.get(gameEntitiesIds[i])!
-    
+
     if (gameEntity.startsAt > approxSettledAt) {
       approxSettledAt = gameEntity.startsAt + BigInt("7200")
     }
@@ -140,14 +141,14 @@ export function createBet(
     context.Condition.set({
       ...conditionEntity,
       turnover: conditionEntity.turnover + amount,
-      _updatedAt: BigInt(createdBlockTimestamp),
+      _updatedAt: createdBlockTimestamp,
     })
 
     const gameEntity: GameEntity = context.Game.get(conditionEntities[0].game_id)!
     context.Game.set({
       ...gameEntity,
       turnover: gameEntity.turnover + amount,
-      _updatedAt: BigInt(createdBlockTimestamp),
+      _updatedAt: createdBlockTimestamp,
     })
 
     const leagueEntity = context.League.get(gameEntity.league_id)!
@@ -163,9 +164,9 @@ export function createBet(
     })
   }
 
-  const potentialPayout = amount * odds / (MULTIPLIERS_VERSIONS.get(version)!)
+  const potentialPayout = safeDiv(amount * odds, (MULTIPLIERS_VERSIONS.get(version)!))
+  
   const betEntityId = coreAddress + "_" + tokenId.toString()
-
   const _betType = betType as "Ordinar" | "Express"
 
   for (let k = 0; k < conditionEntities.length; k++) {
@@ -194,13 +195,12 @@ export function createBet(
     }
 
     for (let i = 0; i < outcomeEntities.length; i++) {
-      const outcomeEntity = outcomeEntities[i]
+      const outcomeEntity = deepCopy(outcomeEntities[i])
 
       if (outcomeEntity.outcomeId === betOutcomeEntities[k].outcomeId) {
-        context.Outcome.set({
-          ...outcomeEntity,
-          _betsEntityIds: outcomeEntity._betsEntityIds!.concat([betEntityId,]),
-        })
+        outcomeEntity._betsEntityIds = outcomeEntity._betsEntityIds!.concat([
+          betEntityId,
+        ])
       }
 
       // odds the condition outcomes must be recalculated after the odrinar bet placed
@@ -210,28 +210,19 @@ export function createBet(
         && funds !== null
       ) {
 
+        outcomeEntity.fund = funds[i]
+
         if (newOdds !== null) {
-          context.Outcome.set({
-            ...outcomeEntity,
-            rawCurrentOdds: newOdds[i],
-          })
+          outcomeEntity.rawCurrentOdds = newOdds[i]
         }
 
-        context.Outcome.set({
-          ...outcomeEntity,
-          fund: funds[i],
-          // currentOdds: toDecimal(
-          //   outcomeEntity.rawCurrentOdds,
-          //   BASES_VERSIONS.mustGetEntry(version).value,
-          // ),
-        })
-
+        // outcomeEntity.currentOdds = toDecimal(
+        //   outcomeEntity.rawCurrentOdds,
+        //   BASES_VERSIONS.mustGetEntry(version).value,
+        // )
       }
-
-      context.Outcome.set({
-        ...outcomeEntity,
-        _updatedAt: BigInt(createdBlockTimestamp),
-      })
+      outcomeEntity._updatedAt = createdBlockTimestamp
+      context.Outcome.set(outcomeEntity)
     }
   }
 

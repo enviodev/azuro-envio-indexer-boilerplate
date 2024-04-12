@@ -76,7 +76,7 @@ export async function createCondition(
 
     const outcomeEntityId = getEntityId(conditionEntityId, outcomeId)
 
-    const outcomeEntity: Mutable<OutcomeEntity> = {
+    const outcomeEntity: OutcomeEntity = {
       id: outcomeEntityId,
       core_id: coreAddress,
       outcomeId: outcomes[i],
@@ -102,6 +102,8 @@ export async function createCondition(
   }
 
   conditionEntity._updatedAt = BigInt(createBlockTimestamp)
+
+  context.log.debug(`condition created id ${conditionEntity.id}`)
 
   context.Condition.set(conditionEntity)
 

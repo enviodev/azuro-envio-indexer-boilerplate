@@ -1,3 +1,33 @@
+import { Mutable } from './types';
+
+export function deepCopy<T>(obj: T): Mutable<T> {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+
+    if (obj instanceof Array) {
+        let copy = [] as any[];
+        for (let i = 0; i < obj.length; i++) {
+            copy[i] = deepCopy(obj[i]);
+        }
+        return copy as any as T;
+    }
+
+    if (obj instanceof Object) {
+        let copy = {} as { [key: string]: any };
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                copy[key] = deepCopy(obj[key]);
+            }
+        }
+        return copy as T;
+    }
+
+    throw new Error('Unable to copy obj! Its type isn\'t supported.');
+}
+
+
+
 /**
  * TypedMap entry.
  */
@@ -75,6 +105,8 @@ export class TypedMap<K, V> {
 }
 
 
+// TODO delete below
+
 export enum JSONValueKind {
     NULL = 0,
     BOOL = 1,
@@ -84,14 +116,16 @@ export enum JSONValueKind {
     OBJECT = 5,
 }
 
+export type JSONValuePayload = number;
+
 export class JSONValue {
     kind: JSONValueKind;
-    data: string;
+    data: any;
 
     constructor(kind: JSONValueKind, data: any) {
         this.kind = kind;
         // Directly use JSON.stringify to convert any data into a string representation.
-        this.data = JSON.stringify(data);
+        this.data = Number(data);
     }
 
     isNull(): boolean {
@@ -100,30 +134,25 @@ export class JSONValue {
 
     toBool(): boolean {
         this.ensureKind(JSONValueKind.BOOL);
-        return JSON.parse(this.data);
-    }
-
-    toNumber(): number {
-        this.ensureKind(JSONValueKind.NUMBER);
-        return JSON.parse(this.data);
+        return this.data != 0;
     }
 
     toBigInt(): bigint {
         this.ensureKind(JSONValueKind.NUMBER);
-        return BigInt(JSON.parse(this.data));
+        return BigInt(this.data)
     }
 
     toString(): string {
         this.ensureKind(JSONValueKind.STRING);
-        return JSON.parse(this.data);
+        return this.data.toString();
     }
 
     toArray(): any[] {
         this.ensureKind(JSONValueKind.ARRAY);
-        return JSON.parse(this.data);
+        return [this.data];
     }
 
-    toObject(): object {
+    toObject(): number {
         this.ensureKind(JSONValueKind.OBJECT);
         return JSON.parse(this.data);
     }
