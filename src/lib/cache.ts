@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { type } from "os";
 import * as path from "path";
-import { ConditionV1Response, ConditionV2Response } from "../utils/types";
+import { ConditionV1Response, ConditionV2Response, IPFSMatchDetails } from "../utils/types";
 
 export const CacheCategory = {
   Token: "token",
@@ -11,6 +11,7 @@ export const CacheCategory = {
   ConditionV1: "conditionv1",
   ConditionV2: "conditionv2",
   LPv1NodeWithdrawView: "lpv1nodewithdrawview",
+  IPFSMatchDetails: "ipfsmatchdetails",
 } as const;
 
 export type CacheCategory = (typeof CacheCategory)[keyof typeof CacheCategory];
@@ -36,6 +37,8 @@ type ShapeConditionV2 = Shape & Record<ConditionId, { condition: ConditionV2Resp
 
 type ShapeLpv1NodeWithdrawView = Shape & Record<Address, { withdrawAmount: string }>;
 
+type ShapeIPFSMatchDetails = Shape & Record<string, { matchDetails: IPFSMatchDetails }>;
+
 export class Cache {
   static init<C = CacheCategory>(
     category: C,
@@ -45,20 +48,14 @@ export class Cache {
       throw new Error("Unsupported cache category");
     }
 
-    type S = C extends "token"
-      ? ShapeToken
-      : C extends "lpv1"
-      ? ShapeLPv1
-      : C extends "lpv1bet"
-      ? ShapeLPv1Bet
-      : C extends "lpv1nodewithdrawview"
-      ? ShapeLpv1NodeWithdrawView
-      : C extends "conditionv1"
-      ? ShapeConditionV1
-      : C extends "conditionv2"
-      ? ShapeConditionV2
-      : C extends "freebetv1"
-      ? ShapeFreebetV1
+    type S = C extends "token" ? ShapeToken
+      : C extends "lpv1" ? ShapeLPv1
+      : C extends "lpv1bet" ? ShapeLPv1Bet
+      : C extends "lpv1nodewithdrawview" ? ShapeLpv1NodeWithdrawView
+      : C extends "conditionv1" ? ShapeConditionV1
+      : C extends "conditionv2" ? ShapeConditionV2
+      : C extends "freebetv1" ? ShapeFreebetV1
+      : C extends "ipfsmatchdetails" ? ShapeIPFSMatchDetails
       : ShapeRoot;
     const entry = new Entry<S>(`${category}-${chainId.toString()}`);
     return entry;

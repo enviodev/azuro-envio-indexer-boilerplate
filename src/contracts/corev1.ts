@@ -59,7 +59,7 @@ export async function getConditionV1FromId(
             condition: condition,
         } as const;
 
-        cache.add({ [conditionId]: entry as any });
+        cache.add({ [conditionId]: entry as any});
 
         return entry;
     } catch (err) {

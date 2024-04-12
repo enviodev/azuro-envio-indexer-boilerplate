@@ -10,3 +10,7 @@ export function getEntityId(arg1: string, arg2: string, arg3?: string): string {
     return `${arg1}_${arg2}`;
   }
 }
+
+export function isPlainObject(obj: any): boolean {
+  return typeof obj === 'object' && obj !== null && !Array.isArray(obj) && !(obj instanceof Date);
+}

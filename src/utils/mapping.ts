@@ -107,59 +107,59 @@ export class TypedMap<K, V> {
 
 // TODO delete below
 
-export enum JSONValueKind {
-    NULL = 0,
-    BOOL = 1,
-    NUMBER = 2,
-    STRING = 3,
-    ARRAY = 4,
-    OBJECT = 5,
-}
+// export enum JSONValueKind {
+//     NULL = 0,
+//     BOOL = 1,
+//     NUMBER = 2,
+//     STRING = 3,
+//     ARRAY = 4,
+//     OBJECT = 5,
+// }
 
-export type JSONValuePayload = number;
+// export type JSONValuePayload = number;
 
-export class JSONValue {
-    kind: JSONValueKind;
-    data: any;
+// export class JSONValue {
+//     kind: JSONValueKind;
+//     data: any;
 
-    constructor(kind: JSONValueKind, data: any) {
-        this.kind = kind;
-        // Directly use JSON.stringify to convert any data into a string representation.
-        this.data = Number(data);
-    }
+//     constructor(kind: JSONValueKind, data: any) {
+//         this.kind = kind;
+//         // Directly use JSON.stringify to convert any data into a string representation.
+//         this.data = Number(data);
+//     }
 
-    isNull(): boolean {
-        return this.kind === JSONValueKind.NULL;
-    }
+//     isNull(): boolean {
+//         return this.kind === JSONValueKind.NULL;
+//     }
 
-    toBool(): boolean {
-        this.ensureKind(JSONValueKind.BOOL);
-        return this.data != 0;
-    }
+//     toBool(): boolean {
+//         this.ensureKind(JSONValueKind.BOOL);
+//         return this.data != 0;
+//     }
 
-    toBigInt(): bigint {
-        this.ensureKind(JSONValueKind.NUMBER);
-        return BigInt(this.data)
-    }
+//     toBigInt(): bigint {
+//         this.ensureKind(JSONValueKind.NUMBER);
+//         return BigInt(this.data)
+//     }
 
-    toString(): string {
-        this.ensureKind(JSONValueKind.STRING);
-        return this.data.toString();
-    }
+//     toString(): string {
+//         this.ensureKind(JSONValueKind.STRING);
+//         return this.data.toString();
+//     }
 
-    toArray(): any[] {
-        this.ensureKind(JSONValueKind.ARRAY);
-        return [this.data];
-    }
+//     toArray(): any[] {
+//         this.ensureKind(JSONValueKind.ARRAY);
+//         return [this.data];
+//     }
 
-    toObject(): number {
-        this.ensureKind(JSONValueKind.OBJECT);
-        return JSON.parse(this.data);
-    }
+//     toObject(): number {
+//         this.ensureKind(JSONValueKind.OBJECT);
+//         return JSON.parse(this.data);
+//     }
 
-    private ensureKind(expectedKind: JSONValueKind): void {
-        if (this.kind !== expectedKind) {
-            throw new Error(`JSON value is not of expected type: ${expectedKind}`);
-        }
-    }
-}
+//     private ensureKind(expectedKind: JSONValueKind): void {
+//         if (this.kind !== expectedKind) {
+//             throw new Error(`JSON value is not of expected type: ${expectedKind}`);
+//         }
+//     }
+// }

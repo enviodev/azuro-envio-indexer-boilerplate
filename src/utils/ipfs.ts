@@ -1,5 +1,8 @@
-import { CoreContract_ConditionCreatedEvent_handlerContextAsync } from "../src/Types.gen";
+import { CoreContract_ConditionCreatedEvent_handlerContextAsync, LPv2Contract_NewGameEvent_handlerContext } from "../src/Types.gen";
 import { IPFSMatchDetails } from "./types";
+import { Cache, CacheCategory } from "../lib/cache";
+import { match } from "assert";
+
 
 function encodeBase58(hexStr: string): string {
   const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -7,59 +10,78 @@ function encodeBase58(hexStr: string): string {
   let encoded = '';
 
   while (num > 0) {
-      const remainder = num % BigInt(58);
-      num = num / BigInt(58);
-      encoded = alphabet[Number(remainder)] + encoded;
+    const remainder = num % BigInt(58);
+    num = num / BigInt(58);
+    encoded = alphabet[Number(remainder)] + encoded;
   }
 
   return encoded;
 }
 
+
 export function byte32ToIPFSCIDv0(hexStr: string): string {
-    // Convert the hex string to a Buffer
-    const binaryStr = Buffer.from(hexStr, 'hex');
-    // Prepend the multihash identifier and length (0x12 for sha2-256, 0x20 for 32 bytes)
-    const completedBinaryStr = Buffer.concat([Buffer.from([0x12, 0x20]), binaryStr]);
-    // Encode the complete binary string to Base58
-    return encodeBase58(completedBinaryStr.toString('hex'));
+  // Convert the hex string to a Buffer
+  const binaryStr = Buffer.from(hexStr, 'hex');
+  // Prepend the multihash identifier and length (0x12 for sha2-256, 0x20 for 32 bytes)
+  const completedBinaryStr = Buffer.concat([Buffer.from([0x12, 0x20]), binaryStr]);
+  // Encode the complete binary string to Base58
+  return encodeBase58(completedBinaryStr.toString('hex'));
 }
 
-export async function tryFetchIpfsFile(contentHash: string, context: CoreContract_ConditionCreatedEvent_handlerContextAsync): Promise<IPFSMatchDetails | null> {
+
+export async function tryFetchIpfsFile(
+  contentHash: string,
+  chainId: number,
+  context: CoreContract_ConditionCreatedEvent_handlerContextAsync | LPv2Contract_NewGameEvent_handlerContext,
+): Promise<IPFSMatchDetails | null> {
   // https://gateway.ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1
+
+  const cache = Cache.init(CacheCategory.IPFSMatchDetails, chainId);
+  const matchDetails = cache.read(contentHash);
+
+  if (matchDetails) {
+    return matchDetails.matchDetails;
+  }
+  
+  let resp: IPFSMatchDetails | undefined = undefined;
+  
   try {
-    const response = await fetch(`https://gateway.ipfs.io/ipfs/${contentHash}`);
-    if (response.ok) {
-      const resp = await response.json();
-      return resp as IPFSMatchDetails;
-    }
+    resp = await fetchIpfsFile(contentHash, "gateway.ipfs.io", context);
   } catch (e) {
-    context.log.error("Unable to fetch from IPFS Gateway");
+    try {
+      resp = await fetchIpfsFile(contentHash, "cloudflare-ipfs.com", context);
+    } catch (e) {
+      try {
+        resp = await fetchIpfsFile(contentHash, "ipfs.io", context);
+      } catch (e) {
+        context.log.error("Unable to fetch from any IPFS gateway");
+      }
+    }
   }
 
-  try {
-    const response = await fetch(
-      `https://cloudflare-ipfs.com/ipfs/${contentHash}`
-    );
-    console.log("response");
-    if (response.ok) {
-      const resp = await response.json();
-      return resp as IPFSMatchDetails;
-    }
-  } catch (e) {
-    context.log.error("Unable to fetch from Cloudflare");
+  if (resp) {
+    const entry = {
+      matchDetails: resp,
+    } as const;
+
+    cache.add({ [contentHash]: entry as any });
+    return resp;
   }
 
+  return null
+}
+
+async function fetchIpfsFile(contentHash: string, baseUrl: string, context: CoreContract_ConditionCreatedEvent_handlerContextAsync | LPv2Contract_NewGameEvent_handlerContext): Promise<IPFSMatchDetails | undefined> {
   try {
-    const response = await fetch(`https://ipfs.io/ipfs/${contentHash}`);
+    const response = await fetch(`https://${baseUrl}/ipfs/${contentHash}`);
     if (response.ok) {
-      const resp = await response.json();
-      return resp as IPFSMatchDetails;
+      const resp = await response.json() as IPFSMatchDetails;
+      return resp
     }
   } catch (e) {
-    context.log.error("Unable to fetch from IPFS");
+    context.log.error(`Unable to fetch IPFS data from ${baseUrl}`);
+    throw e
   }
-
-  return null;
 }
 
 

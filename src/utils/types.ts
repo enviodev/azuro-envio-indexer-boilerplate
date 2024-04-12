@@ -3,17 +3,31 @@ export type Mutable<T> = {
 };
 
 export type IPFSMatchDetails = {
-  titleLeague: string;
-  titleCountry: string;
-  entity1Name: string;
-  entity2Name: string;
-  entity1Image: string;
-  entity2Image: string;
-  sportTypeId: number;
-  scopeId: number;
-  gameId: number;
-  leagueId: number;
-  countryId: number;
+  titleLeague: string | null;
+  titleCountry: string | null;
+  entity1Name: string | null;
+  entity2Name: string | null;
+  entity1Image: string | null;
+  entity2Image: string | null;
+  sportTypeId: number | null;
+  scopeId: number | null;
+  gameId: number | null;
+  leagueId: number | null;
+  countryId: number | null;
+  //v2
+  sportId?: number | null;
+  country?: {
+    name: string | null;
+  }
+  league?: {
+    name: string | null;
+  }
+  extra?: {
+    provider: number | null;
+  }
+  participants: Array<{ name: string | null, image: string | null }> | null
+  // string access forparticipantNameKey, participantImageKey
+  [key: string]: string | number | null | { name: string | null } | { provider: number | null } | Array<{ name: string | null, image: string | null }> | undefined;
 }
 
 
