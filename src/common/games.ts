@@ -113,7 +113,6 @@ export async function createGame(
 
     // V1
     const titleCountryField = data.titleCountry
-
     if (typeof titleCountryField === 'string') {
         countryName = titleCountryField.toString()
     }
@@ -204,6 +203,7 @@ export async function createGame(
             hasActiveLeagues: false,
             activeLeaguesEntityIds: [],
         } as CountryEntity
+        context.Country.set(countryEntity)
     }
 
     let leagueEntityId = getEntityId(sportId.toString(), countryName, leagueName)
@@ -222,12 +222,13 @@ export async function createGame(
         context.League.set(leagueEntity)
     }
 
+
+
     // V1 - gameId from ipfs
     let gameId = rawGameId
     if (gameId === null) {
         const gameIdObjectField = data.gameId
-        if (!gameIdObjectField || typeof gameIdObjectField === 'number') {
-            context.log.error('createGame gameIdObjectField is null')
+        if (!gameIdObjectField || typeof gameIdObjectField !== 'number') { context.log.error('createGame gameIdObjectField is null')
             return null
         }
         gameId = BigInt(gameIdObjectField)

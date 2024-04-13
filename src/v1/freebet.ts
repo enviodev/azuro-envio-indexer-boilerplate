@@ -55,7 +55,7 @@ async function getOrCreateFreebetContract(
 
 XYZFreeBetContract_BettorWin_loader(({ event, context }) => { 
   context.FreebetContract.load(event.srcAddress, {});
-  // context.LiquidityPoolContract.load(event.srcAddress); // TODO check if this is correct // probably not
+  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
   // context.Bet.load(event.srcAddress + "_" + event.params.azuroBetId.toString()); // TODO check if this is correct // probably not
 });
 XYZFreeBetContract_BettorWin_handler(async ({ event, context }) => {
@@ -90,6 +90,7 @@ XYZFreeBetContract_BettorWin_handler(async ({ event, context }) => {
 
 XYZFreeBetContract_FreeBetMinted_loader(({ event, context }) => {
   context.FreebetContract.load(event.srcAddress, {});
+  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
 });
 XYZFreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
   const freebetContractEntity = await getOrCreateFreebetContract(
@@ -131,7 +132,7 @@ XYZFreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
 
 XYZFreeBetContract_FreeBetMintedBatch_loader(({ event, context }) => {
   context.FreebetContract.load(event.srcAddress, {});
-  // context.LiquidityPoolContract.load(event.srcAddress); // TODO how to get?
+  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
 });
 XYZFreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
   
@@ -174,7 +175,7 @@ XYZFreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) =>
 
 XYZFreeBetContract_FreeBetRedeemed_loader(({ event, context }) => {
   context.FreebetContract.load(event.srcAddress, {});
-  // context.LiquidityPoolContract.load(event.params.bettor); // TODO check if this is correct // probably not
+  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
 });
 XYZFreeBetContract_FreeBetRedeemed_handler(async ({ event, context }) => {
   // const freebetContractEntity = await context.FreebetContract.get(event.srcAddress);
