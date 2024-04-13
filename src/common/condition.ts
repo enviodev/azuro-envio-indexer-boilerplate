@@ -96,15 +96,10 @@ export async function createCondition(
   }
 
   conditionEntity.outcomesIds = outcomeIds
-
   if (startsAt) {
     conditionEntity.internalStartsAt = startsAt
   }
-
   conditionEntity._updatedAt = BigInt(createBlockTimestamp)
-
-  context.log.debug(`condition created id ${conditionEntity.id}`)
-
   context.Condition.set(conditionEntity)
 
   const gameEntity = (await context.Game.get(gameEntityId))!
@@ -118,7 +113,6 @@ export async function createCondition(
   })
 
   const leagueEntity = (await context.League.get(gameEntity.league_id))!
-  // context.log.debug(`leagueEntity ${JSON.stringify(leagueEntity)}`)
 
   if (!leagueEntity.activeGamesEntityIds!.includes(gameEntityId)) {
     context.League.set({
@@ -459,7 +453,6 @@ export function resolveCondition(
         ...leagueEntity,
         hasActiveGames: false,
       })
-
       context.Country.set({
         ...countryEntity,
         activeLeaguesEntityIds: removeItem(

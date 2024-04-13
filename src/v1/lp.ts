@@ -28,7 +28,10 @@ import { get } from "http";
 
 LPContract_BetterWin_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
-  context.Bet.load(getEntityId(event.srcAddress, event.params.tokenId.toString()), {});
+  const betEntityId = getEntityId('0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d', event.params.tokenId.toString());
+  context.Bet.load(betEntityId, {});
+  context.LiveBet.load(betEntityId, {});
+  context.CoreContract.load('0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d', {})
 });
 LPContract_BetterWin_handler(({ event, context }) => {
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
@@ -64,7 +67,7 @@ LPContract_LiquidityAdded_handler(({ event, context }) => {
 });
 
 LPContract_LiquidityRemoved_loader(({ event, context }) => {
-
+  context.LiquidityPoolContract.load(event.srcAddress)
 });
 LPContract_LiquidityRemoved_handlerAsync(async ({ event, context }) => {
 
@@ -154,7 +157,9 @@ LPContract_Transfer_handler(({ event, context }) => {
   )
 });
 
-LPContract_WithdrawTimeoutChanged_loader(({ event, context }) => { });
+LPContract_WithdrawTimeoutChanged_loader(({ event, context }) => {
+  context.LiquidityPoolContract.load(event.srcAddress);
+ });
 LPContract_WithdrawTimeoutChanged_handler(({ event, context }) => { 
   changeWithdrawalTimeout(event.srcAddress, event.params.newWithdrawTimeout, context)
 });

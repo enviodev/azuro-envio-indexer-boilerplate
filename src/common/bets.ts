@@ -312,15 +312,13 @@ export function bettorWin(
   blockTimestamp: number,
   context: LPv2Contract_BettorWinEvent_handlerContext,
 ): void {
-  const betEntityId = coreAddress + "_" + tokenId.toString()
+  const betEntityId = getEntityId(coreAddress, tokenId.toString())
 
   const coreContractEntity = context.CoreContract.get(coreAddress)
 
   if (!coreContractEntity) {
     context.log.error('coreContractEntity not found. coreContractEntityId = {}')
     return
-  } else {
-    context.log.debug(`coreContractEntity found. coreContractEntityId = ${coreAddress}`)
   }
 
   if (coreContractEntity.type_ === CORE_TYPE_LIVE) {
