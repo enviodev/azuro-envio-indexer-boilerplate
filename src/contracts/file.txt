@@ -1,5 +1,0 @@
-Starting indexer
-
-> azuro@0.1.0 start
-> ts-node generated/src/Index.bs.js
-
