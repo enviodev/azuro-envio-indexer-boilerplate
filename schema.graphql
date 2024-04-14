@@ -6,7 +6,7 @@ enum LiquidityPoolContractType {
 type LiquidityPoolContract @entity {
   id: ID!
   chainId: Int!
-  # chainName: String!
+  chainName: String!
   address: String!
   cores: [CoreContract!]! @derivedFrom(field: "liquidityPool") # todo
   coreAddresses: [String!]

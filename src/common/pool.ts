@@ -116,6 +116,7 @@ export async function createPoolEntity(
     address: liquidityPoolAddress,
     coreAddresses: [coreAddress],
     type_: version,
+    chainName: 'gnosis', // TODO: get chain name
     token: tokenAddress,
     version: version,
     chainId: chainId,
@@ -144,8 +145,8 @@ export async function createPoolEntity(
     withdrawnWithStakingAmount: 0n,
     liquidityManager: undefined,
   };
-
   context.LiquidityPoolContract.set(liquidityPoolContractEntity);
+  context.log.debug(`createPoolEntity liquidityPoolAddress = ${liquidityPoolAddress} coreAddress = ${coreAddress}`)
 
   return liquidityPoolContractEntity;
 }

@@ -21,7 +21,7 @@ import { getEntityId } from "../utils/schema";
 
 // TODO: get contract addresses
 
-Corev2Contract_ConditionCreated_loader(async ({ event, context }) => { 
+Corev2Contract_ConditionCreated_loader(async ({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
 });
 Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
@@ -32,9 +32,15 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const conditionData = deserialiseConditionV2Result(_conditionData.condition)
 
   context.log.debug(`v2 ConditionCreated handler conditionId = ${conditionId} coreAddress = ${coreAddress}`)
-  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
-  const gameEntityId = getEntityId(liquidityPoolAddress, event.params.gameId.toString())
 
+  const coreContractEntity = await context.CoreContract.get(coreAddress)
+
+  if (!coreContractEntity) {
+    throw new Error(`v2 ConditionCreated coreContractEntity not found. coreAddress = ${coreAddress}`)
+  }
+
+  const liquidityPoolAddress = coreContractEntity.liquidityPool_id
+  const gameEntityId = getEntityId(liquidityPoolAddress, event.params.gameId.toString())
   const gameEntity = await context.Game.get(gameEntityId)
 
   // TODO remove later
@@ -98,7 +104,7 @@ Corev2Contract_ConditionResolved_handler(({ event, context }) => {
 Corev2Contract_ConditionStopped_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
   context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
- });
+});
 Corev2Contract_ConditionStopped_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
@@ -123,7 +129,7 @@ Corev2Contract_ConditionStopped_handler(({ event, context }) => {
 Corev2Contract_NewBet_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
   context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
- });
+});
 Corev2Contract_NewBet_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
@@ -162,13 +168,13 @@ Corev2Contract_NewBet_handler(({ event, context }) => {
     event.params.funds,
     context,
   )
- });
+});
 
 Corev2Contract_OddsChanged_loader(({ event, context }) => {
   context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
   context.CoreContract.load(event.srcAddress, {})
- });
-Corev2Contract_OddsChanged_handler(async ({ event, context }) => { 
+});
+Corev2Contract_OddsChanged_handler(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
@@ -193,9 +199,9 @@ Corev2Contract_OddsChanged_handler(async ({ event, context }) => {
   }
 
   updateConditionOdds(
-    VERSION_V2, 
-    conditionEntity, 
-    outcomesEntities, 
+    VERSION_V2,
+    conditionEntity,
+    outcomesEntities,
     conditionData.virtualFunds,
     event.blockNumber,
     context,
