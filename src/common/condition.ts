@@ -8,6 +8,7 @@ import { countConditionResolved } from "./pool";
 import { Condition, LiveCondition } from "../src/DbFunctions.bs";
 import { getEntityId } from "../utils/schema";
 import { Mutable } from "../utils/types";
+import { deepCopy } from "../utils/mapping";
 
 export async function createCondition(
   version: string,
@@ -587,7 +588,7 @@ export function resolveLiveCondition(
   context: LiveCorev1Contract_ConditionResolvedEvent_handlerContext,
 ): LiveConditionEntity | null {
   const _liveConditionEntity = context.LiveCondition.get(liveConditionEntityId)!
-  const liveConditionEntity = {..._liveConditionEntity}
+  const liveConditionEntity = deepCopy(_liveConditionEntity)
 
   const isCanceled = winningOutcomes.length === 0 || winningOutcomes[0] === 0n
 
@@ -641,7 +642,7 @@ export function resolveLiveCondition(
     for (let j = 0; j < liveOutcomeEntity._betsEntityIds!.length; j++) {
       const livebetEntityId = liveOutcomeEntity._betsEntityIds![j]
       const _liveBetEntity = context.LiveBet.get(livebetEntityId)!
-      const liveBetEntity = {..._liveBetEntity}
+      const liveBetEntity = deepCopy(_liveBetEntity)
 
       betsAmount = betsAmount + liveBetEntity.rawAmount
 
@@ -650,7 +651,7 @@ export function resolveLiveCondition(
         liveConditionEntity.conditionId.toString(),
       )
       const _liveSelectionEntity = context.LiveSelection.get(liveSelectionEntityId)!
-      const liveSelectionEntity = {..._liveSelectionEntity}
+      const liveSelectionEntity = deepCopy(_liveSelectionEntity)
 
       if (!isCanceled) {
         if (winningOutcomes.indexOf(liveSelectionEntity._outcomeId) !== -1) {
