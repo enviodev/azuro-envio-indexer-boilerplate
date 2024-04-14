@@ -43,7 +43,7 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
 
   const gameEntity = await createGame(
-  liquidityPoolAddress,
+    liquidityPoolAddress,
     null,
     conditionData.ipfsHash,
     null,
@@ -143,7 +143,7 @@ CoreContract_ConditionShifted_handler(({ event, context }) => {
 CoreContract_ConditionStopped_loader(({ event, context }) => {
   context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
 });
-CoreContract_ConditionStopped_handler(({ event, context }) => { 
+CoreContract_ConditionStopped_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
@@ -157,9 +157,9 @@ CoreContract_ConditionStopped_handler(({ event, context }) => {
   }
 
   pauseUnpauseCondition(
-    conditionEntity, 
-    event.params.flag, 
-    BigInt(event.blockTimestamp), 
+    conditionEntity,
+    event.params.flag,
+    BigInt(event.blockTimestamp),
     context
   )
 });
@@ -192,9 +192,9 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.srcAddress);
 
   if (!coreContractEntity) {
-    createCoreEntity(event.srcAddress, 
-      liquidityPool, 
-      CORE_TYPE_PRE_MATCH, 
+    createCoreEntity(event.srcAddress,
+      liquidityPool,
+      CORE_TYPE_PRE_MATCH,
       context,
     );
   }

@@ -128,7 +128,11 @@ export function createBet(
     conditionEntitiesIds[i] = conditionEntities[i].id
     gameEntitiesIds[i] = conditionEntities[i].game_id
 
-    const gameEntity: GameEntity = context.Game.get(gameEntitiesIds[i])!
+    const gameEntity = context.Game.get(gameEntitiesIds[i])
+
+    if (!gameEntity) {
+      throw new Error(`Game not found with id ${gameEntitiesIds[i]}`)
+    }
 
     if (gameEntity.startsAt > approxSettledAt) {
       approxSettledAt = gameEntity.startsAt + BigInt("7200")
@@ -276,7 +280,6 @@ export function createBet(
     rawSettledOdds: undefined,
     resolvedTxHash: undefined
   }
-
   context.Bet.set(betEntity)
 
   for (let i = 0; i < betOutcomeEntities.length; i++) {
@@ -296,7 +299,6 @@ export function createBet(
       bet_id: betEntityId,
       result: undefined,
     }
-
     context.Selection.set(selectionEntity)
   }
 
@@ -415,7 +417,7 @@ export function createLiveBet(
         outcomeId.toString(),
       )
       const _liveOutcomeEntity = context.LiveOutcome.get(outcomeEntityId)!
-      const liveOutcomeEntity = { ..._liveOutcomeEntity }
+      const liveOutcomeEntity = deepCopy(_liveOutcomeEntity)
 
       outcomeEntities[liveOutcomeEntity.sortOrder] = liveOutcomeEntity
     }

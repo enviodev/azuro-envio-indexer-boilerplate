@@ -228,7 +228,8 @@ export async function createGame(
     let gameId = rawGameId
     if (gameId === null) {
         const gameIdObjectField = data.gameId
-        if (!gameIdObjectField || typeof gameIdObjectField !== 'number') { context.log.error('createGame gameIdObjectField is null')
+        if (!gameIdObjectField || typeof gameIdObjectField !== 'number') {
+            context.log.error('createGame gameIdObjectField is null')
             return null
         }
         gameId = BigInt(gameIdObjectField)

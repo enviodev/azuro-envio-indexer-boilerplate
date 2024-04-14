@@ -24,14 +24,19 @@ import { depositLiquidity, withdrawLiquidity, transferLiquidity, changeWithdrawa
 import { VERSION_V1, BET_TYPE_ORDINAR, ZERO_ADDRESS } from "../constants";
 import { getEntityId } from "../utils/schema";
 import { getNodeWithdrawAmount } from "../contracts/lpv1";
-import { get } from "http";
+import { getConfigByChainId } from "../../generated/src/ConfigYAML.bs.js"
 
 LPContract_BetterWin_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
-  const betEntityId = getEntityId('0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d', event.params.tokenId.toString());
+  
+  const config = getConfigByChainId(event.chainId)
+  const coreAddress = config.contracts.Core.addresses[0]
+  
+  context.CoreContract.load(coreAddress, {})
+
+  const betEntityId = getEntityId(coreAddress, event.params.tokenId.toString());
   context.Bet.load(betEntityId, {});
   context.LiveBet.load(betEntityId, {});
-  context.CoreContract.load('0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d', {})
 });
 LPContract_BetterWin_handler(({ event, context }) => {
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
@@ -97,8 +102,16 @@ LPContract_LiquidityRequested_handler(({ event, context }) => { });
 
 LPContract_NewBet_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress);
-  const conditionEntityId = getEntityId('0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d',event.params.conditionId.toString())
+  
+  const config = getConfigByChainId(event.chainId)
+  const coreAddress = config.contracts.Core.addresses[0]
+  context.CoreContract.load(coreAddress, {})
+  
+  const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
   context.Condition.load(conditionEntityId, {});
+  //context.Game.load(conditionEntity.game_id, {}) // ?
+  context.Outcome.load(getEntityId(conditionEntityId,event.params.outcomeId.toString()), {})
+
 });
 LPContract_NewBet_handler(({ event, context }) => {
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
@@ -118,7 +131,11 @@ LPContract_NewBet_handler(({ event, context }) => {
   }
 
   const outcomeEntityId = getEntityId(conditionEntity.id,event.params.outcomeId.toString())
-  const outcomeEntity = context.Outcome.get(outcomeEntityId)!
+  const outcomeEntity = context.Outcome.get(outcomeEntityId)
+
+  if (!outcomeEntity) {
+    throw new Error(`Outcome not found with id ${outcomeEntityId}`)
+  }
 
   createBet(
     VERSION_V1,

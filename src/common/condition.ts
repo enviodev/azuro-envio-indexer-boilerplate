@@ -186,7 +186,11 @@ export function resolveCondition(
   chainId: number,
   context: CoreContract_ConditionCreatedEvent_handlerContext,
 ): ConditionEntity | null {
-  const conditionEntity: ConditionEntity = context.Condition.get(conditionEntityId)!
+  const conditionEntity = context.Condition.get(conditionEntityId)
+
+  if (!conditionEntity) {
+    throw new Error(`resolveCondition conditionEntity not found with id = ${conditionEntityId}`)
+  }
 
   const isCanceled = winningOutcomes.length === 0 || winningOutcomes[0] === 0n
 
@@ -505,22 +509,18 @@ export function resolveCondition(
 
 
 export function pauseUnpauseCondition(
-  conditionEntity: ConditionEntity,
+  _conditionEntity: ConditionEntity,
   flag: boolean,
   blockTimestamp: bigint,
   context: CoreContract_ConditionStoppedEvent_handlerContext,
 ): ConditionEntity | null {
+  const conditionEntity = deepCopy(_conditionEntity)
+
   if (flag) {
-    context.Condition.set({
-      ...conditionEntity,
-      status: CONDITION_STATUS_PAUSED,
-    })
+    conditionEntity.status = CONDITION_STATUS_PAUSED
   }
   else {
-    context.Condition.set({
-      ...conditionEntity,
-      status: CONDITION_STATUS_CREATED,
-    })
+    conditionEntity.status = CONDITION_STATUS_CREATED
   }
 
   context.Condition.set({
@@ -528,45 +528,40 @@ export function pauseUnpauseCondition(
     _updatedAt: blockTimestamp,
   })
 
-  const gameEntity: GameEntity = context.Game.get(conditionEntity.game_id)!
+  const _gameEntity: GameEntity = context.Game.get(conditionEntity.game_id)!
+  
+  if (!_gameEntity) {
+    throw new Error(`pauseUnpauseCondition gameEntity not found with id = ${conditionEntity.game_id}`)
+  }
+
+  const gameEntity = deepCopy(_gameEntity)
 
   if (flag) {
-    context.Game.set({
-      ...gameEntity,
-      _activeConditionsEntityIds: removeItem(
-        gameEntity._activeConditionsEntityIds!,
-        conditionEntity.id,
-      ),
-      _pausedConditionsEntityIds: gameEntity._pausedConditionsEntityIds!.concat([conditionEntity.id]),
-    })
+    gameEntity._activeConditionsEntityIds = removeItem(
+      gameEntity._activeConditionsEntityIds!,
+      conditionEntity.id,
+    )
+    gameEntity._pausedConditionsEntityIds = gameEntity._pausedConditionsEntityIds!.concat([conditionEntity.id])
 
     if (
       gameEntity.status === GAME_STATUS_CREATED
       && gameEntity._activeConditionsEntityIds!.length === 0
     ) {
-      context.Game.set({
-        ...gameEntity,
-        hasActiveConditions: false,
-        status: GAME_STATUS_PAUSED,
-      })
+      gameEntity.hasActiveConditions = false
+      gameEntity.status = GAME_STATUS_PAUSED
     }
   }
   else {
-    context.Game.set({
-      ...gameEntity,
-      _activeConditionsEntityIds: gameEntity._activeConditionsEntityIds!.concat([conditionEntity.id]),
-      _pausedConditionsEntityIds: removeItem(
-        gameEntity._pausedConditionsEntityIds!,
-        conditionEntity.id,
-      ),
-    })
+    gameEntity._activeConditionsEntityIds = gameEntity._activeConditionsEntityIds!.concat([conditionEntity.id])
+    gameEntity._pausedConditionsEntityIds = removeItem(
+      gameEntity._pausedConditionsEntityIds!,
+      conditionEntity.id,
+    )
+
 
     if (gameEntity.status === GAME_STATUS_PAUSED) {
-      context.Game.set({
-        ...gameEntity,
-        hasActiveConditions: true,
-        status: GAME_STATUS_CREATED,
-      })
+      gameEntity.hasActiveConditions = true
+      gameEntity.status = GAME_STATUS_CREATED
     }
   }
 
