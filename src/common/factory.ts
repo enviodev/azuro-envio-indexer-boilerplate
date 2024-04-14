@@ -16,6 +16,7 @@ export function createCoreEntity(
     type_: coreType,
   }
   context.CoreContract.set(coreContractEntity)
+  context.log.debug(`createCoreEntity coreAddress = ${coreAddress} coreType = ${coreType} liquidityPool_id = ${liquidityPoolContractEntity.id}`)
   return coreContractEntity
 }
 
