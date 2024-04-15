@@ -103,7 +103,7 @@ type Condition @entity {
   coreAddress: String!
   conditionId: BigInt!
   game: Game!
-  outcomes: [Outcome!]! @derivedFrom(field: "condition")
+  # outcomes: [Outcome!]! @derivedFrom(field: "condition")
   outcomesIds: [BigInt!]
   # wonOutcomes: [Outcome!]
   wonOutcomeIds: [BigInt!]

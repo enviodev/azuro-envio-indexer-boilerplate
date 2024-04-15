@@ -128,7 +128,13 @@ Corev2Contract_ConditionStopped_handler(({ event, context }) => {
 
 Corev2Contract_NewBet_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
-  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+  
+  const conditionEntityId = getEntityId(event.srcAddress, event.params.conditionId.toString())
+  context.Condition.load(conditionEntityId, {})
+  
+  const outComeEntityId = getEntityId(conditionEntityId,event.params.outcomeId.toString())
+  context.Outcome.load(getEntityId(conditionEntityId,event.params.outcomeId.toString()), {})
+  context.log.debug(`Outcome entity loaded in core v2 (new bet) with id ${outComeEntityId}`)
 });
 Corev2Contract_NewBet_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
@@ -147,7 +153,11 @@ Corev2Contract_NewBet_handler(({ event, context }) => {
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
 
   const outcomeEntityId = getEntityId(conditionEntity.id, event.params.outcomeId.toString())
-  const outcomeEntity = context.Outcome.get(outcomeEntityId)!
+  const outcomeEntity = context.Outcome.get(outcomeEntityId)
+
+  if (!outcomeEntity) {
+    throw new Error(`Outcome not found with id ${outcomeEntityId}`)
+  }
 
   createBet(
     VERSION_V2,
