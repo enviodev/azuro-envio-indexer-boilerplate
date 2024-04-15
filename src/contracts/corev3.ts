@@ -7,7 +7,6 @@ import { CHAIN_CONSTANTS } from "../constants";
 import { ConditionV3, ConditionV3Response } from "../utils/types";
 
 
-// LPv1 Contract ABI
 const contractABI = require("../../abis/CoreV3.json");
 
 // 0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e
@@ -20,7 +19,7 @@ export async function getConditionV3FromId(
 }> {
     console.log("v3 getConditionV3FromId", contractAddress, chainId, _conditionId)
     const conditionId = _conditionId.toString();
-    const cache = Cache.init(CacheCategory.ConditionV2, chainId);
+    const cache = Cache.init(CacheCategory.ConditionV3, chainId);
     const _condition = cache.read(conditionId);
 
     if (_condition) {

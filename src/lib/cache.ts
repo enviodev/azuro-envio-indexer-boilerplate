@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { type } from "os";
 import * as path from "path";
-import { ConditionV1Response, ConditionV2Response, IPFSMatchDetails } from "../utils/types";
+import { ConditionV1Response, ConditionV2Response, ConditionV3Response, IPFSMatchDetails, LiveCondition, LiveConditionResponse } from "../utils/types";
 
 export const CacheCategory = {
   Token: "token",
@@ -10,6 +10,8 @@ export const CacheCategory = {
   FreebetV1Contract: "freebetv1",
   ConditionV1: "conditionv1",
   ConditionV2: "conditionv2",
+  ConditionV3: "conditionv3",
+  LiveCondition: "livecondition",
   LPv1NodeWithdrawView: "lpv1nodewithdrawview",
   IPFSMatchDetails: "ipfsmatchdetails",
 } as const;
@@ -35,6 +37,10 @@ type ShapeConditionV1 = Shape & Record<ConditionId, { condition: ConditionV1Resp
 
 type ShapeConditionV2 = Shape & Record<ConditionId, { condition: ConditionV2Response }>;
 
+type ShapeConditionV3 = Shape & Record<ConditionId, { condition: ConditionV3Response }>;
+
+type ShapeLiveCondition = Shape & Record<ConditionId, { condition: LiveConditionResponse }>;
+
 type ShapeLpv1NodeWithdrawView = Shape & Record<Address, { withdrawAmount: string }>;
 
 type ShapeIPFSMatchDetails = Shape & Record<string, { matchDetails: IPFSMatchDetails }>;
@@ -54,6 +60,8 @@ export class Cache {
       : C extends "lpv1nodewithdrawview" ? ShapeLpv1NodeWithdrawView
       : C extends "conditionv1" ? ShapeConditionV1
       : C extends "conditionv2" ? ShapeConditionV2
+      : C extends "conditionv3" ? ShapeConditionV3
+      : C extends "livecondition" ? ShapeLiveCondition
       : C extends "freebetv1" ? ShapeFreebetV1
       : C extends "ipfsmatchdetails" ? ShapeIPFSMatchDetails
       : ShapeRoot;

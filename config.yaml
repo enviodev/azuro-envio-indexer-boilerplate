@@ -67,7 +67,7 @@ contracts:
       - event: LiquidityManagerChanged(address newLiquidityManager)
       - event: LiquidityRemoved(address indexed account, uint48 indexed depositId, uint256 amount)
         isAsync: true
-      - event: NewGame(uint256 indexed gameId, uint64 startsAt, bytes data) # TODO: This only imported v3 not v2 version which seems to be the same contract
+      - event: NewGame(uint256 indexed gameId, uint64 startsAt, bytes data) # TODO: This only imported v2 not v3 version which seems to be the same contract
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
       - event: WithdrawTimeoutChanged(uint64 newWithdrawTimeout)
   - name: Factory
