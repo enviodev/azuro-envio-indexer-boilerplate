@@ -116,6 +116,7 @@ export function createBet(
   createdBlockNumber: bigint,
   funds: bigint[] | null,
   context: LPContract_NewBetEvent_handlerContext | Corev2Contract_NewBetEvent_handlerContext,
+  err_msg: string | null = null,
 ): BetEntity | null {
   let conditionIds: bigint[] = []
   let conditionEntitiesIds: string[] = []
@@ -128,7 +129,7 @@ export function createBet(
     conditionEntitiesIds[i] = conditionEntities[i].id
     gameEntitiesIds[i] = conditionEntities[i].game_id
 
-    const gameEntity = context.Game.get(gameEntitiesIds[i])
+    const gameEntity = context.Condition.getGame(conditionEntities[i])
 
     if (!gameEntity) {
       throw new Error(`Game not found with id ${gameEntitiesIds[i]}`)
@@ -139,39 +140,65 @@ export function createBet(
     }
   }
 
+  err_msg += `\n length of outcomeEntities = ${betOutcomeEntities.length}`
+
   // update outcomes, condition and game turnover for ordinar bets
   if (betType === BET_TYPE_ORDINAR) {
-    const conditionEntity: ConditionEntity = context.Condition.get(conditionEntitiesIds[0])!
+    const conditionEntity = context.Condition.get(conditionEntitiesIds[0])
+    err_msg += `\n length of conditionEntities = ${conditionEntities.length}`
+
+    if (!conditionEntity) {
+      throw new Error(`Condition not found (in createBet) with id ${conditionEntitiesIds[0]}`)
+    }
+
+    err_msg += `\n original conditionEntity. OutcomeEntityIds = ${conditionEntity.outcomesIds}`
     context.Condition.set({
       ...conditionEntity,
       turnover: conditionEntity.turnover + amount,
       _updatedAt: createdBlockTimestamp,
     })
+    err_msg += `\n updated conditionEntity. OutcomeEntityIds = ${conditionEntity.outcomesIds}`
 
-    const gameEntity: GameEntity = context.Game.get(conditionEntities[0].game_id)!
+    const gameEntity = context.Game.get(conditionEntities[0].game_id)
+
+    if (!gameEntity) {
+      throw new Error(`Game not found (in createBet) with id ${conditionEntities[0].game_id}`)
+    }
+
     context.Game.set({
       ...gameEntity,
       turnover: gameEntity.turnover + amount,
       _updatedAt: createdBlockTimestamp,
     })
 
-    const leagueEntity = context.League.get(gameEntity.league_id)!
+    const leagueEntity = context.Game.getLeague(gameEntity)
+
+    if (!leagueEntity) {
+      throw new Error(`League not found (in createBet) with id ${gameEntity.league_id}`)
+    }
+
     context.League.set({
       ...leagueEntity,
       turnover: leagueEntity.turnover + amount,
     })
 
-    const countryEntity = context.Country.get(leagueEntity.country_id)!
+    const countryEntity = context.League.getCountry(leagueEntity)
+
+    if (!countryEntity) {
+      throw new Error(`Country not found (in createBet) with id ${leagueEntity.country_id}`)
+    }
+
     context.Country.set({
       ...countryEntity,
       turnover: countryEntity.turnover + amount,
     })
+  } else {
+    err_msg += `\n not ordinar bet, context not changed`
   }
 
   const potentialPayout = safeDiv(amount * odds, (MULTIPLIERS_VERSIONS.get(version)!))
   
-  const betEntityId = coreAddress + "_" + tokenId.toString()
-  const _betType = betType as "Ordinar" | "Express"
+  const betEntityId = getEntityId(coreAddress, tokenId.toString())
 
   for (let k = 0; k < conditionEntities.length; k++) {
     const conditionEntity = conditionEntities[k]
@@ -179,12 +206,19 @@ export function createBet(
 
     // double-check of sorting by sortOrder field
     for (let j = 0; j < conditionEntity.outcomesIds!.length; j++) {
+      err_msg += `\n conditionEntity.outcomesIds!.length = ${conditionEntity.outcomesIds?.length}`
       const outcomeId = conditionEntity.outcomesIds![j]
 
-      const outcomeEntityId = conditionEntity.id + "_" + outcomeId.toString()
-      const outcomeEntity: OutcomeEntity = context.Outcome.get(outcomeEntityId)!
+      const outcomeEntityId = getEntityId(conditionEntity.id, outcomeId.toString())
 
-      outcomeEntities[outcomeEntity.sortOrder] = outcomeEntity
+      // derived from
+      // const outcomeEntity = context.Outcome.get(outcomeEntityId)
+
+      // if (!outcomeEntity) {
+      //   throw new Error(`Outcome not found (in createBet) with id ${outcomeEntityId}. Loaded outcomeEntityId is ${err_msg}`)
+      // }
+
+      // outcomeEntities[outcomeEntity.sortOrder] = outcomeEntity
     }
 
     let newOdds: bigint[] | null = null
@@ -232,7 +266,7 @@ export function createBet(
 
   const betEntity: BetEntity = {
     id: betEntityId,
-    type_: _betType,
+    type_: betType,
     _subBetsCount: betOutcomeEntities.length,
     _wonSubBetsCount: 0,
     _lostSubBetsCount: 0,

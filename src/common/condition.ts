@@ -92,8 +92,12 @@ export async function createCondition(
       // ),
       _updatedAt: BigInt(createBlockTimestamp),
     }
-
     context.Outcome.set(outcomeEntity)
+  }
+
+  // TODO remove
+  if (outcomeIds.length !== 2) {
+    throw new Error(`createCondition outcomeIds.length !== 2`)
   }
 
   conditionEntity.outcomesIds = outcomeIds

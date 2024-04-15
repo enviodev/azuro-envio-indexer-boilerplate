@@ -105,19 +105,20 @@ LPContract_NewBet_loader(({ event, context }) => {
   
   const config = getConfigByChainId(event.chainId)
   const coreAddress = config.contracts.Core.addresses[0]
+  
   context.CoreContract.load(coreAddress, {})
   
   const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
-  context.Condition.load(conditionEntityId, {});
-  //context.Game.load(conditionEntity.game_id, {}) // ?
-  context.Outcome.load(getEntityId(conditionEntityId,event.params.outcomeId.toString()), {})
+  context.Condition.load(conditionEntityId, {loadGame: {loadLeague: {loadCountry: {}}}});
 
+  const outComeEntityId = getEntityId(conditionEntityId, event.params.outcomeId.toString())
+  context.Outcome.load(outComeEntityId, {})
 });
 LPContract_NewBet_handler(({ event, context }) => {
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
+  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress);
 
   if (!liquidityPoolContractEntity) {
-    context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${event.srcAddress}`);
+    throw new Error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${event.srcAddress}`);
   }
 
   const coreAddress = liquidityPoolContractEntity?.coreAddresses![0]
@@ -155,6 +156,7 @@ LPContract_NewBet_handler(({ event, context }) => {
     BigInt(event.blockNumber),
     [event.params.fund1, event.params.fund2],
     context,
+    `lpv1. loaded outcomeEntityId is ${outcomeEntityId}`
   )
 });
 
