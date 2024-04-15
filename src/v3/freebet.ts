@@ -11,8 +11,11 @@ import { createFreebet, resolveFreebet, withdrawFreebet } from "../common/freebe
 import { VERSION_V3 } from "../constants";
 import { getEntityId } from "../utils/schema";
 
-FreeBetv3Contract_NewBet_loader(({ event, context }) => { });
+FreeBetv3Contract_NewBet_loader(({ event, context }) => {
+  context.CoreContract.load(event.params.core, {});
+ });
 FreeBetv3Contract_NewBet_handler(({ event, context }) => {
+  throw new Error('Not implemented')
   // const coreContractEntity = context.CoreContract.get(event.params.core)
 
   // if (!coreContractEntity) {
@@ -38,7 +41,7 @@ FreeBetv3Contract_NewBet_handler(({ event, context }) => {
   //   event.transactionHash,
   //   coreContractEntity.id,
   //   event.params.azuroBetId,
-  //   event.blockNumber,
+  //   BigInt(event.blockNumber),
   //   context,
   // )
 
@@ -52,37 +55,41 @@ FreeBetv3Contract_NewBet_handler(({ event, context }) => {
   // )
 });
 
-FreeBetv3Contract_BettorWin_loader(({ event, context }) => { });
+FreeBetv3Contract_BettorWin_loader(({ event, context }) => { 
+  context.CoreContract.load(event.params.core, {});
+});
 FreeBetv3Contract_BettorWin_handler(({ event, context }) => {
-  // const coreContractEntity = context.CoreContract.get(event.params.core)
+  throw new Error('Not implemented')
+  const coreContractEntity = context.CoreContract.get(event.params.core)
 
-  // if (!coreContractEntity) {
-  //   context.log.error('v3 handleBettorWin coreContractEntity not found. coreContractEntityId = {event.params.core}')
+  if (!coreContractEntity) {
+    context.log.error('v3 handleBettorWin coreContractEntity not found. coreContractEntityId = {event.params.core}')
 
-  //   return
-  // }
+    return
+  }
 
-  // const freebetEntityId = getEntityId(event.srcAddress, event.params.freeBetId.toString())
-  // const freebetEntity = context.Freebet.get(freebetEntityId)
+  const freebetEntityId = getEntityId(event.srcAddress, event.params.freeBetId.toString())
+  const freebetEntity = context.Freebet.get(freebetEntityId)
 
-  // // TODO remove later
-  // if (!freebetEntity) {
-  //   context.log.error(`v3 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
-  //   return
-  // }
+  // TODO remove later
+  if (!freebetEntity) {
+    context.log.error(`v3 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    return
+  }
 
-  // withdrawFreebet(freebetEntityId, event.blockTimestamp, context)
+  withdrawFreebet(freebetEntityId, event.blockTimestamp, context)
 });
 
 FreeBetv3Contract_PayoutsResolved_loader(({ event, context }) => { });
 FreeBetv3Contract_PayoutsResolved_handler(({ event, context }) => {
-  // for (let i = 0; i < event.params.azuroBetId.length; i++) {
-  //   resolveFreebet(
-  //     event.srcAddress,
-  //     event.params.azuroBetId[i],
-  //     false,
-  //     event.blockTimestamp,
-  //     context
-  //   )
-  // }
+  throw new Error('Not implemented')
+  for (let i = 0; i < event.params.azuroBetId.length; i++) {
+    resolveFreebet(
+      event.srcAddress,
+      event.params.azuroBetId[i],
+      false,
+      event.blockTimestamp,
+      context
+    )
+  }
 });

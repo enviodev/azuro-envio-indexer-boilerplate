@@ -1,5 +1,6 @@
-import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContextAsync, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreebetContractEntity, FreebetEntity, XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs, eventLog } from "../../generated/src/Types.gen";
+import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContextAsync, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreeBetv3Contract_NewBetEvent_handlerContext, FreebetContractEntity, FreebetEntity, XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs, eventLog } from "../../generated/src/Types.gen";
 import { FREEBET_STATUS_CREATED, FREEBET_STATUS_REDEEMED } from "../constants";
+import { getEntityId } from "../utils/schema";
 
 export function createFreebetContractEntity(
   chainId: string,
@@ -10,12 +11,12 @@ export function createFreebetContractEntity(
   freebetContractManager: string | null
 ): FreebetContractEntity {
   const freebetContractEntity: FreebetContractEntity = {
-    id: freebetContractAddress + "_" + chainId,
+    id: getEntityId(freebetContractAddress, chainId),
     liquidityPool_id: liquidityPoolAddress,
     address: freebetContractAddress,
-    name: freebetContractName ? freebetContractName : "",
-    affiliate: freebetContractAffiliate ? freebetContractAffiliate : "",
-    manager: freebetContractManager ? freebetContractManager : "",
+    name: freebetContractName ? freebetContractName : undefined,
+    affiliate: freebetContractAffiliate ? freebetContractAffiliate : undefined,
+    manager: freebetContractManager ? freebetContractManager : undefined,
   };
 
   return freebetContractEntity;
@@ -36,8 +37,8 @@ export function createFreebet(
   txHash: string,
   coreAddress: string | undefined,
   azuroBetId: bigint | undefined,
-  createBlock: number,
-  context: FreeBetContract_FreeBetMintedEvent_handlerContextAsync,
+  createBlock: bigint,
+  context: FreeBetContract_FreeBetMintedEvent_handlerContextAsync | FreeBetv3Contract_NewBetEvent_handlerContext,
 ): FreebetEntity {
   const freebetEntityId = freebetContractAddress + '_' + freebetId.toString()
 
@@ -67,15 +68,14 @@ export function createFreebet(
     rawMinOdds: minOdds,
     // minOdds: minOdds.toBigDecimal(),
     durationTime: durationTime,
-    expiresAt: durationTime + BigInt(createBlock),
+    expiresAt: durationTime + createBlock,
     createdTxHash: txHash,
-    createdBlockNumber: BigInt(createBlock),
-    createdBlockTimestamp: BigInt(createBlock),
+    createdBlockNumber: createBlock,
+    createdBlockTimestamp: createBlock,
     burned: false,
     isResolved: false,
-    _updatedAt: BigInt(createBlock),
+    _updatedAt: createBlock,
   }
-
   context.Freebet.set(freebetEntity)
 
   return freebetEntity

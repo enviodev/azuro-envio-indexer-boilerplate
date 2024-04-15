@@ -124,7 +124,7 @@ XYZFreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
     event.transactionHash,
     undefined,
     undefined,
-    event.blockNumber,
+    BigInt(event.blockNumber),
     context,
   )
 
@@ -166,7 +166,7 @@ XYZFreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) =>
       event.transactionHash,
       undefined,
       undefined,
-      event.blockNumber,
+      BigInt(event.blockNumber),
       context 
     )
   }

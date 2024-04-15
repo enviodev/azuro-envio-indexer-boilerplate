@@ -18,31 +18,32 @@ import {
 import { createBet } from "../common/bets";
 import { createCondition, pauseUnpauseCondition, resolveCondition, updateConditionMargin, updateConditionOdds, updateConditionReinforcement } from "../common/condition";
 import { BET_TYPE_ORDINAR, VERSION_V3 } from "../constants";
-import { deserialiseConditionV3Result, getConditionV3FromId } from "../contracts/corev3";
+import { getConditionV3FromId } from "../contracts/corev3";
 import { OutcomeEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
-Corev3Contract_ConditionCreated_loader(({ event, context }) => {});
+Corev3Contract_ConditionCreated_loader(({ event, context }) => { });
 Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
-  // const conditionId = event.params.conditionId
-  // const coreAddress = event.srcAddress
+  const conditionId = event.params.conditionId
+  const coreAddress = event.srcAddress
 
-  // const _conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
-  // const conditionData = deserialiseConditionV3Result(_conditionData.condition)
+  throw new Error(`v3 event address needed: ${event.srcAddress}`)
 
-  // const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
-  // const gameEntityId = getEntityId(
-  //   liquidityPoolAddress,
-  //   event.params.gameId.toString(),
-  // )
+  const conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
 
-  // const gameEntity = await context.Game.get(gameEntityId)
+  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
+  const gameEntityId = getEntityId(
+    liquidityPoolAddress,
+    event.params.gameId.toString(),
+  )
 
-  // // TODO remove later
-  // if (!gameEntity) {
-  //   context.log.error('v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}')
-  //   return
-  // }
+  const gameEntity = await context.Game.get(gameEntityId)
+
+  // TODO remove later
+  if (!gameEntity) {
+    context.log.error('v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}')
+    return
+  }
 
   // createCondition(
   //   VERSION_V3,
@@ -63,39 +64,41 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   // )
 });
 
-Corev3Contract_ConditionResolved_loader(({ event, context }) => {});
+Corev3Contract_ConditionResolved_loader(({ event, context }) => { });
 Corev3Contract_ConditionResolved_handler(({ event, context }) => {
-  // const conditionId = event.params.conditionId
-  // const coreAddress = event.srcAddress
+  throw new Error(`v3 event core (condition resolved) address needed: ${event.srcAddress}`)
+  const conditionId = event.params.conditionId
+  const coreAddress = event.srcAddress
 
-  // const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
-  // const conditionEntity = context.Condition.get(conditionEntityId)
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
+  const conditionEntity = context.Condition.get(conditionEntityId)
 
-  // // TODO remove later
-  // if (!conditionEntity) {
-  //   context.log.error(
-  //     `v3 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`,
-  //   )
-  //   return
-  // }
+  // TODO remove later
+  if (!conditionEntity) {
+    context.log.error(
+      `v3 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`,
+    )
+    return
+  }
 
-  // const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
+  const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
 
-  // resolveCondition(
-  //   VERSION_V3,
-  //   liquidityPoolAddress,
-  //   conditionEntityId,
-  //   event.params.winningOutcomes,
-  //   event.transactionHash,
-  //   event.blockNumber,
-  //   event.blockTimestamp,
-  //   event.chainId,
-  //   context,
-  // )
+  resolveCondition(
+    VERSION_V3,
+    liquidityPoolAddress,
+    conditionEntityId,
+    event.params.winningOutcomes,
+    event.transactionHash,
+    event.blockNumber,
+    event.blockTimestamp,
+    event.chainId,
+    context,
+  )
 });
 
-Corev3Contract_ConditionStopped_loader(({ event, context }) => {});
+Corev3Contract_ConditionStopped_loader(({ event, context }) => { });
 Corev3Contract_ConditionStopped_handler(({ event, context }) => {
+  throw new Error(`v3 event core (condition stopped) address needed: ${event.srcAddress}`)
   // const conditionId = event.params.conditionId
   // const coreAddress = event.srcAddress
 
@@ -109,15 +112,24 @@ Corev3Contract_ConditionStopped_handler(({ event, context }) => {
   // }
 
   // pauseUnpauseCondition(
-  //   conditionEntity, 
-  //   event.params.flag, 
-  //   BigInt(event.blockTimestamp), 
+  //   conditionEntity,
+  //   event.params.flag,
+  //   BigInt(event.blockTimestamp),
   //   context,
   // )
 });
 
-Corev3Contract_NewBet_loader(({ event, context }) => {});
+Corev3Contract_NewBet_loader(({ event, context }) => {
+  const coreAddress = event.srcAddress
+  const conditionId = event.params.conditionId
+  const conditionEntityId = getEntityId(
+    coreAddress,
+    conditionId.toString(),
+  )
+  context.Condition.load(conditionEntityId, {});
+ });
 Corev3Contract_NewBet_handler(({ event, context }) => {
+  throw new Error(`v3 core event address needed: ${event.srcAddress}`)
   // const conditionId = event.params.conditionId
   // const coreAddress = event.srcAddress
 
@@ -156,20 +168,20 @@ Corev3Contract_NewBet_handler(({ event, context }) => {
   //   liquidityPoolContractEntity.tokenDecimals,
   //   event.params.amount,
   //   event.transactionHash,
-  //   event.blockNumber,
-  //   event.blockTimestamp,
+  //   BigInt(event.blockNumber),
+  //   BigInt(event.blockTimestamp),
   //   event.params.funds,
   //   context
   // )
 });
 
-Corev3Contract_OddsChanged_loader(({ event, context }) => {});
+Corev3Contract_OddsChanged_loader(({ event, context }) => { });
 Corev3Contract_OddsChanged_handler(async ({ event, context }) => {
-  // const conditionId = event.params.conditionId
-  // const coreAddress = event.srcAddress
+  const conditionId = event.params.conditionId
+  const coreAddress = event.srcAddress
 
-  // const conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
-
+  const conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
+  throw new Error(`v3 core event address needed: ${event.srcAddress}`)
   // const conditionEntityId = getEntityId(
   //   coreAddress,
   //   conditionId.toString(),
@@ -199,14 +211,15 @@ Corev3Contract_OddsChanged_handler(async ({ event, context }) => {
   //   VERSION_V3,
   //   conditionEntity,
   //   outcomesEntities,
-  //   conditionData.condition.virtualFunds,
+  //   conditionData.virtualFunds,
   //   event.blockNumber,
   //   context,
   // )
 });
 
-Corev3Contract_MarginChanged_loader(({ event, context }) => {});
+Corev3Contract_MarginChanged_loader(({ event, context }) => { });
 Corev3Contract_MarginChanged_handler(({ event, context }) => {
+  throw new Error(`v3 core (margin changed) event address needed: ${event.srcAddress}`)
   // const conditionId = event.params.conditionId
   // const coreAddress = event.srcAddress
 
@@ -225,8 +238,9 @@ Corev3Contract_MarginChanged_handler(({ event, context }) => {
   // updateConditionMargin(conditionEntity, event.params.newMargin, event.blockTimestamp, context)
 });
 
-Corev3Contract_ReinforcementChanged_loader(({ event, context }) => {});
+Corev3Contract_ReinforcementChanged_loader(({ event, context }) => { });
 Corev3Contract_ReinforcementChanged_handler(({ event, context }) => {
+  throw new Error(`v3 core (reinforcement changed) event address needed: ${event.srcAddress}`)
   // const conditionId = event.params.conditionId
   // const coreAddress = event.srcAddress
 

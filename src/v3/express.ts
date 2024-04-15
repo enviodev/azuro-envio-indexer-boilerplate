@@ -9,8 +9,11 @@ import { BET_TYPE_EXPRESS, VERSION_V3 } from "../constants";
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
-Expressv3Contract_NewBet_loader(({ event, context }) => { });
+Expressv3Contract_NewBet_loader(({ event, context }) => {
+  context.log.debug(`Expressv3Contract_NewBet_loader: ${event.srcAddress}`)
+ });
 Expressv3Contract_NewBet_handler(({ event, context }) => {
+  throw new Error(`express v3 new bet not implemented: ${event.srcAddress}`)
   // const expressAddress = event.srcAddress
   // const prematchAddress = context.ExpressPrematchRelation.get(expressAddress)!.prematchAddress
 
@@ -63,8 +66,8 @@ Expressv3Contract_NewBet_handler(({ event, context }) => {
   //   liquidityPoolContractEntity.tokenDecimals,
   //   event.params.bet.amount,
   //   event.transactionHash,
-  //   event.blockTimestamp,
-  //   event.blockNumber,
+  //   BigInt(event.blockTimestamp),
+  //   BigInt(event.blockNumber),
   //   null,
   //   context,
   // )
@@ -72,14 +75,15 @@ Expressv3Contract_NewBet_handler(({ event, context }) => {
 
 Expressv3Contract_Transfer_loader(({ event, context }) => { });
 Expressv3Contract_Transfer_handler(({ event, context }) => {
-  // transferBet(
-  //   event.srcAddress,
-  //   null,
-  //   event.params.tokenId,
-  //   event.params.from,
-  //   event.params.to,
-  //   event.blockNumber,
-  //   context,
-  // )
+  throw new Error(`express v3 transfer not implemented: ${event.srcAddress}`)
+  transferBet(
+    event.srcAddress,
+    null,
+    event.params.tokenId,
+    event.params.from,
+    event.params.to,
+    event.blockNumber,
+    context,
+  )
 
 });
