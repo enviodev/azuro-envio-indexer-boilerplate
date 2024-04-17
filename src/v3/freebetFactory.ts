@@ -7,7 +7,9 @@ import { FreebetContractEntity } from "../../generated/src/Types.gen";
 
 import { createFreebetContractEntity } from "../common/freebets";
 
-FreeBetFactoryContract_NewFreeBet_loader(({ event, context }) => {});
+FreeBetFactoryContract_NewFreeBet_loader(({ event, context }) => {
+  context.contractRegistration.addFreeBetv3(event.params.freeBetAddress.toString())
+});
 FreeBetFactoryContract_NewFreeBet_handler(({ event, context }) => {
   const freeBetAddress = event.params.freeBetAddress.toString();
   const liquidityPoolAddress = event.params.lpAddress.toString();

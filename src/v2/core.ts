@@ -19,8 +19,6 @@ import { createBet } from "../common/bets";
 import { OutcomeEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
-// TODO: get contract addresses
-
 Corev2Contract_ConditionCreated_loader(async ({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
 });
@@ -71,7 +69,7 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 
 Corev2Contract_ConditionResolved_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
-  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
 });
 Corev2Contract_ConditionResolved_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
@@ -103,7 +101,7 @@ Corev2Contract_ConditionResolved_handler(({ event, context }) => {
 
 Corev2Contract_ConditionStopped_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {})
-  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
 });
 Corev2Contract_ConditionStopped_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
@@ -133,8 +131,7 @@ Corev2Contract_NewBet_loader(({ event, context }) => {
   context.Condition.load(conditionEntityId, {})
   
   const outComeEntityId = getEntityId(conditionEntityId,event.params.outcomeId.toString())
-  context.Outcome.load(getEntityId(conditionEntityId,event.params.outcomeId.toString()), {})
-  context.log.debug(`Outcome entity loaded in core v2 (new bet) with id ${outComeEntityId}`)
+  context.Outcome.load(outComeEntityId, {})
 });
 Corev2Contract_NewBet_handler(({ event, context }) => {
   const conditionId = event.params.conditionId

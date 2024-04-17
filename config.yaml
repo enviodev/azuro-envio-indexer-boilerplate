@@ -8,6 +8,7 @@ contracts:
       - event: ConditionCreated(uint256 indexed oracleConditionId, uint256 indexed conditionId, uint64 timestamp)
         isAsync: true
       - event: ConditionResolved(uint256 indexed oracleConditionId, uint256 indexed conditionId, uint64 outcomeWin, uint8 state, uint256 amountForLp)
+        isAsync: true
       - event: ConditionShifted(uint256 oracleCondId, uint256 conditionId, uint64 newTimestamp)
       - event: ConditionStopped(uint256 indexed conditionId, bool flag)
       - event: LpChanged(address indexed newLp)
@@ -21,6 +22,7 @@ contracts:
         isAsync: true
       - event: LiquidityRequested(address indexed requestWallet, uint256 requestedValueLp)
       - event: NewBet(address indexed owner, uint256 indexed betId, uint256 indexed conditionId, uint64 outcomeId, uint128 amount, uint256 odds, uint128 fund1, uint128 fund2)
+        isAsync: true
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
       - event: WithdrawTimeoutChanged(uint64 newWithdrawTimeout)
   - name: XYZFreeBet
@@ -57,6 +59,7 @@ contracts:
       - event: NewBet(address indexed bettor, uint256 indexed betId,(address,uint64,uint128,uint48,bool,(uint256,uint64)[] ,uint64[]) bet) # interesting stress test - struct within struct event emit
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - name: LPv2
+    address: '0x204e7371Ade792c5C006fb52711c50a7efC843ed'
     handler: src/v2/lp.ts
     events:
       - event: BettorWin(address indexed core, address indexed bettor, uint256 tokenId, uint256 amount)

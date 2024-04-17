@@ -24,6 +24,7 @@ import { linkBetWithFreeBet } from "../common/bets";
 import { getLPAndNameOfFreebetV1Details } from "../contracts/freebetv1";
 
 import { VERSION_V1, ZERO_ADDRESS } from "../constants";
+import { getEntityId } from "../utils/schema";
 
 async function getOrCreateFreebetContract(
   chainId: number,
@@ -69,12 +70,11 @@ XYZFreeBetContract_BettorWin_handler(async ({ event, context }) => {
 
   const coreAddress = liquidityPoolContractEntity.coreAddresses![0]
 
-  const betEntityId = coreAddress + "_" + event.params.azuroBetId.toString()
+  const betEntityId = getEntityId(coreAddress, event.params.azuroBetId.toString())
   const betEntity = context.Bet.get(betEntityId)
 
   if (!betEntity) {
-    context.log.error(`v1 handleBettorWin betEntity not found. betEntity = ${betEntityId}`)
-
+    context.log.error(`v1 handleBettorWin betEntity not found in bettorwin handler. betEntity = ${betEntityId}`)
     return
   }
 
@@ -83,7 +83,6 @@ XYZFreeBetContract_BettorWin_handler(async ({ event, context }) => {
 
   if (!freebetEntity) {
     context.log.error(`v1 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
-
     return
   }
 });

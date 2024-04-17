@@ -1,6 +1,6 @@
 import { zeroPadBytes } from "ethers"
 import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE, BET_TYPE_EXPRESS } from "../constants"
-import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity } from "../src/Types.gen"
+import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPContract_NewBetEvent_handlerContextAsync, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal, safeDiv } from "../utils/math"
 import { getEntityId } from "../utils/schema"
@@ -77,7 +77,7 @@ export function linkBetWithFreeBet(
   context: FreeBetContract_FreeBetRedeemedEvent_handlerContext,
 ): BetEntity | null {
 
-  const betEntityId = coreAddress + "_" + tokenId.toString()
+  const betEntityId = getEntityId(coreAddress, tokenId.toString())
   const betEntity = context.Bet.get(betEntityId)
 
   if (!betEntity) {
@@ -98,7 +98,7 @@ export function linkBetWithFreeBet(
   return betEntity
 }
 
-export function createBet(
+export async function createBet(
   version: string,
   betType: typeof BET_TYPE_ORDINAR | typeof BET_TYPE_EXPRESS,
   conditionEntities: ConditionEntity[],
@@ -115,9 +115,9 @@ export function createBet(
   createdBlockTimestamp: bigint,
   createdBlockNumber: bigint,
   funds: bigint[] | null,
-  context: LPContract_NewBetEvent_handlerContext | Corev2Contract_NewBetEvent_handlerContext,
+  context: Corev2Contract_NewBetEvent_handlerContext | LPContract_NewBetEvent_handlerContextAsync,
   err_msg: string | null = null,
-): BetEntity | null {
+): Promise<BetEntity | null> {
   let conditionIds: bigint[] = []
   let conditionEntitiesIds: string[] = []
   let gameEntitiesIds: string[] = []
@@ -129,7 +129,7 @@ export function createBet(
     conditionEntitiesIds[i] = conditionEntities[i].id
     gameEntitiesIds[i] = conditionEntities[i].game_id
 
-    const gameEntity = context.Condition.getGame(conditionEntities[i])
+    const gameEntity = await context.Condition.getGame(conditionEntities[i])
 
     if (!gameEntity) {
       throw new Error(`Game not found with id ${gameEntitiesIds[i]}`)
@@ -144,7 +144,7 @@ export function createBet(
 
   // update outcomes, condition and game turnover for ordinar bets
   if (betType === BET_TYPE_ORDINAR) {
-    const conditionEntity = context.Condition.get(conditionEntitiesIds[0])
+    const conditionEntity = await context.Condition.get(conditionEntitiesIds[0])
     err_msg += `\n length of conditionEntities = ${conditionEntities.length}`
 
     if (!conditionEntity) {
@@ -159,7 +159,7 @@ export function createBet(
     })
     err_msg += `\n updated conditionEntity. OutcomeEntityIds = ${conditionEntity.outcomesIds}`
 
-    const gameEntity = context.Game.get(conditionEntities[0].game_id)
+    const gameEntity = await context.Game.get(conditionEntities[0].game_id)
 
     if (!gameEntity) {
       throw new Error(`Game not found (in createBet) with id ${conditionEntities[0].game_id}`)
@@ -171,7 +171,7 @@ export function createBet(
       _updatedAt: createdBlockTimestamp,
     })
 
-    const leagueEntity = context.Game.getLeague(gameEntity)
+    const leagueEntity = await context.Game.getLeague(gameEntity)
 
     if (!leagueEntity) {
       throw new Error(`League not found (in createBet) with id ${gameEntity.league_id}`)
@@ -182,7 +182,7 @@ export function createBet(
       turnover: leagueEntity.turnover + amount,
     })
 
-    const countryEntity = context.League.getCountry(leagueEntity)
+    const countryEntity = await context.League.getCountry(leagueEntity)
 
     if (!countryEntity) {
       throw new Error(`Country not found (in createBet) with id ${leagueEntity.country_id}`)
@@ -210,15 +210,13 @@ export function createBet(
       const outcomeId = conditionEntity.outcomesIds![j]
 
       const outcomeEntityId = getEntityId(conditionEntity.id, outcomeId.toString())
+      const outcomeEntity = await context.Outcome.get(outcomeEntityId)
 
-      // derived from
-      // const outcomeEntity = context.Outcome.get(outcomeEntityId)
+      if (!outcomeEntity) {
+        throw new Error(`Outcome not found (in createBet) with id ${outcomeEntityId}. Loaded outcomeEntityId is ${err_msg}`)
+      }
 
-      // if (!outcomeEntity) {
-      //   throw new Error(`Outcome not found (in createBet) with id ${outcomeEntityId}. Loaded outcomeEntityId is ${err_msg}`)
-      // }
-
-      // outcomeEntities[outcomeEntity.sortOrder] = outcomeEntity
+      outcomeEntities[outcomeEntity.sortOrder] = outcomeEntity
     }
 
     let newOdds: bigint[] | null = null
@@ -361,7 +359,7 @@ export function bettorWin(
     const liveBetEntity = context.LiveBet.get(betEntityId)
 
     if (!liveBetEntity) {
-      context.log.error(`v1 handleBettorWin betEntity not found. betEntity = ${betEntityId}`)
+      context.log.error(`v1 handleBettorWin liveBetEntity not found in bettorWin. betEntity = ${betEntityId}`)
       return
     }
 
@@ -380,7 +378,7 @@ export function bettorWin(
     const betEntity = context.Bet.get(betEntityId)
 
     if (!betEntity) {
-      context.log.error(`v1 handleBettorWin betEntity not found. betEntity = ${betEntityId}`)
+      context.log.error(`v1 handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
       return
     }
 

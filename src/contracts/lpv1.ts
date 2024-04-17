@@ -14,8 +14,6 @@ export async function getTokenForPool(
 ): Promise<{
   readonly token: string;
 }> {
-  console.log("getTokenForPool", contractAddress)
-
   const cache = Cache.init(CacheCategory.LPv1, chainId);
   const lpv1 = cache.read(contractAddress.toLowerCase());
 
