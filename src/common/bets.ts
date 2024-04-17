@@ -378,7 +378,7 @@ export function bettorWin(
     const betEntity = context.Bet.get(betEntityId)
 
     if (!betEntity) {
-      context.log.error(`v1 handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
+      context.log.error(`v1 handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId} core_type = ${coreContractEntity.type_}`)
       return
     }
 

@@ -32,7 +32,9 @@ export async function getConditionV1FromId(
         return _condition;
     } 
 
-    await sleep(500);
+    await sleep(200);
+
+    context.log.debug(`getting new condition with id ${conditionId}`);
 
     // else {
     //     // temp

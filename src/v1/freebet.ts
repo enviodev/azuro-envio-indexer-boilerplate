@@ -74,7 +74,7 @@ XYZFreeBetContract_BettorWin_handler(async ({ event, context }) => {
   const betEntity = context.Bet.get(betEntityId)
 
   if (!betEntity) {
-    context.log.error(`v1 handleBettorWin betEntity not found in bettorwin handler. betEntity = ${betEntityId}`)
+    context.log.error(`v1 handleBettorWin betEntity not found in handler of bettorwin. betEntity = ${betEntityId}`)
     return
   }
 
