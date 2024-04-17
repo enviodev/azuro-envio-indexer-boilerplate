@@ -63,7 +63,7 @@ export async function createGame(
         const ipfsHash = byte32ToIPFSCIDv0(ipfsHashBytes.slice(2))
         data = await tryFetchIpfsFile(ipfsHash, chainId, context)
         if (data === null) {
-            context.log.error(`createGame IPFS failed to convert to object. Hash: ${ipfsHash}`)
+            context.log.error(`createGame (v2) IPFS failed to convert to object. Hash: ${ipfsHash}`)
             return null
         }
     }
@@ -74,12 +74,12 @@ export async function createGame(
         try {
             data = JSON.parse(dataBytes) as IPFSMatchDetails;
         } catch (error) {
-            context.log.error(`createGame bytes data failed to parse json. data: ${dataBytes}. \n${error}`,);
+            context.log.error(`createGame (v3) bytes data failed to parse json. data: ${dataBytes}. \n${error}`,);
             return null;
         }
 
         if (data === null) {
-            context.log.error(`createGame bytes data failed to convert to object. data: ${dataBytes}`);
+            context.log.error(`createGame (v3) bytes data failed to convert to object. data: ${dataBytes}`);
             return null;
         }
         // Proceed with using 'data' as a JavaScript object
