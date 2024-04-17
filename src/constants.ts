@@ -5,8 +5,9 @@ type chainConstants = {
 };
 
 const GOERLI_CHAIN_CONSTANTS: chainConstants = {
-  // rpcURL: "https://rpc.ankr.com/gnosis",
-  rpcURL: "https://gnosis-mainnet.public.blastapi.io",
+  rpcURL: "https://rpc.ankr.com/gnosis",
+  // rpcURL: "https://gnosis-mainnet.public.blastapi.io",
+  // rpcURL: "wss://gnosis-rpc.publicnode.com"
 };
 
 // Key is chain ID

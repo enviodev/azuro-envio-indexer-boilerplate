@@ -1,5 +1,6 @@
 import {
   CoreContract_ConditionCreatedEvent_handlerContext,
+  CoreContract_ConditionResolvedEvent_handlerContextAsync,
   CoreContract_LpChangedEvent_handlerContextAsync,
   LPv2Contract_LiquidityAddedEvent_handlerContext,
   LPv2Contract_LiquidityManagerChangedEvent_handlerContext,
@@ -146,8 +147,6 @@ export async function createPoolEntity(
     liquidityManager: undefined,
   };
   context.LiquidityPoolContract.set(liquidityPoolContractEntity);
-  context.log.debug(`createPoolEntity liquidityPoolAddress = ${liquidityPoolAddress} coreAddress = ${coreAddress}`)
-
   return liquidityPoolContractEntity;
 }
 
@@ -371,17 +370,16 @@ export function changeWithdrawalTimeout(
   return liquidityPoolContractEntity;
 }
 
-export function countConditionResolved(
+export async function countConditionResolved(
   liquidityPoolAddress: string,
   betsAmount: bigint,
   wonBetsAmount: bigint,
   blockNumber: number,
   blockTimestamp: number,
   chainId: number,
-  context: CoreContract_ConditionCreatedEvent_handlerContext
-): LiquidityPoolContractEntity | null {
-  const liquidityPoolContractEntity =
-    context.LiquidityPoolContract.get(liquidityPoolAddress);
+  context: CoreContract_ConditionCreatedEvent_handlerContext | CoreContract_ConditionResolvedEvent_handlerContextAsync
+): Promise<LiquidityPoolContractEntity | null> {
+  const liquidityPoolContractEntity = await context.LiquidityPoolContract.get(liquidityPoolAddress);
 
   // TODO remove later
   if (!liquidityPoolContractEntity) {

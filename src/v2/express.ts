@@ -74,6 +74,7 @@ Expressv2Contract_NewBet_handler(({ event, context }) => {
 
 Expressv2Contract_Transfer_loader(({ event, context }) => { });
 Expressv2Contract_Transfer_handler(({ event, context }) => {
+  context.log.debug(`Expressv2Contract_Transfer_handler address: ${event.srcAddress}`)
   const betEntity = transferBet(
     event.srcAddress,
     null,

@@ -15,6 +15,7 @@ import {
   LPContract_WithdrawTimeoutChanged_loader,
   LPContract_WithdrawTimeoutChanged_handler,
   LPContract_LiquidityRemoved_handlerAsync,
+  LPContract_NewBet_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 
 import { createBet, bettorWin } from "../common/bets";
@@ -114,8 +115,8 @@ LPContract_NewBet_loader(({ event, context }) => {
   const outComeEntityId = getEntityId(conditionEntityId, event.params.outcomeId.toString())
   context.Outcome.load(outComeEntityId, {})
 });
-LPContract_NewBet_handler(({ event, context }) => {
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress);
+LPContract_NewBet_handlerAsync(async ({ event, context }) => {
+  const liquidityPoolContractEntity = await context.LiquidityPoolContract.get(event.srcAddress);
 
   if (!liquidityPoolContractEntity) {
     throw new Error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${event.srcAddress}`);
@@ -124,7 +125,7 @@ LPContract_NewBet_handler(({ event, context }) => {
   const coreAddress = liquidityPoolContractEntity?.coreAddresses![0]
 
   const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
-  const conditionEntity = context.Condition.get(conditionEntityId)
+  const conditionEntity = await context.Condition.get(conditionEntityId)
 
   if (!conditionEntity) {
     context.log.error(`v1 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
@@ -132,7 +133,7 @@ LPContract_NewBet_handler(({ event, context }) => {
   }
 
   const outcomeEntityId = getEntityId(conditionEntity.id,event.params.outcomeId.toString())
-  const outcomeEntity = context.Outcome.get(outcomeEntityId)
+  const outcomeEntity = await context.Outcome.get(outcomeEntityId)
 
   if (!outcomeEntity) {
     throw new Error(`Outcome not found with id ${outcomeEntityId}`)
