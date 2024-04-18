@@ -132,11 +132,13 @@ LPContract_NewBet_handlerAsync(async ({ event, context }) => {
     return
   }
 
-  const outcomeEntityId = getEntityId(conditionEntity.id,event.params.outcomeId.toString())
+  const outcomeEntityId = getEntityId(conditionEntityId,event.params.outcomeId.toString())
   const outcomeEntity = await context.Outcome.get(outcomeEntityId)
 
   if (!outcomeEntity) {
-    throw new Error(`Outcome not found with id ${outcomeEntityId}`)
+    // throw new Error(`Outcome not found with id ${outcomeEntityId}`)
+    context.log.debug(`outcome entity not found with id ${outcomeEntityId}`)
+    return
   }
 
   createBet(

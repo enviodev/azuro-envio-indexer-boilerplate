@@ -13,6 +13,7 @@ import {
   FreeBetContract_Transfer_handler,
   FreeBetContract_FreeBetMinted_handlerAsync,
   FreeBetContract_FreeBetMintedBatch_handlerAsync,
+  FreeBetContract_FreeBetRedeemed_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { linkBetWithFreeBet } from "../common/bets";
 import { createFreebet, createFreebetContractEntity, redeemFreebet, reissueFreebet, resolveFreebet, transferFreebet, withdrawFreebet } from "../common/freebets";
@@ -38,7 +39,15 @@ async function getOrCreateFreebetContract(
     chainId
   );
 
-  return createFreebetContractEntity(chainId.toString(), freebetContractAddress, lp, name, null, null)
+  return createFreebetContractEntity(
+    chainId.toString(),
+    freebetContractAddress, 
+    lp, 
+    name, 
+    null, 
+    null,
+    context,
+  )
 }
 
 FreeBetContract_BettorWin_loader(({ event, context }) => {
@@ -141,15 +150,15 @@ FreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
 FreeBetContract_FreeBetRedeemed_loader(({ event, context }) => {
   context.CoreContract.load(event.params.core, {});
  });
-FreeBetContract_FreeBetRedeemed_handler(({ event, context }) => {
-  const coreContractEntity = context.CoreContract.get(event.params.core)
+FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
+  const coreContractEntity = await context.CoreContract.get(event.params.core)
 
   if (!coreContractEntity) {
     context.log.error(`v2 handleFreeBetRedeemed coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
     return
   }
 
-  const freebetEntity = redeemFreebet(
+  const freebetEntity = await redeemFreebet(
     event.srcAddress,
     event.params.id,
     coreContractEntity.id,

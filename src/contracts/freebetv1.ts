@@ -11,20 +11,19 @@ const contractABI = require("../../abis/FreebetV1.json");
 // since they have the same functions for name and LP
 export async function getLPAndNameOfFreebetV1Details(
   contractAddress: string,
-  chainId: number
+  chainId: number,
+  context: any = null,
 ): Promise<{
   readonly name: string;
   readonly lp: string;
 }> {
-  console.log(contractAddress)
-
   const cache = Cache.init(CacheCategory.FreebetV1Contract, chainId);
   const details = cache.read(contractAddress.toLowerCase());
 
   if (details) {
     return {
       name: details.name,
-      lp: details.symbol,
+      lp: details.lp,
     };
   }
 

@@ -188,7 +188,7 @@ Corev2Contract_OddsChanged_handler(async ({ event, context }) => {
   const _conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId)
   const conditionData = deserialiseConditionV2Result(_conditionData.condition)
 
-  const conditionEntityId = coreAddress + "_" + conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
   const conditionEntity = context.Condition.get(conditionEntityId)
 
   // TODO remove later

@@ -31,11 +31,6 @@ export async function getConditionV1FromId(
     if (_condition) {
         return _condition;
     } 
-
-    await sleep(200);
-
-    context.log.debug(`getting new condition with id ${conditionId}`);
-
     // else {
     //     // temp
     //     return {
@@ -69,7 +64,10 @@ export async function getConditionV1FromId(
     // }
 
     // to avoid rate limiting
-    // await sleep(1000);
+    // await sleep(200);
+
+    context.log.debug(`getting new condition with id ${conditionId}`);
+
 
     // RPC URL
     const rpcURL = CHAIN_CONSTANTS[chainId].rpcURL;

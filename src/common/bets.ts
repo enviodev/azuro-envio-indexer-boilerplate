@@ -1,6 +1,6 @@
 import { zeroPadBytes } from "ethers"
 import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE, BET_TYPE_EXPRESS } from "../constants"
-import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPContract_NewBetEvent_handlerContextAsync, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity } from "../src/Types.gen"
+import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPContract_NewBetEvent_handlerContextAsync, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal, safeDiv } from "../utils/math"
 import { getEntityId } from "../utils/schema"
@@ -68,21 +68,20 @@ export function transferBet(
 }
 
 
-export function linkBetWithFreeBet(
+export async function linkBetWithFreeBet(
   coreAddress: string,
   tokenId: bigint,
   freebetEntityId: string,
   freebetOwner: string,
   blockTimestamp: number,
-  context: FreeBetContract_FreeBetRedeemedEvent_handlerContext,
-): BetEntity | null {
+  context: XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync,
+): Promise<BetEntity | null> {
 
   const betEntityId = getEntityId(coreAddress, tokenId.toString())
-  const betEntity = context.Bet.get(betEntityId)
+  const betEntity = await context.Bet.get(betEntityId)
 
   if (!betEntity) {
     context.log.error(`linkBetWithFreeBet betEntity not found. betEntity = ${betEntityId}`)
-
     return null
   }
 
@@ -378,8 +377,10 @@ export function bettorWin(
     const betEntity = context.Bet.get(betEntityId)
 
     if (!betEntity) {
-      context.log.error(`v1 handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId} core_type = ${coreContractEntity.type_}`)
+      context.log.error(`v1 handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
       return
+    } else {
+      // context.log.error(`v1 handleBettorWin found!!!!!!`)
     }
 
     context.Bet.set({
