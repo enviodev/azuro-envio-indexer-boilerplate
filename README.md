@@ -1,6 +1,6 @@
 # Azuro Envio indexer boilerplate
 
-This repo is to help the grantee build the opensource azuro indexer, it includes the configuration and events indexed from the [gnosis azuro v3 subgraph](https://github.com/Azuro-protocol/Azuro-subgraphs)
+This repo is to help the grantee build the opensource azuro indexer, it includes the configuration and events indexed from the [gnosis azuro v3 subgraph](https://github.com/Azuro-protocol/Azuro-subgraphs). Now deployed
 
 ### Additional resources
 
