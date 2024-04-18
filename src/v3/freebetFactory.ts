@@ -16,16 +16,14 @@ FreeBetFactoryContract_NewFreeBet_handler(({ event, context }) => {
   const affiliate = event.params.affiliate.toString();
   const manager = event.params.manager.toString();
 
-  let freebetContractEntity: FreebetContractEntity =
-    createFreebetContractEntity(
-      event.chainId.toString(),
-      freeBetAddress,
-      liquidityPoolAddress,
-      null,
-      affiliate,
-      manager
-    );
-
-  context.FreebetContract.set(freebetContractEntity);
+  createFreebetContractEntity(
+    event.chainId.toString(),
+    freeBetAddress,
+    liquidityPoolAddress,
+    null,
+    affiliate,
+    manager,
+    context,
+  );
 
 });

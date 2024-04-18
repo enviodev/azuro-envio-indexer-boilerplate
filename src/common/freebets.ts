@@ -1,4 +1,4 @@
-import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContextAsync, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreeBetv3Contract_NewBetEvent_handlerContext, FreebetContractEntity, FreebetEntity, XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs, eventLog } from "../../generated/src/Types.gen";
+import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContextAsync, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContextAsync, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreeBetv3Contract_NewBetEvent_handlerContext, FreebetContractEntity, FreebetEntity, XYZFreeBetContract_FreeBetMintedBatchEvent_handlerContextAsync, XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContext, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync, eventLog } from "../../generated/src/Types.gen";
 import { FREEBET_STATUS_CREATED, FREEBET_STATUS_REDEEMED } from "../constants";
 import { getEntityId } from "../utils/schema";
 
@@ -8,7 +8,8 @@ export function createFreebetContractEntity(
   liquidityPoolAddress: string,
   freebetContractName: string | null,
   freebetContractAffiliate: string | null,
-  freebetContractManager: string | null
+  freebetContractManager: string | null,
+  context: XYZFreeBetContract_FreeBetMintedBatchEvent_handlerContextAsync | XYZFreeBetContract_FreeBetRedeemedEvent_handlerContext,
 ): FreebetContractEntity {
   const freebetContractEntity: FreebetContractEntity = {
     id: getEntityId(freebetContractAddress, chainId),
@@ -18,7 +19,7 @@ export function createFreebetContractEntity(
     affiliate: freebetContractAffiliate ? freebetContractAffiliate : undefined,
     manager: freebetContractManager ? freebetContractManager : undefined,
   };
-
+  context.FreebetContract.set(freebetContractEntity);
   return freebetContractEntity;
 }
 
@@ -111,16 +112,16 @@ export function reissueFreebet(
 }
 
 
-export function redeemFreebet(
+export async function redeemFreebet(
   freebetContractAddress: string,
   freebetId: bigint,
   coreAddress: string,
   azuroBetId: bigint,
-  context: FreeBetContract_FreeBetRedeemedEvent_handlerContext,
+  context: XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync | FreeBetContract_FreeBetRedeemedEvent_handlerContextAsync,
   event: eventLog<FreeBetContract_FreeBetRedeemedEvent_eventArgs> | eventLog<XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs>,
-): FreebetEntity | null {
-  const freebetEntityId = freebetContractAddress + "_" + freebetId.toString()
-  const freebetEntity = context.Freebet.get(freebetEntityId)
+): Promise<FreebetEntity | null> {
+  const freebetEntityId = getEntityId(freebetContractAddress, freebetId.toString())
+  const freebetEntity = await context.Freebet.get(freebetEntityId)
 
   // TODO remove later
   if (!freebetEntity) {
@@ -173,7 +174,7 @@ export function transferFreebet(
   context: FreeBetContract_TransferEvent_handlerContext,
 ): FreebetEntity | null {
 
-  const freebetEntityId = freebetContractAddress + "_" + tokenId.toString()
+  const freebetEntityId = getEntityId(freebetContractAddress, tokenId.toString())
   const freebetEntity = context.Freebet.get(freebetEntityId)
 
   // TODO remove later
@@ -219,7 +220,7 @@ export function resolveFreebet(
   blockTimestamp: number,
   context: FreeBetContract_TransferEvent_handlerContext,
 ): FreebetEntity | null {
-  const freebetEntityId = freebetContractAddress + "_" + tokenId.toString()
+  const freebetEntityId = getEntityId(freebetContractAddress, tokenId.toString())
   const freebetEntity = context.Freebet.get(freebetEntityId)
 
   // TODO remove later

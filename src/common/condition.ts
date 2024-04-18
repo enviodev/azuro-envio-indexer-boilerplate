@@ -29,7 +29,7 @@ export async function createCondition(
   startsAt: bigint | null = null,
 ): Promise<Mutable<typeof conditionEntity> | null> {
 
-  const conditionEntityId = coreAddress + "_" + conditionId.toString()
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
 
   const conditionEntity: Mutable<ConditionEntity> = {
     id: conditionEntityId,
@@ -96,7 +96,7 @@ export async function createCondition(
   }
 
   // TODO remove
-  if (outcomeIds.length !== 2) {
+  if (outcomes.length !== 2) {
     throw new Error(`createCondition outcomeIds.length !== 2`)
   }
 
@@ -210,11 +210,11 @@ export async function resolveCondition(
   else {
     let wonOutcomes: string[] = []
 
-    for (let i = 0; i < winningOutcomes.length; i++) {
-      const outcomeEntityId = getEntityId(conditionEntity.id, winningOutcomes[i].toString())
-      const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!.id
-      // wonOutcomes = wonOutcomes.concat([outcomeEntity])
-    }
+    // for (let i = 0; i < winningOutcomes.length; i++) {
+    //   const outcomeEntityId = getEntityId(conditionEntity.id, winningOutcomes[i].toString())
+    //   // const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!.id
+    //   // wonOutcomes = wonOutcomes.concat([outcomeEntity])
+    // }
 
     // conditionEntity.wonOutcomes = wonOutcomes
     conditionEntity.wonOutcomeIds = winningOutcomes

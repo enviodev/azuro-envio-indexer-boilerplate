@@ -34,6 +34,7 @@ contracts:
       - event: FreeBetMintedBatch(address[] receivers, uint256[] ids, (uint128,uint64,uint64)[] bets)
         isAsync: true
       - event: FreeBetRedeemed(address indexed bettor, uint256 indexed id, uint256 indexed azuroBetId, uint128 amount)
+        isAsync: true
       - event: FreeBetReissued(address indexed receiver, uint256 indexed id, (uint128,uint64,uint64) bet)
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - name: Azurobets
@@ -88,6 +89,7 @@ contracts:
       - event: FreeBetMintedBatch(address[] receivers, uint256[] ids, (uint128,uint64,uint64)[] bets)
         isAsync: true
       - event: FreeBetRedeemed(address indexed core, address indexed bettor, uint256 indexed id, uint256 azuroBetId, uint128 amount)
+        isAsync: true
       - event: FreeBetReissued(address indexed receiver, uint256 indexed id, (uint128,uint64,uint64) bet)
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - name: Corev3
