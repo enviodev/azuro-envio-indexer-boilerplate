@@ -240,8 +240,7 @@ export async function withdrawLiquidity(
   chainId: number,
   context: LPv2Contract_LiquidityRemovedEvent_handlerContextAsync
 ): Promise<LiquidityPoolTransactionEntity | null> {
-  const liquidityPoolContractEntity: LiquidityPoolContractEntity =
-    (await context.LiquidityPoolContract.get(liquidityPoolAddress))!;
+  const liquidityPoolContractEntity: LiquidityPoolContractEntity = (await context.LiquidityPoolContract.get(liquidityPoolAddress))!;
 
   // TODO remove later
   if (!liquidityPoolContractEntity) {
@@ -272,10 +271,8 @@ export async function withdrawLiquidity(
     context
   );
 
-  const liquidityPoolNftEntityId = liquidityPoolAddress + "_" + leaf.toString();
-  const liquidityPoolNftEntity = await context.LiquidityPoolNft.get(
-    liquidityPoolNftEntityId
-  );
+  const liquidityPoolNftEntityId = getEntityId(liquidityPoolAddress, leaf.toString());
+  const liquidityPoolNftEntity = await context.LiquidityPoolNft.get(liquidityPoolNftEntityId);
 
   // TODO remove later
   if (!liquidityPoolNftEntity) {

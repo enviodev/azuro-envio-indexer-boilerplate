@@ -49,7 +49,7 @@
 //   //   conditionOdds[i] = event.params.bet.conditionOdds[i]
 //   // }
 
-//   // const lp = context.CoreContract.get(prematchAddress)!.liquidityPool_id
+//   // const lp = context.CoreContract.get(prematchAddress.toLowerCase())!.liquidityPool_id
 //   // const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
 
 //   // createBet(

@@ -41,7 +41,7 @@ export function createFreebet(
   createBlock: bigint,
   context: FreeBetContract_FreeBetMintedEvent_handlerContextAsync | FreeBetv3Contract_NewBetEvent_handlerContext,
 ): FreebetEntity {
-  const freebetEntityId = freebetContractAddress + '_' + freebetId.toString()
+  const freebetEntityId = getEntityId(freebetContractAddress, freebetId.toString())
 
   let _status: typeof FREEBET_STATUS_REDEEMED | typeof FREEBET_STATUS_CREATED;
 

@@ -30,7 +30,7 @@ export async function getConditionV1FromId(
 
     if (_condition) {
         return _condition;
-    } 
+    }
     else {
         // temp
         // return {
@@ -62,53 +62,54 @@ export async function getConditionV1FromId(
         //     }
         // }
         // }
-        
-    // to avoid rate limiting
-    // await sleep(200);
 
-    context.log.debug(`getting new condition with id ${conditionId}`);
+        // to avoid rate limiting
+        // await sleep(200);
 
-    // RPC URL
-    const rpcURL = CHAIN_CONSTANTS[chainId].rpcURL;
+        context.log.debug(`getting new condition with id ${conditionId}`);
 
-    // Create Web3 instance
-    const web3 = new Web3(rpcURL);
+        // RPC URL
+        const rpcURL = CHAIN_CONSTANTS[chainId].rpcURL;
 
-    // Create LPv1 contract instance
-    const corev1Contract = new web3.eth.Contract(contractABI, contractAddress);
+        // Create Web3 instance
+        const web3 = new Web3(rpcURL);
 
-    try {
-        const _result = await corev1Contract.methods.getCondition(conditionId).call() as unknown;
-        const result = _result as ConditionV1Response;
+        // Create LPv1 contract instance
+        const corev1Contract = new web3.eth.Contract(contractABI, contractAddress);
 
-        const condition: ConditionV1Response = {
-            fundBank: [result.fundBank[0].toString().toLowerCase(), result.fundBank[1].toString().toLowerCase()],
-            payouts: [result.payouts[0].toString().toLowerCase(), result.payouts[1].toString().toLowerCase()],
-            totalNetBets: [result.totalNetBets[0].toString().toLowerCase(), result.totalNetBets[1].toString().toLowerCase()],
-            reinforcement: result.reinforcement.toString().toLowerCase(),
-            margin: result.margin.toString().toLowerCase(),
-            ipfsHash: result.ipfsHash.toString().toLowerCase(),
-            outcomes: [result.outcomes[0].toString().toLowerCase(), result.outcomes[1].toString().toLowerCase()],
-            scopeId: result.scopeId.toString().toLowerCase(),
-            outcomeWin: result.outcomeWin.toString().toLowerCase(),
-            timestamp: result.timestamp.toString().toLowerCase(),
-            state: result.state.toString().toLowerCase(),
-            leaf: result.leaf.toString().toLowerCase(),
-        };
+        try {
+            const _result = await corev1Contract.methods.getCondition(conditionId).call() as unknown;
+            const result = _result as ConditionV1Response;
 
-        const entry = {
-            condition: condition,
-        } as const;
+            const condition: ConditionV1Response = {
+                fundBank: [result.fundBank[0].toString().toLowerCase(), result.fundBank[1].toString().toLowerCase()],
+                payouts: [result.payouts[0].toString().toLowerCase(), result.payouts[1].toString().toLowerCase()],
+                totalNetBets: [result.totalNetBets[0].toString().toLowerCase(), result.totalNetBets[1].toString().toLowerCase()],
+                reinforcement: result.reinforcement.toString().toLowerCase(),
+                margin: result.margin.toString().toLowerCase(),
+                ipfsHash: result.ipfsHash.toString().toLowerCase(),
+                outcomes: [result.outcomes[0].toString().toLowerCase(), result.outcomes[1].toString().toLowerCase()],
+                scopeId: result.scopeId.toString().toLowerCase(),
+                outcomeWin: result.outcomeWin.toString().toLowerCase(),
+                timestamp: result.timestamp.toString().toLowerCase(),
+                state: result.state.toString().toLowerCase(),
+                leaf: result.leaf.toString().toLowerCase(),
+            };
 
-        cache.add({ [conditionId]: entry as any });
+            const entry = {
+                condition: condition,
+            } as const;
 
-        return entry;
-    } catch (err) {
-        console.error("An error occurred", err);
-        throw err; // or handle the error as needed
+            cache.add({ [conditionId]: entry as any });
+
+            return entry;
+        } catch (err) {
+            console.error("An error occurred", err);
+            throw err; // or handle the error as needed
+        }
     }
-}
 
+}
 
 export function deserialiseConditionV1Result(result: ConditionV1Response): ConditionV1 {
     const condition: ConditionV1 = {

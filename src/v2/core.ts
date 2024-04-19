@@ -31,17 +31,17 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 
   context.log.debug(`v2 ConditionCreated handler conditionId = ${conditionId} coreAddress = ${coreAddress}`)
 
-  const coreContractEntity = await context.CoreContract.get(coreAddress)
+  const coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
 
-  if (!coreContractEntity) {
-    throw new Error(`v2 ConditionCreated coreContractEntity not found. coreAddress = ${coreAddress}`)
-  }
+  // if (!coreContractEntity) {
+  //   throw new Error(`v2 ConditionCreated coreContractEntity not found. coreAddress = ${coreAddress}`)
+  // }
 
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
   const gameEntityId = getEntityId(liquidityPoolAddress, event.params.gameId.toString())
   const gameEntity = await context.Game.get(gameEntityId)
 
-  TODO remove later
+  // TODO remove later
   if (!gameEntity) {
     context.log.error(`v2 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`)
     return
@@ -84,7 +84,7 @@ Corev2Contract_ConditionResolved_handler(({ event, context }) => {
     return
   }
 
-  const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
+  const liquidityPoolAddress = context.CoreContract.get(coreAddress.toLowerCase())!.liquidityPool_id
 
   resolveCondition(
     VERSION_V2,
@@ -146,7 +146,7 @@ Corev2Contract_NewBet_handler(({ event, context }) => {
     return
   }
 
-  const lp = context.CoreContract.get(coreAddress)!.liquidityPool_id
+  const lp = context.CoreContract.get(coreAddress.toLowerCase())!.liquidityPool_id
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
 
   const outcomeEntityId = getEntityId(conditionEntity.id, event.params.outcomeId.toString())

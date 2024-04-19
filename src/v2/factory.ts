@@ -35,7 +35,7 @@ FactoryContract_NewCore_handler(({ event, context }) => {
 
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress)!
 
-  let coreContractEntity = context.CoreContract.get(coreAddress)
+  let coreContractEntity = context.CoreContract.get(coreAddress.toLowerCase())
 
   context.log.debug(`create core entity ${coreAddress}`)
   if (!coreContractEntity) {
@@ -53,7 +53,7 @@ FactoryContract_NewCore_handler(({ event, context }) => {
   }
 
   if (prematchAddress !== null) {
-    const coreContractId = context.CoreContract.get(prematchAddress)!.id
+    const coreContractId = context.CoreContract.get(prematchAddress.toLowerCase())!.id
     createExpressPrematchRelationEntity(coreAddress, coreContractId, context)
   }
 });
@@ -91,7 +91,7 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
     context,
   )
 
-  let coreContractEntity = await context.CoreContract.get(coreAddress)
+  let coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
   context.log.debug(`v2 new pool handler coreAddress: ${coreAddress}`)
   if (!coreContractEntity) {
     createCoreEntity(coreAddress, liquidityPoolContractEntity, coreType, context)
@@ -102,7 +102,7 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
     const prematchAddress = getPrematchAddressByExpressAddressV2(coreAddress, context)
 
     if (prematchAddress !== null) {
-      const coreContractId = (await context.CoreContract.get(prematchAddress))!.id
+      const coreContractId = (await context.CoreContract.get(prematchAddress.toLowerCase()))!.id
       createExpressPrematchRelationEntity(coreAddress, coreContractId, context)
     }
   }
