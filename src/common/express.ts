@@ -4,6 +4,7 @@
 
 
 export function calcPayoutV2(address: string, tokenId: bigint): bigint {
+  throw new Error("Method not implemented for core type express v2.")
   // const expressSC = ExpressV2.bind(Address.fromString(address))
 
   // const payout = expressSC.try_calcPayout(tokenId)
@@ -16,6 +17,7 @@ export function calcPayoutV2(address: string, tokenId: bigint): bigint {
 }
 
 export function calcPayoutV3(address: string, tokenId: bigint): bigint {
+  throw new Error("Method not implemented for core type express v3.")
   // const expressSC = ExpressV3.bind(Address.fromString(address))
 
   // const payout = expressSC.try_calcPayout(tokenId)

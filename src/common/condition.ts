@@ -434,7 +434,7 @@ export async function resolveCondition(
     turnover: countryEntity.turnover - conditionEntity.turnover,
   })
 
-  countConditionResolved(
+  await countConditionResolved(
     liquidityPoolAddress,
     betsAmount,
     wonBetsAmount,

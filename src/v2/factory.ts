@@ -101,7 +101,7 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
 
   if (!coreContractEntity) {
     createCoreEntity(coreAddress, liquidityPoolContractEntity, coreType, context)
-    connectCore(coreAddress, coreType, event.chainId, context)
+    await connectCore(coreAddress, coreType, event.chainId, context)
   }
 
   if (coreType === CORE_TYPE_EXPRESS) {

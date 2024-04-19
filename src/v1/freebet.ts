@@ -87,7 +87,7 @@
 //   }
 
 //   const freebetEntityId = betEntity.freebet_id!
-//   const freebetEntity = withdrawFreebet(freebetEntityId, event.blockTimestamp, context)
+//   const freebetEntity = await withdrawFreebet(freebetEntityId, event.blockTimestamp, context)
 
 //   if (!freebetEntity) {
 //     context.log.error(`v1 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
@@ -219,7 +219,7 @@
 //     return
 //   }
 
-//   linkBetWithFreeBet(
+//   await linkBetWithFreeBet(
 //     coreAddress,
 //     event.params.azuroBetId,
 //     freebetEntity.id,

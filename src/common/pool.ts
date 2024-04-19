@@ -3,6 +3,7 @@ import {
   CoreContract_ConditionResolvedEvent_handlerContextAsync,
   CoreContract_LpChangedEvent_handlerContextAsync,
   LPv2Contract_LiquidityAddedEvent_handlerContext,
+  LPv2Contract_LiquidityAddedEvent_handlerContextAsync,
   LPv2Contract_LiquidityManagerChangedEvent_handlerContext,
   LPv2Contract_LiquidityRemovedEvent_handlerContext,
   LPv2Contract_LiquidityRemovedEvent_handlerContextAsync,
@@ -150,7 +151,7 @@ export async function createPoolEntity(
   return liquidityPoolContractEntity;
 }
 
-export function depositLiquidity(
+export async function depositLiquidity(
   liquidityPoolAddress: string,
   amount: bigint,
   leaf: bigint,
@@ -159,9 +160,9 @@ export function depositLiquidity(
   blockTimestamp: number,
   txHash: string,
   chainId: number,
-  context: LPv2Contract_LiquidityAddedEvent_handlerContext
-): LiquidityPoolTransactionEntity | null {
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress);
+  context: LPv2Contract_LiquidityAddedEvent_handlerContextAsync
+): Promise<LiquidityPoolTransactionEntity | null> {
+  const liquidityPoolContractEntity = await context.LiquidityPoolContract.get(liquidityPoolAddress);
 
   // TODO remove later
   if (!liquidityPoolContractEntity) {
@@ -184,7 +185,7 @@ export function depositLiquidity(
     depositedWithStakingAmount: depositedWithStakingAmount,
   });
 
-  updatePoolOnCommonEvents(
+  await updatePoolOnCommonEvents(
     liquidityPoolAddress,
     BigInt(blockNumber),
     BigInt(blockTimestamp),
@@ -192,7 +193,7 @@ export function depositLiquidity(
     context
   );
 
-  const liquidityPoolNftEntityId = liquidityPoolAddress + "_" + leaf.toString();
+  const liquidityPoolNftEntityId = getEntityId(liquidityPoolAddress, leaf.toString());
   const liquidityPoolNftEntity: LiquidityPoolNftEntity = {
     id: liquidityPoolNftEntityId,
     nftId: leaf,
@@ -263,7 +264,7 @@ export async function withdrawLiquidity(
     });
   }
 
-  updatePoolOnCommonEvents(
+  await updatePoolOnCommonEvents(
     liquidityPoolAddress,
     BigInt(blockNumber),
     BigInt(blockTimestamp),
@@ -394,7 +395,7 @@ export async function countConditionResolved(
     wonBetsCount: liquidityPoolContractEntity.wonBetsCount + 1n,
   });
 
-  updatePoolOnCommonEvents(
+  await updatePoolOnCommonEvents(
     liquidityPoolAddress,
     BigInt(blockNumber),
     BigInt(blockTimestamp),
