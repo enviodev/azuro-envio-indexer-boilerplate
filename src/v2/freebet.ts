@@ -173,7 +173,7 @@ FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
     return
   }
 
-  linkBetWithFreeBet(
+  await linkBetWithFreeBet(
     coreContractEntity.id,
     event.params.azuroBetId,
     freebetEntity.id,

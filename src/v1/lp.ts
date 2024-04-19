@@ -58,8 +58,8 @@
 // LPContract_LiquidityAdded_loader(({ event, context }) => {
 //   context.LiquidityPoolContract.load(event.srcAddress);
 // });
-// LPContract_LiquidityAdded_handler(({ event, context }) => {
-//   depositLiquidity(
+// LPContract_LiquidityAdded_handlerAsync(async({ event, context }) => {
+//   await depositLiquidity(
 //     event.srcAddress,
 //     event.params.amount,
 //     event.params.leaf,
@@ -84,7 +84,7 @@
 //   )
 //   const isFullyWithdrawn = BigInt(nodeWithdrawView.withdrawAmount) === 0n ? true : false
 
-//   withdrawLiquidity(
+//   await withdrawLiquidity(
 //     event.srcAddress,
 //     event.params.amount,
 //     event.params.leaf,

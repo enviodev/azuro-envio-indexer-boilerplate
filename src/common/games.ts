@@ -9,7 +9,7 @@ import { getImageUrl } from "../utils/images"
 import { byte32ToIPFSCIDv0, tryFetchIpfsFile } from "../utils/ipfs"
 import { IPFSMatchDetails } from "../utils/types"
 
-
+// TODO delete
 const DEFAULT_GAME: GameEntity = {
     id: "1",
     liquidityPool_id: "",

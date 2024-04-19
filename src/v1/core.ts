@@ -109,7 +109,7 @@
 
 //   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
 
-//   resolveCondition(
+//   await resolveCondition(
 //     VERSION_V1,
 //     liquidityPoolAddress,
 //     conditionEntityId,

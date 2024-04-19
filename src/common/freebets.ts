@@ -90,7 +90,7 @@ export function reissueFreebet(
   context: FreeBetContract_FreeBetReissuedEvent_handlerContext,
 ): FreebetEntity | null {
 
-  const freebetEntityId = freebetContractAddress + "_" + freebetId.toString()
+  const freebetEntityId = getEntityId(freebetContractAddress, freebetId.toString())
 
   const freebetEntity = context.Freebet.get(freebetEntityId)
 

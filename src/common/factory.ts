@@ -8,7 +8,7 @@ export function createCoreEntity(
   coreAddress: string,
   liquidityPoolContractEntity: LiquidityPoolContractEntity,
   coreType: string,
-  context: FactoryContract_NewPoolEvent_handlerContextAsync | CoreContract_LpChangedEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext,
+  context: FactoryContract_NewPoolEvent_handlerContextAsync | CoreContract_LpChangedEvent_handlerContextAsync,
 ): CoreContractEntity {
   const coreContractEntity: CoreContractEntity = {
     id: coreAddress.toLowerCase(),
@@ -78,7 +78,7 @@ export async function connectCore(
   coreAddress: string, 
   coreType: string, 
   chainId: number,
-  context: FactoryContract_NewPoolEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext
+  context: FactoryContract_NewPoolEvent_handlerContextAsync
 ): Promise<void> {
   const coreAddressTyped = coreAddress
 

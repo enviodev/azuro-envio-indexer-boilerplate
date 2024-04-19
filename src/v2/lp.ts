@@ -21,6 +21,7 @@ import {
   LPv2Contract_WithdrawTimeoutChanged_handler,
   LPv2Contract_LiquidityRemoved_handlerAsync,
   LPv2Contract_NewGame_handlerAsync,
+  LPv2Contract_LiquidityAdded_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { bettorWin } from "../common/bets";
 import { cancelGame, createGame, shiftGame } from "../common/games";
@@ -58,8 +59,8 @@ LPv2Contract_GameShifted_handler(({ event, context }) => {
 LPv2Contract_LiquidityAdded_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress)
 });
-LPv2Contract_LiquidityAdded_handler(({ event, context }) => {
-  depositLiquidity(
+LPv2Contract_LiquidityAdded_handlerAsync(async ({ event, context }) => {
+  await depositLiquidity(
     event.srcAddress,
     event.params.amount,
     event.params.depositId,
@@ -108,7 +109,7 @@ LPv2Contract_LiquidityRemoved_handlerAsync(async ({ event, context }) => {
     isFullyWithdrawn = true
   }
 
-  withdrawLiquidity(
+  await withdrawLiquidity(
     event.srcAddress,
     event.params.amount,
     event.params.depositId,

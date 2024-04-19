@@ -12,6 +12,7 @@ import {
   Corev2Contract_OddsChanged_handler,
   Corev2Contract_ConditionCreated_handlerAsync,
   Corev2Contract_NewBet_handlerAsync,
+  Corev2Contract_ConditionResolved_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { createCondition, pauseUnpauseCondition, resolveCondition, updateConditionOdds } from "../common/condition";
 import { BET_TYPE_ORDINAR, VERSION_V2 } from "../constants";
@@ -70,7 +71,7 @@ Corev2Contract_ConditionResolved_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress.toLowerCase(), {})
   context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
 });
-Corev2Contract_ConditionResolved_handler(({ event, context }) => {
+Corev2Contract_ConditionResolved_handlerAsync(async({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
@@ -83,9 +84,9 @@ Corev2Contract_ConditionResolved_handler(({ event, context }) => {
     return
   }
 
-  const liquidityPoolAddress = context.CoreContract.get(coreAddress.toLowerCase())!.liquidityPool_id
+  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress.toLowerCase()))!.liquidityPool_id
 
-  resolveCondition(
+  await resolveCondition(
     VERSION_V2,
     liquidityPoolAddress,
     conditionEntityId,
