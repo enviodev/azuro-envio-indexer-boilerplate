@@ -79,6 +79,7 @@ contracts:
     handler: src/v2/factory.ts
     events:
       - event: NewCore(address indexed lp, address indexed core, string indexed coreType)
+        isAsync: true
       - event: NewPool(address indexed lp, address indexed core, string indexed coreType, address access)
         isAsync: true
   - name: FreeBet

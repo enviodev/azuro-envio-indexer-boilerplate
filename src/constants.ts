@@ -62,6 +62,27 @@ export const CORE_TYPE_EXPRESS_V2 = "express-v2";
 export const CORE_TYPE_LIVE = "live";
 export const CORE_TYPES = new TypedMap<string, string>();
 
+CORE_TYPES.set(
+  '0x56ff202de9ba417fbc2912bebe53dea80efb0df607262a180f0517649590c806',
+  CORE_TYPE_PRE_MATCH,
+)
+CORE_TYPES.set(
+  '0xa370412a877636f0419e753f8c70c2a0836cf09798778fd9a2285aaae2c168e7',
+  CORE_TYPE_PRE_MATCH_V2,
+)
+CORE_TYPES.set(
+  '0x36216ab39e2e6e2f7615df148032d88ba1863a2cb6295d3f972e47d1ac7a4a85',
+  CORE_TYPE_EXPRESS,
+)
+CORE_TYPES.set(
+  '0x0120c420fa0b8dacbc611f3b9d2b64da4e1e8984482ec9dff5b8371455ae24b0',
+  CORE_TYPE_EXPRESS_V2,
+)
+CORE_TYPES.set(
+  '0x889375b77befea7650d686ae2bb3a2d812c58007d3fc942cd8eb7cf4fc8d4e93',
+  CORE_TYPE_LIVE,
+)
+
 export const X_PROFIT = BigInt(75);
 export const X_PROFIT_DIVIDER = BigInt(100);
 

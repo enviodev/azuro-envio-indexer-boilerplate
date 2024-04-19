@@ -18,7 +18,7 @@ import {
 import { linkBetWithFreeBet } from "../common/bets";
 import { createFreebet, createFreebetContractEntity, redeemFreebet, reissueFreebet, resolveFreebet, transferFreebet, withdrawFreebet } from "../common/freebets";
 import { VERSION_V2, ZERO_ADDRESS } from "../constants";
-import { getLPAndNameOfFreebetV1Details } from "../contracts/freebetv1";
+import { getLPAndNameOfFreebetV2Details } from "../contracts/freebetv2";
 import { FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContextAsync, FreebetContractEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
@@ -34,7 +34,7 @@ async function getOrCreateFreebetContract(
     return freebetContractEntity
   }
 
-  const { lp, name } = await getLPAndNameOfFreebetV1Details(
+  const { lp, name } = await getLPAndNameOfFreebetV2Details(
     freebetContractAddress,
     chainId
   );
