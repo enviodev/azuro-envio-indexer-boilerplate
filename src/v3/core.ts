@@ -45,7 +45,7 @@
 //     return
 //   }
 
-//   // createCondition(
+//   // await createCondition(
 //   //   VERSION_V3,
 //   //   coreAddress,
 //   //   conditionId,
@@ -154,7 +154,7 @@
 //   // )
 //   // const outcomeEntity = context.Outcome.get(outcomeEntityId)!
 
-//   // createBet(
+//   // await createBet(
 //   //   VERSION_V3,
 //   //   BET_TYPE_ORDINAR,
 //   //   [conditionEntity],

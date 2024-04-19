@@ -45,6 +45,7 @@ contracts:
     handler: src/v2/azurobet.ts
     events:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+        isAsync: true
   - name: Corev2
     address: '0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e'
     handler: src/v2/core.ts
@@ -54,12 +55,14 @@ contracts:
       - event: ConditionResolved(uint256 indexed conditionId, uint8 state, uint64 outcomeWin, int128 lpProfit)
       - event: ConditionStopped(uint256 indexed conditionId, bool flag)
       - event: NewBet(address indexed  bettor, address indexed affiliate, uint256 indexed conditionId, uint256 tokenId, uint64 outcomeId, uint128 amount, uint64 odds, uint128[2] funds)
+        isAsync: true
       - event: OddsChanged(uint256 indexed conditionId, uint64[2] newOdds)
   - name: Expressv2
     handler: src/v2/express.ts
     events:
       - event: NewBet(address indexed bettor, uint256 indexed betId,(address,uint64,uint128,uint48,bool,(uint256,uint64)[] ,uint64[]) bet) # interesting stress test - struct within struct event emit
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+        isAsync: true
   - name: LPv2
     address: '0x204e7371Ade792c5C006fb52711c50a7efC843ed'
     handler: src/v2/lp.ts
@@ -73,6 +76,7 @@ contracts:
       - event: LiquidityRemoved(address indexed account, uint48 indexed depositId, uint256 amount)
         isAsync: true
       - event: NewGame(uint256 indexed gameId, uint64 startsAt, bytes data) # TODO: This only imported v2 not v3 version which seems to be the same contract
+        isAsync: true
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
       - event: WithdrawTimeoutChanged(uint64 newWithdrawTimeout)
   - name: Factory

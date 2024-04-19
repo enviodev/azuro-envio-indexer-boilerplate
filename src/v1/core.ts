@@ -62,7 +62,7 @@
 //     return
 //   }
 
-//   createCondition(
+//   await createCondition(
 //     VERSION_V1,
 //     coreAddress,
 //     conditionId,

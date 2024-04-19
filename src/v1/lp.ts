@@ -141,7 +141,7 @@
 //     return
 //   }
 
-//   createBet(
+//   await createBet(
 //     VERSION_V1,
 //     BET_TYPE_ORDINAR,
 //     [conditionEntity],

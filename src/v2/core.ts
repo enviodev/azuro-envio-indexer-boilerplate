@@ -11,6 +11,7 @@ import {
   Corev2Contract_OddsChanged_loader,
   Corev2Contract_OddsChanged_handler,
   Corev2Contract_ConditionCreated_handlerAsync,
+  Corev2Contract_NewBet_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { createCondition, pauseUnpauseCondition, resolveCondition, updateConditionOdds } from "../common/condition";
 import { BET_TYPE_ORDINAR, VERSION_V2 } from "../constants";
@@ -41,11 +42,11 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!gameEntity) {
-    context.log.error(`v2 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`)
+    context.log.error(`v2 ConditionCreated gameEntity not found, skipping create condition. gameEntityId = ${gameEntityId}`)
     return
   }
 
-  createCondition(
+  await createCondition(
     VERSION_V2,
     coreAddress,
     conditionId,
@@ -78,7 +79,7 @@ Corev2Contract_ConditionResolved_handler(({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v2 handleConditionResolved conditionEntity not found. conditionEntityId = $conditionEntityId}`)
+    context.log.error(`v2 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
     return
   }
 
@@ -131,12 +132,12 @@ Corev2Contract_NewBet_loader(({ event, context }) => {
   const outComeEntityId = getEntityId(conditionEntityId,event.params.outcomeId.toString())
   context.Outcome.load(outComeEntityId, {})
 });
-Corev2Contract_NewBet_handler(({ event, context }) => {
+Corev2Contract_NewBet_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
-  const conditionEntity = context.Condition.get(conditionEntityId)
+  const conditionEntity = await context.Condition.get(conditionEntityId)
 
   // TODO remove later
   if (!conditionEntity) {
@@ -144,17 +145,17 @@ Corev2Contract_NewBet_handler(({ event, context }) => {
     return
   }
 
-  const lp = context.CoreContract.get(coreAddress.toLowerCase())!.liquidityPool_id
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
+  const lp = (await context.CoreContract.get(coreAddress.toLowerCase()))!.liquidityPool_id
+  const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(lp))!
 
   const outcomeEntityId = getEntityId(conditionEntity.id, event.params.outcomeId.toString())
-  const outcomeEntity = context.Outcome.get(outcomeEntityId)
+  const outcomeEntity = await context.Outcome.get(outcomeEntityId)
 
   if (!outcomeEntity) {
     throw new Error(`Outcome not found with id ${outcomeEntityId}`)
   }
 
-  createBet(
+  await createBet(
     VERSION_V2,
     BET_TYPE_ORDINAR,
     [conditionEntity],
@@ -176,7 +177,7 @@ Corev2Contract_NewBet_handler(({ event, context }) => {
 });
 
 Corev2Contract_OddsChanged_loader(({ event, context }) => {
-  context.Condition.load(event.srcAddress + "_" + event.params.conditionId.toString(), {})
+  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
   context.CoreContract.load(event.srcAddress.toLowerCase(), {})
 });
 Corev2Contract_OddsChanged_handler(async ({ event, context }) => {

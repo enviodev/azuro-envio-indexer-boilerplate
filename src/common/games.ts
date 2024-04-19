@@ -86,8 +86,8 @@ export async function createGame(
     }
 
     if (data === null) {
-        context.log.error('Couldn\'t fetch createGame data from IPFS')
-        return null
+        throw new Error('Couldn\'t fetch createGame data from IPFS')
+        // return null
     }
 
     let sportId: bigint | null = null
@@ -222,8 +222,6 @@ export async function createGame(
         context.League.set(leagueEntity)
     }
 
-
-
     // V1 - gameId from ipfs
     let gameId = rawGameId
     if (gameId === null) {
@@ -352,11 +350,12 @@ export async function createGame(
         }
     }
 
-    const gameSlug = participantsNames[0].concat('-').concat(participantsNames[1])
+    const gameTitle = participantsNames[0].concat(' - ').concat(participantsNames[1])
+    const gameSlug = gameTitle.concat('-').concat(gameEntity.gameId.toString())
 
     context.Game.set({
         ...gameEntity,
-        title: participantsNames[0].concat(' - ').concat(participantsNames[1]),
+        title: gameTitle,
         slug: toSlug(gameSlug),
         _updatedAt: createBlockTimestamp,
     })
