@@ -4,6 +4,7 @@ import {
   FactoryContract_NewPool_loader,
   FactoryContract_NewPool_handler,
   FactoryContract_NewPool_handlerAsync,
+  FactoryContract_NewCore_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { connectCore, createCoreEntity, createExpressPrematchRelationEntity, getPrematchAddressByExpressAddressV2, getPrematchAddressByExpressAddressV3 } from "../common/factory";
 import { createPoolEntity } from "../common/pool";
@@ -14,15 +15,14 @@ import { LP_WHITELIST } from "../whitelists";
 FactoryContract_NewCore_loader(async ({ event, context }) => {
     context.contractRegistration.addCorev2(event.params.core);
     
-    const resp = await getAzuroBetAddress(event.params.lp, event.chainId)
+    const resp = await getAzuroBetAddress(event.params.core, event.chainId)
     context.contractRegistration.addAzurobets(resp.azuroBetAddress)
  });
-FactoryContract_NewCore_handler(({ event, context }) => {
+FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
   const liquidityPoolAddress = event.params.lp
 
   if (LP_WHITELIST.indexOf(liquidityPoolAddress.toLowerCase()) === -1) {
-    context.log.warn(`v2 handleNewPool skip ${liquidityPoolAddress} because it isn\'t whitelisted`)
-    return
+    throw new Error(`v2 handleNewPool skip ${liquidityPoolAddress} because it isn\'t whitelisted`)
   }
 
   const coreAddress = event.params.core
@@ -33,14 +33,14 @@ FactoryContract_NewCore_handler(({ event, context }) => {
     return
   }
 
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress)!
+  const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(liquidityPoolAddress))!
 
-  let coreContractEntity = context.CoreContract.get(coreAddress.toLowerCase())
+  let coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
 
   context.log.debug(`create core entity ${coreAddress}`)
   if (!coreContractEntity) {
     createCoreEntity(coreAddress, liquidityPoolContractEntity, coreType, context)
-    connectCore(event.params.core, coreType, context)
+    await connectCore(event.params.core, coreType, event.chainId, context)
   }
 
   let prematchAddress: string | null = null
@@ -53,20 +53,24 @@ FactoryContract_NewCore_handler(({ event, context }) => {
   }
 
   if (prematchAddress !== null) {
-    const coreContractId = context.CoreContract.get(prematchAddress.toLowerCase())!.id
+    const coreContractId = (await context.CoreContract.get(prematchAddress.toLowerCase()))!.id
     createExpressPrematchRelationEntity(coreAddress, coreContractId, context)
   }
 });
 
-FactoryContract_NewPool_loader(({ event, context }) => {
+FactoryContract_NewPool_loader(async ({ event, context }) => {
   context.contractRegistration.addLPv2(event.params.lp);
   context.contractRegistration.addCorev2(event.params.core);
+
+  const resp = await getAzuroBetAddress(event.params.core, event.chainId)
+  context.contractRegistration.addAzurobets(resp.azuroBetAddress)
 });
 FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
   const liquidityPoolAddress = event.params.lp
 
   if (LP_WHITELIST.indexOf(liquidityPoolAddress.toLowerCase()) === -1) {
     context.log.warn(`v2 handleNewPool skip ${liquidityPoolAddress} because it isn\'t whitelisted`)
+    throw new Error('not whitelisted!!!!!')
     return
   }
 
@@ -75,6 +79,8 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
   const coreType = CORE_TYPES.get(event.params.coreType)
 
   if (coreType === null) {
+    context.log.debug(`no core type!!!!`)
+    throw new Error(`no core type!!!! ${coreType} ${event.params.coreType} ${event.params.core}`)
     return
   }
 
@@ -93,9 +99,10 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
 
   let coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
   context.log.debug(`v2 new pool handler coreAddress: ${coreAddress}`)
+
   if (!coreContractEntity) {
     createCoreEntity(coreAddress, liquidityPoolContractEntity, coreType, context)
-    connectCore(coreAddress, coreType, context)
+    connectCore(coreAddress, coreType, event.chainId, context)
   }
 
   if (coreType === CORE_TYPE_EXPRESS) {

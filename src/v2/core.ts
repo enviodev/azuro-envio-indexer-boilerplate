@@ -29,13 +29,11 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const _conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId, context)
   const conditionData = deserialiseConditionV2Result(_conditionData.condition)
 
-  context.log.debug(`v2 ConditionCreated handler conditionId = ${conditionId} coreAddress = ${coreAddress}`)
-
   const coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
 
-  // if (!coreContractEntity) {
-  //   throw new Error(`v2 ConditionCreated coreContractEntity not found. coreAddress = ${coreAddress}`)
-  // }
+  if (!coreContractEntity) {
+    throw new Error(`v2 ConditionCreated coreContractEntity not found. coreAddress = ${coreAddress}`)
+  }
 
   const liquidityPoolAddress = coreContractEntity.liquidityPool_id
   const gameEntityId = getEntityId(liquidityPoolAddress, event.params.gameId.toString())

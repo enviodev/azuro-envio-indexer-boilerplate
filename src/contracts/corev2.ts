@@ -69,7 +69,7 @@ export async function getConditionV2FromId(
     }
 }
 
-
+// TODO don't export
 export function deserialiseConditionV2Result(response: ConditionV2Response): ConditionV2 {
     const condition: ConditionV2 = {
         gameId: BigInt(response.gameId),
