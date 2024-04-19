@@ -54,7 +54,7 @@ FreeBetContract_BettorWin_loader(({ event, context }) => {
   context.CoreContract.load(event.params.core.toLowerCase(), {});
 });
 FreeBetContract_BettorWin_handler(({ event, context }) => {
-  const coreContractEntity = context.CoreContract.get(event.params.core)
+  const coreContractEntity = context.CoreContract.get(event.params.core.toLowerCase())
 
   if (!coreContractEntity) {
     context.log.error(`v2 handleBettorWin coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
@@ -151,7 +151,7 @@ FreeBetContract_FreeBetRedeemed_loader(({ event, context }) => {
   context.CoreContract.load(event.params.core.toLowerCase(), {});
  });
 FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
-  const coreContractEntity = await context.CoreContract.get(event.params.core)
+  const coreContractEntity = await context.CoreContract.get(event.params.core.toLowerCase())
 
   if (!coreContractEntity) {
     context.log.error(`v2 handleFreeBetRedeemed coreContractEntity not found. coreContractEntityId = ${event.params.core}`)

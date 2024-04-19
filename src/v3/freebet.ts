@@ -16,7 +16,7 @@
 //  });
 // FreeBetv3Contract_NewBet_handler(({ event, context }) => {
 //   throw new Error('Not implemented')
-//   // const coreContractEntity = context.CoreContract.get(event.params.core)
+//   // const coreContractEntity = context.CoreContract.get(event.params.core.toLowerCase())
 
 //   // if (!coreContractEntity) {
 //   //   context.log.error('v3 handleNewBet (freebet) coreContractEntity not found. coreContractEntityId = ${event.params.core}')
@@ -60,7 +60,7 @@
 // });
 // FreeBetv3Contract_BettorWin_handler(({ event, context }) => {
 //   throw new Error('Not implemented')
-//   const coreContractEntity = context.CoreContract.get(event.params.core)
+//   const coreContractEntity = context.CoreContract.get(event.params.core.toLowerCase())
 
 //   if (!coreContractEntity) {
 //     context.log.error('v3 handleBettorWin coreContractEntity not found. coreContractEntityId = {event.params.core}')

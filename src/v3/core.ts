@@ -31,7 +31,7 @@
 
 //   const conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
 
-//   const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
+//   const liquidityPoolAddress = (await context.CoreContract.get(coreAddress.toLowerCase()))!.liquidityPool_id
 //   const gameEntityId = getEntityId(
 //     liquidityPoolAddress,
 //     event.params.gameId.toString(),
@@ -81,7 +81,7 @@
 //     return
 //   }
 
-//   const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
+//   const liquidityPoolAddress = context.CoreContract.get(coreAddress.toLowerCase())!.liquidityPool_id
 
 //   resolveCondition(
 //     VERSION_V3,
@@ -145,7 +145,7 @@
 //   //   return
 //   // }
 
-//   // const lp = context.CoreContract.get(coreAddress)!.liquidityPool_id
+//   // const lp = context.CoreContract.get(coreAddress.toLowerCase())!.liquidityPool_id
 //   // const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
 
 //   // const outcomeEntityId = getEntityId(

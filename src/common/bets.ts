@@ -347,10 +347,10 @@ export function bettorWin(
 ): void {
   const betEntityId = getEntityId(coreAddress, tokenId.toString())
 
-  const coreContractEntity = context.CoreContract.get(coreAddress)
+  const coreContractEntity = context.CoreContract.get(coreAddress.toLowerCase())
 
   if (!coreContractEntity) {
-    context.log.error('coreContractEntity not found. coreContractEntityId = {}')
+    context.log.error('bettorWin coreContractEntity not found. coreContractEntityId = {}')
     return
   }
 

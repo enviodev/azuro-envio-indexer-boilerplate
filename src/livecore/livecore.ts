@@ -79,7 +79,7 @@ LiveCorev1Contract_NewLiveBet_handler(({ event, context }) => {
     return
   }
 
-  const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id
+  const liquidityPoolAddress = context.CoreContract.get(coreAddress.toLowerCase())!.liquidityPool_id
   const liquidityPoolContractEntity = context.LiquidityPoolContract.get(liquidityPoolAddress)!
 
   const liveOutcomeEntityId = getEntityId(
