@@ -86,6 +86,7 @@ contracts:
     handler: src/v2/freebet.ts
     events:
       - event: BettorWin(address indexed core, address indexed bettor, uint256 indexed azuroBetId, uint128 amount)
+        isAsync: true
       - event: FreeBetMinted(address indexed receiver, uint256 indexed id, (uint128,uint64,uint64) bet)
         isAsync: true
       - event: FreeBetMintedBatch(address[] receivers, uint256[] ids, (uint128,uint64,uint64)[] bets)

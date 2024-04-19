@@ -14,6 +14,7 @@ import {
   FreeBetContract_FreeBetMinted_handlerAsync,
   FreeBetContract_FreeBetMintedBatch_handlerAsync,
   FreeBetContract_FreeBetRedeemed_handlerAsync,
+  FreeBetContract_BettorWin_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { linkBetWithFreeBet } from "../common/bets";
 import { createFreebet, createFreebetContractEntity, redeemFreebet, reissueFreebet, resolveFreebet, transferFreebet, withdrawFreebet } from "../common/freebets";
@@ -53,8 +54,8 @@ async function getOrCreateFreebetContract(
 FreeBetContract_BettorWin_loader(({ event, context }) => {
   context.CoreContract.load(event.params.core.toLowerCase(), {});
 });
-FreeBetContract_BettorWin_handler(({ event, context }) => {
-  const coreContractEntity = context.CoreContract.get(event.params.core.toLowerCase())
+FreeBetContract_BettorWin_handlerAsync(async ({ event, context }) => {
+  const coreContractEntity = await context.CoreContract.get(event.params.core.toLowerCase())
 
   if (!coreContractEntity) {
     context.log.error(`v2 handleBettorWin coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
@@ -62,7 +63,7 @@ FreeBetContract_BettorWin_handler(({ event, context }) => {
   }
 
   const betEntityId = getEntityId(coreContractEntity.id, event.params.azuroBetId.toString())
-  const betEntity = context.Bet.get(betEntityId)
+  const betEntity = await context.Bet.get(betEntityId)
 
   if (!betEntity) {
     context.log.error(`v2 handleBettorWin betEntity not found. betEntity = ${betEntityId}`)
@@ -71,7 +72,7 @@ FreeBetContract_BettorWin_handler(({ event, context }) => {
 
   const freebetEntityId = betEntity.freebet_id!
 
-  const freebetEntity = withdrawFreebet(freebetEntityId, event.blockTimestamp, context)
+  const freebetEntity = await withdrawFreebet(freebetEntityId, event.blockTimestamp, context)
 
   if (!freebetEntity) {
     context.log.error(`v2 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
@@ -189,7 +190,9 @@ FreeBetContract_FreeBetReissued_handler(({ event, context }) => {
   reissueFreebet(event.srcAddress, event.params.id, event.blockNumber, context)
 });
 
-FreeBetContract_Transfer_loader(({ event, context }) => { });
+FreeBetContract_Transfer_loader(({ event, context }) => { 
+  context.Freebet.load(getEntityId(event.srcAddress, event.params.tokenId.toString()), {});
+});
 FreeBetContract_Transfer_handler(({ event, context }) => {
   // create nft
   if (event.params.from === ZERO_ADDRESS) {
