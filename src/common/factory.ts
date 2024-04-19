@@ -10,13 +10,15 @@ export function createCoreEntity(
   context: FactoryContract_NewPoolEvent_handlerContextAsync | CoreContract_LpChangedEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext,
 ): CoreContractEntity {
   const coreContractEntity: CoreContractEntity = {
-    id: coreAddress,
+    id: coreAddress.toLowerCase(),
     liquidityPool_id: liquidityPoolContractEntity.id,
-    address: coreAddress,
+    address: coreAddress.toLowerCase(),
     type_: coreType,
   }
-  // 0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d
+  // 0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d v1
+  // 0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e v2
   context.CoreContract.set(coreContractEntity) 
+  context.log.debug(`core contract created = ${coreAddress} coreType = ${coreType}`)
   return coreContractEntity
 }
 
@@ -77,9 +79,9 @@ export function connectCore(
   coreType: string, 
   context: FactoryContract_NewPoolEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext
 ): void {
-  console.log(coreAddress)
-  context.log.error(`connectCore coreAddress = ${coreAddress}`)
+  context.log.error(`In connectCore() coreAddress = ${coreAddress} coreType = ${coreType}`)
   throw new Error("Method not implemented.")
+
   // const coreAddressTyped = coreAddress
 
   // if (coreType === CORE_TYPE_PRE_MATCH) {

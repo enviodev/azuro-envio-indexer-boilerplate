@@ -12,7 +12,7 @@
 // import { getEntityId } from "../utils/schema";
 
 // FreeBetv3Contract_NewBet_loader(({ event, context }) => {
-//   context.CoreContract.load(event.params.core, {});
+//   context.CoreContract.load(event.params.core.toLowerCase(), {});
 //  });
 // FreeBetv3Contract_NewBet_handler(({ event, context }) => {
 //   throw new Error('Not implemented')
@@ -56,7 +56,7 @@
 // });
 
 // FreeBetv3Contract_BettorWin_loader(({ event, context }) => { 
-//   context.CoreContract.load(event.params.core, {});
+//   context.CoreContract.load(event.params.core.toLowerCase(), {});
 // });
 // FreeBetv3Contract_BettorWin_handler(({ event, context }) => {
 //   throw new Error('Not implemented')

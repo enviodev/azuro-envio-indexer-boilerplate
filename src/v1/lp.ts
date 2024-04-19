@@ -33,7 +33,7 @@ LPContract_BetterWin_loader(({ event, context }) => {
   const config = getConfigByChainId(event.chainId)
   const coreAddress = config.contracts.Core.addresses[0]
   
-  context.CoreContract.load(coreAddress, {})
+  context.CoreContract.load(coreAddress.toLowerCase(), {})
 
   const betEntityId = getEntityId(coreAddress, event.params.tokenId.toString());
   context.Bet.load(betEntityId, {});
@@ -107,7 +107,7 @@ LPContract_NewBet_loader(({ event, context }) => {
   const config = getConfigByChainId(event.chainId)
   const coreAddress = config.contracts.Core.addresses[0]
   
-  context.CoreContract.load(coreAddress, {})
+  context.CoreContract.load(coreAddress.toLowerCase(), {})
   
   const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
   context.Condition.load(conditionEntityId, {loadGame: {loadLeague: {loadCountry: {}}}});

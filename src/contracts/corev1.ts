@@ -33,41 +33,40 @@ export async function getConditionV1FromId(
     } 
     else {
         // temp
-        return {
-            "condition": {
-                "fundBank": [
-                    "1692093013776901738474",
-                    "1808006986223098261525"
-                ],
-                "payouts": [
-                    "0",
-                    "180521158000000000"
-                ],
-                "totalNetBets": [
-                    "0",
-                    "100000000000000000"
-                ],
-                "reinforcement": "3500000000000000000000",
-                "margin": "75000000",
-                "ipfsHash": "0x472e6bcdaf2d8acb2bc7d5d003facb62ea865d4268b99879ffee44f3f622c931",
-                "outcomes": [
-                    "23",
-                    "24"
-                ],
-                "scopeId": "1583",
-                "outcomeWin": "24",
-                "timestamp": "1654800300",
-                "state": "1",
-                "leaf": "1099511627778"
-            }
-        }
-    }
-
+        // return {
+        //     "condition": {
+        //         "fundBank": [
+        //             "1692093013776901738474",
+        //             "1808006986223098261525"
+        //         ],
+        //         "payouts": [
+        //             "0",
+        //             "180521158000000000"
+        //         ],
+        //         "totalNetBets": [
+        //             "0",
+        //             "100000000000000000"
+        //         ],
+        //         "reinforcement": "3500000000000000000000",
+        //         "margin": "75000000",
+        //         "ipfsHash": "0x472e6bcdaf2d8acb2bc7d5d003facb62ea865d4268b99879ffee44f3f622c931",
+        //         "outcomes": [
+        //             "23",
+        //             "24"
+        //         ],
+        //         "scopeId": "1583",
+        //         "outcomeWin": "24",
+        //         "timestamp": "1654800300",
+        //         "state": "1",
+        //         "leaf": "1099511627778"
+        //     }
+        // }
+        // }
+        
     // to avoid rate limiting
     // await sleep(200);
 
     context.log.debug(`getting new condition with id ${conditionId}`);
-
 
     // RPC URL
     const rpcURL = CHAIN_CONSTANTS[chainId].rpcURL;
