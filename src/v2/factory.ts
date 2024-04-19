@@ -98,7 +98,6 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
   )
 
   let coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
-  context.log.debug(`v2 new pool handler coreAddress: ${coreAddress}`)
 
   if (!coreContractEntity) {
     createCoreEntity(coreAddress, liquidityPoolContractEntity, coreType, context)

@@ -1,6 +1,6 @@
 import { zeroPadBytes } from "ethers"
 import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE, BET_TYPE_EXPRESS } from "../constants"
-import { BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPContract_NewBetEvent_handlerContextAsync, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync } from "../src/Types.gen"
+import { Azurobetv2Contract_TransferEvent_handlerContextAsync, BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPContract_NewBetEvent_handlerContextAsync, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal, safeDiv } from "../utils/math"
 import { getEntityId } from "../utils/schema"
@@ -8,15 +8,15 @@ import { Mutable } from "../utils/types"
 import { deepCopy } from "../utils/mapping"
 
 
-export function transferBet(
+export async function transferBet(
   coreAddress: string | null,
   azuroBetAddress: string | null,
   tokenId: bigint,
   from: string,
   to: string,
   block: number,
-  context: Expressv2Contract_TransferEvent_handlerContext,
-): BetEntity | null {
+  context: Azurobetv2Contract_TransferEvent_handlerContextAsync,
+): Promise<BetEntity | null> {
   // create nft
   if (from === ZERO_ADDRESS) {
     return null
@@ -33,7 +33,7 @@ export function transferBet(
     finalCoreAddress = coreAddress
   }
   else if (azuroBetAddress !== null) {
-    const azuroBetContractEntity = context.AzuroBetContract.get(azuroBetAddress)
+    const azuroBetContractEntity = await context.AzuroBetContract.get(azuroBetAddress)
 
     // TODO remove later
     if (!azuroBetContractEntity) {
@@ -45,7 +45,7 @@ export function transferBet(
   }
 
   const betEntityId = getEntityId(finalCoreAddress, tokenId.toString())
-  const betEntity = context.Bet.get(betEntityId)
+  const betEntity = await context.Bet.get(betEntityId)
 
   if (!betEntity) {
     context.log.error(`transferBet betEntity not found. betEntity = ${betEntityId}`)

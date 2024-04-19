@@ -165,7 +165,7 @@ export function depositLiquidity(
 
   // TODO remove later
   if (!liquidityPoolContractEntity) {
-    // context.log.error(`depositLiquidity liquidityPoolContractEntity not found. liquidityPoolAddress = ${liquidityPoolAddress}`);
+    context.log.error(`depositLiquidity liquidityPoolContractEntity not found. liquidityPoolAddress = ${liquidityPoolAddress}`);
     return null;
   }
 

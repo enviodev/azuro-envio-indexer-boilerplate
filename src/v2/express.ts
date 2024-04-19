@@ -3,6 +3,7 @@ import {
   Expressv2Contract_NewBet_handler,
   Expressv2Contract_Transfer_loader,
   Expressv2Contract_Transfer_handler,
+  Expressv2Contract_Transfer_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { createBet, transferBet } from "../common/bets";
 import { BET_TYPE_EXPRESS, VERSION_V2 } from "../constants";
@@ -51,7 +52,7 @@ Expressv2Contract_NewBet_handler(({ event, context }) => {
   // const lp = context.CoreContract.get(prematchAddress.toLowerCase())!.liquidityPool_id
   // const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
 
-  // createBet(
+  // await createBet(
   //   VERSION_V2,
   //   BET_TYPE_EXPRESS,
   //   conditionEntities,
@@ -73,9 +74,9 @@ Expressv2Contract_NewBet_handler(({ event, context }) => {
 });
 
 Expressv2Contract_Transfer_loader(({ event, context }) => { });
-Expressv2Contract_Transfer_handler(({ event, context }) => {
+Expressv2Contract_Transfer_handlerAsync(async ({ event, context }) => {
   context.log.debug(`Expressv2Contract_Transfer_handler address: ${event.srcAddress}`)
-  const betEntity = transferBet(
+  const betEntity = await transferBet(
     event.srcAddress,
     null,
     event.params.tokenId,

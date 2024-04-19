@@ -52,7 +52,7 @@
 //   // const lp = context.CoreContract.get(prematchAddress.toLowerCase())!.liquidityPool_id
 //   // const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
 
-//   // createBet(
+//   // await createBet(
 //   //   VERSION_V3,
 //   //   BET_TYPE_EXPRESS,
 //   //   conditionEntities,
@@ -76,7 +76,7 @@
 // Expressv3Contract_Transfer_loader(({ event, context }) => { });
 // Expressv3Contract_Transfer_handler(({ event, context }) => {
 //   throw new Error(`express v3 transfer not implemented: ${event.srcAddress}`)
-//   transferBet(
+//   await transferBet(
 //     event.srcAddress,
 //     null,
 //     event.params.tokenId,

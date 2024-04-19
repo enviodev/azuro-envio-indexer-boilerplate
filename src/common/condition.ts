@@ -27,7 +27,7 @@ export async function createCondition(
   createBlockTimestamp: number,
   context: CoreContract_ConditionCreatedEvent_handlerContextAsync | Corev2Contract_ConditionCreatedEvent_handlerContextAsync,
   startsAt: bigint | null = null,
-): Promise<Mutable<typeof conditionEntity> | null> {
+): Promise<Mutable<ConditionEntity> | null> {
 
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
 
@@ -64,8 +64,7 @@ export async function createCondition(
   )
 
   if (newOdds === null) {
-    context.log.error(`createCondition getOdds returned null, conditionId {}`)
-    return null
+    throw new Error(`createCondition getOdds returned null, conditionId {}`)
   }
 
   let outcomeIds: bigint[] = []

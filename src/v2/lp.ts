@@ -20,6 +20,7 @@ import {
   LPv2Contract_WithdrawTimeoutChanged_loader,
   LPv2Contract_WithdrawTimeoutChanged_handler,
   LPv2Contract_LiquidityRemoved_handlerAsync,
+  LPv2Contract_NewGame_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { bettorWin } from "../common/bets";
 import { cancelGame, createGame, shiftGame } from "../common/games";
@@ -29,19 +30,26 @@ import { getNodeWithdrawAmount } from "../contracts/lpv1";
 import { getEntityId } from "../utils/schema";
 
 LPv2Contract_BettorWin_loader(({ event, context }) => {
+  context.CoreContract.load(event.params.core.toLowerCase(), {})
+  context.Bet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
+  context.LiveBet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
 });
 LPv2Contract_BettorWin_handler(({ event, context }) => {
   const coreAddress = event.params.core
   bettorWin(coreAddress, event.params.tokenId, event.params.amount, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
 });
 
-LPv2Contract_GameCanceled_loader(({ event, context }) => {});
+LPv2Contract_GameCanceled_loader(({ event, context }) => {
+  context.Game.load(getEntityId(event.srcAddress, event.params.gameId.toString()), {})
+});
 LPv2Contract_GameCanceled_handler(({ event, context }) => {
-  const gameEntityId = event.srcAddress + "_" + event.params.gameId.toString()
+  const gameEntityId = getEntityId(event.srcAddress, event.params.gameId.toString())
   cancelGame(gameEntityId, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
 });
 
-LPv2Contract_GameShifted_loader(({ event, context }) => {});
+LPv2Contract_GameShifted_loader(({ event, context }) => {
+  context.Game.load(getEntityId(event.srcAddress, event.params.gameId.toString()), {})
+});
 LPv2Contract_GameShifted_handler(({ event, context }) => {
   const gameEntityId = getEntityId(event.srcAddress, event.params.gameId.toString())
   shiftGame(gameEntityId, event.params.newStart, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
@@ -70,7 +78,9 @@ LPv2Contract_LiquidityDonated_handler(({ event, context }) => {
     throw new Error('LPv2Contract_LiquidityDonated_handler not implemented')
 });
 
-LPv2Contract_LiquidityManagerChanged_loader(({ event, context }) => {});
+LPv2Contract_LiquidityManagerChanged_loader(({ event, context }) => {
+  context.LiquidityPoolContract.load(event.srcAddress)
+});
 LPv2Contract_LiquidityManagerChanged_handler(({ event, context }) => {
   let newAddress: string | null = null
 
@@ -85,7 +95,10 @@ LPv2Contract_LiquidityManagerChanged_handler(({ event, context }) => {
   )
 });
 
-LPv2Contract_LiquidityRemoved_loader(({ event, context }) => {});
+LPv2Contract_LiquidityRemoved_loader(({ event, context }) => {
+  context.LiquidityPoolContract.load(event.srcAddress)
+  context.LiquidityPoolNft.load(getEntityId(event.srcAddress, event.params.depositId.toString()), {})
+});
 LPv2Contract_LiquidityRemoved_handlerAsync(async ({ event, context }) => {
   let isFullyWithdrawn = false
   
@@ -111,11 +124,11 @@ LPv2Contract_LiquidityRemoved_handlerAsync(async ({ event, context }) => {
 
 LPv2Contract_NewGame_loader(({ event, context }) => {
 }); // new game v2 vs v3? // assuming v2 for now
-LPv2Contract_NewGame_handler(({ event, context }) => {
+LPv2Contract_NewGame_handlerAsync(async ({ event, context }) => {
 
-  const network = 'gnosis'
+  const network = 'gnosis' // TODO fix
   context.log.debug(`event.params.data = ${event.params.data}`)
-  createGame(
+  await createGame(
     event.srcAddress,
     event.params.gameId,
     event.params.data,
