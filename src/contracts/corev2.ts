@@ -36,16 +36,8 @@ export async function getConditionV2FromId(
     // Create LPv1 contract instance
     const corev2Contract = new web3.eth.Contract(contractABI, contractAddress);
 
-    context.log.debug(`before condition contract call id: ${conditionId} address: ${contractAddress} chainId: ${chainId} rpcUrl: ${rpcURL}`)
-
     try {
-        if (context) {
-            context.log.debug(`before condition v2 contract call`)
-        }
         const _result = await corev2Contract.methods.getCondition(conditionId).call() as unknown;
-        if (context) {
-            context.log.debug(`after condition contract call`)
-        }
 
         const result = _result as ConditionV2;
 
