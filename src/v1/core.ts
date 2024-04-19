@@ -25,7 +25,7 @@ import { deserialiseConditionV1Result, getConditionV1FromId } from "../contracts
 import { getEntityId } from "../utils/schema";
 
 CoreContract_ConditionCreated_loader(async ({ event, context }) => {
-  context.CoreContract.load(event.srcAddress, {})
+  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
 });
 CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.srcAddress);
@@ -83,7 +83,7 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 });
 
 CoreContract_ConditionResolved_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress, {})
+  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
   context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
   context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
   // context.Outcome.load(, {})
@@ -174,7 +174,7 @@ CoreContract_ConditionStopped_handler(({ event, context }) => {
 
 CoreContract_LpChanged_loader(async ({ event, context }) => {
   await context.contractRegistration.addLP(event.params.newLp);
-  context.CoreContract.load(event.srcAddress, {});
+  context.CoreContract.load(event.srcAddress.toLowerCase(), {});
 
   const resp = await getAzuroBetAddress(event.params.newLp, event.chainId)
   await context.contractRegistration.addAzurobets(resp.azuroBetAddress)

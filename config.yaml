@@ -46,6 +46,7 @@ contracts:
     events:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - name: Corev2
+    address: '0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e'
     handler: src/v2/core.ts
     events:
       - event: ConditionCreated(uint256 indexed gameId, uint256 indexed conditionId)
