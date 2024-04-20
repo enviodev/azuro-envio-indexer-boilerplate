@@ -18,6 +18,7 @@ contracts:
     events:
       - event: BetterWin(address indexed better, uint256 tokenId, uint256 amount)
       - event: LiquidityAdded(address indexed account, uint256 amount, uint48 leaf)
+        isAsync: true
       - event: LiquidityRemoved(address indexed account, uint48 indexed leaf, uint256 amount)
         isAsync: true
       - event: LiquidityRequested(address indexed requestWallet, uint256 requestedValueLp)
@@ -29,6 +30,7 @@ contracts:
     handler: src/v1/freebet.ts
     events:
       - event: BettorWin(address bettor, uint256 azuroBetId, uint128 amount)
+        isAsync: true
       - event: FreeBetMinted(address indexed receiver, uint256 indexed id, (uint128,uint64,uint64) bet)
         isAsync: true
       - event: FreeBetMintedBatch(address[] receivers, uint256[] ids, (uint128,uint64,uint64)[] bets)
@@ -41,6 +43,7 @@ contracts:
     handler: src/v1/azurobets.ts
     events:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+        isAsync: true
   - name: Azurobetv2
     handler: src/v2/azurobet.ts
     events:
