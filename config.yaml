@@ -110,6 +110,7 @@ contracts:
         isAsync: true
       - event: ConditionStopped(uint256 indexed conditionId, bool flag)
       - event: NewBet( address indexed bettor,  address indexed affiliate, uint256 indexed conditionId, uint256 tokenId, uint64 outcomeId, uint128 amount, uint256 odds, uint128[] funds)
+        isAsync: true
       - event: OddsChanged(uint256 indexed conditionId, uint256[] newOdds)
       - event: MarginChanged(uint256 indexed conditionId, uint64 newMargin)
       - event: ReinforcementChanged(uint256 indexed conditionId, uint128 newReinforcement)
@@ -123,6 +124,7 @@ contracts:
     handler: src/v3/freebet.ts
     events:
       - event: NewBet(uint256 indexed freeBetId,address indexed core,address indexed bettor,uint256 azuroBetId,uint128 amount,uint64 minOdds,uint64 expiresAt)
+        isAsync: true
       - event: BettorWin(address indexed core,address indexed bettor,uint256 indexed freeBetId,uint256 amount)
         isAsync: true
       - event: PayoutsResolved(uint256[] azuroBetId)

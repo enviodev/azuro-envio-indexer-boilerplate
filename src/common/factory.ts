@@ -46,6 +46,8 @@ export function getPrematchAddressByExpressAddressV3(
   expressAddress: string,
   context: FactoryContract_NewCoreEvent_handlerContextAsync,
 ): string | null {
+  context.log.error(`getPrematchAddressByExpressAddressV3 expressAddress = ${expressAddress}`)
+  throw new Error("Method not implemented.")
   // const expressSC = ExpressAbiV3.bind(Address.fromString(expressAddress))
   // const prematchCore = expressSC.try_core()
 
@@ -80,6 +82,8 @@ export async function connectCore(
   chainId: number,
   context: FactoryContract_NewPoolEvent_handlerContextAsync
 ): Promise<void> {
+  throw new Error("connect core not implemented.")
+
   const coreAddressTyped = coreAddress
 
   if (coreType === CORE_TYPE_PRE_MATCH) {
