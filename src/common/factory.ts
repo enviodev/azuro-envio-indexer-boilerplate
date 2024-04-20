@@ -82,8 +82,6 @@ export async function connectCore(
   chainId: number,
   context: FactoryContract_NewPoolEvent_handlerContextAsync
 ): Promise<void> {
-  throw new Error("connect core not implemented.")
-
   const coreAddressTyped = coreAddress
 
   if (coreType === CORE_TYPE_PRE_MATCH) {
