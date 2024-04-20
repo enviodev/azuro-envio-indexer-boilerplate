@@ -73,7 +73,9 @@ export async function tryFetchIpfsFile(
 
 async function fetchIpfsFile(contentHash: string, baseUrl: string, context: CoreContract_ConditionCreatedEvent_handlerContextAsync | LPv2Contract_NewGameEvent_handlerContext): Promise<IPFSMatchDetails | undefined> {
   try {
-    const response = await fetch(`https://${baseUrl}/ipfs/${contentHash}`);
+    const url = `https://${baseUrl}/ipfs/${contentHash}`
+    context.log.debug(`Trying to fetch ipfs data at ${url}`)
+    const response = await fetch(url);
     if (response.ok) {
       const resp = await response.json() as IPFSMatchDetails;
       return resp
