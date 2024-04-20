@@ -199,7 +199,6 @@ XYZFreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
     event.srcAddress,
     context
   )!
-  context.log.debug(`freebetContractEntity liquidity pool id= ${freebetContractEntity.liquidityPool_id}}`)
 
   const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id))!;
 
