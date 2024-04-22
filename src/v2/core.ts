@@ -13,6 +13,7 @@ import {
   Corev2Contract_ConditionCreated_handlerAsync,
   Corev2Contract_NewBet_handlerAsync,
   Corev2Contract_ConditionResolved_handlerAsync,
+  Corev2Contract_OddsChanged_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { createCondition, pauseUnpauseCondition, resolveCondition, updateConditionOdds } from "../common/condition";
 import { BET_TYPE_ORDINAR, VERSION_V2 } from "../constants";
@@ -51,14 +52,14 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     VERSION_V2,
     coreAddress,
     conditionId,
-    "1", //gameEntity.id,
+    gameEntity.id,
     conditionData.margin,
     conditionData.reinforcement,
     conditionData.outcomes,
     conditionData.virtualFunds,
     1,
     false,
-    BigInt(100), // gameEntity.provider,
+    gameEntity.provider,
     event.transactionHash,
     event.blockNumber,
     event.blockTimestamp,
@@ -181,7 +182,7 @@ Corev2Contract_OddsChanged_loader(({ event, context }) => {
   context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
   context.CoreContract.load(event.srcAddress.toLowerCase(), {})
 });
-Corev2Contract_OddsChanged_handler(async ({ event, context }) => {
+Corev2Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
@@ -189,7 +190,7 @@ Corev2Contract_OddsChanged_handler(async ({ event, context }) => {
   const conditionData = deserialiseConditionV2Result(_conditionData.condition)
 
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
-  const conditionEntity = context.Condition.get(conditionEntityId)
+  const conditionEntity = await context.Condition.get(conditionEntityId)
 
   // TODO remove later
   if (!conditionEntity) {
@@ -201,7 +202,7 @@ Corev2Contract_OddsChanged_handler(async ({ event, context }) => {
 
   for (let i = 0; i < conditionEntity.outcomesIds!.length; i++) {
     const outcomeEntityId = getEntityId(conditionEntity.id, conditionEntity.outcomesIds![i].toString())
-    const outcomeEntity = context.Outcome.get(outcomeEntityId)!
+    const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!
     outcomesEntities = outcomesEntities.concat([outcomeEntity])
   }
 

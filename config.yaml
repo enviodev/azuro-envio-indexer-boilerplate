@@ -61,6 +61,7 @@ contracts:
       - event: NewBet(address indexed  bettor, address indexed affiliate, uint256 indexed conditionId, uint256 tokenId, uint64 outcomeId, uint128 amount, uint64 odds, uint128[2] funds)
         isAsync: true
       - event: OddsChanged(uint256 indexed conditionId, uint64[2] newOdds)
+        isAsync: true
   - name: Expressv2
     handler: src/v2/express.ts
     events:
@@ -115,6 +116,7 @@ contracts:
       - event: NewBet( address indexed bettor,  address indexed affiliate, uint256 indexed conditionId, uint256 tokenId, uint64 outcomeId, uint128 amount, uint256 odds, uint128[] funds)
         isAsync: true
       - event: OddsChanged(uint256 indexed conditionId, uint256[] newOdds)
+        isAsync: true
       - event: MarginChanged(uint256 indexed conditionId, uint64 newMargin)
       - event: ReinforcementChanged(uint256 indexed conditionId, uint128 newReinforcement)
   - name: Expressv3
@@ -135,7 +137,9 @@ contracts:
     handler: src/livecore/livecore.ts
     events:
       - event: ConditionCreated(uint256 indexed gameId, uint256 indexed conditionId, uint64[] outcomes, uint256[] odds, uint8 winningOutcomesCount)
+        isAsync: true
       - event: ConditionResolved(uint256 indexed conditionId, uint8 state, uint64[] winningOutcomes, int128 lpProfit, uint64 settledAt)
+        isAsync: true
       - event: NewLiveBet( address indexed bettor,  address indexed affiliate, uint256 indexed conditionId, uint256 tokenId, uint64 outcomeId, uint128 amount, uint64 odds, uint128 payoutLimit)
   - name: FreeBetFactory
     handler: src/v3/freebetFactory.ts

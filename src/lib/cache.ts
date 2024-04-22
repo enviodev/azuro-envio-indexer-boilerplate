@@ -14,6 +14,8 @@ export const CacheCategory = {
   LiveCondition: "livecondition",
   LPv1NodeWithdrawView: "lpv1nodewithdrawview",
   IPFSMatchDetails: "ipfsmatchdetails",
+  ExpressPrematchAddress: "expressprematchaddress",
+  ExpressCalcPayout: "expresscalcpayout",
 } as const;
 
 export type CacheCategory = (typeof CacheCategory)[keyof typeof CacheCategory];
@@ -45,6 +47,10 @@ type ShapeLpv1NodeWithdrawView = Shape & Record<Address, { withdrawAmount: strin
 
 type ShapeIPFSMatchDetails = Shape & Record<string, { matchDetails: IPFSMatchDetails }>;
 
+type ShapeExpressPreMatchAddress = Shape & Record<Address, { preMatchAddress: string }>;
+
+type ShapeExpressCalcPayout = Shape & Record<Address, { payout: bigint }>;
+
 export class Cache {
   static init<C = CacheCategory>(
     category: C,
@@ -64,6 +70,8 @@ export class Cache {
       : C extends "livecondition" ? ShapeLiveCondition
       : C extends "freebetv1" ? ShapeFreebetV1
       : C extends "ipfsmatchdetails" ? ShapeIPFSMatchDetails
+      : C extends "expressprematchaddress" ? ShapeExpressPreMatchAddress
+      : C extends "expresscalcpayout" ? ShapeExpressCalcPayout
       : ShapeRoot;
     const entry = new Entry<S>(`${category}-${chainId.toString()}`);
     return entry;

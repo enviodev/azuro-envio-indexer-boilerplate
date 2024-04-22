@@ -1,30 +1,13 @@
-
-// import { ExpressV2 } from '../../generated/templates/ExpressV2/ExpressV2'
-// import { ExpressV3 } from '../../generated/templates/ExpressV3/ExpressV3'
+import { calcPayout } from "../contracts/express"
 
 
-export function calcPayoutV2(address: string, tokenId: bigint): bigint {
-  throw new Error("Method not implemented for core type express v2.")
-  // const expressSC = ExpressV2.bind(Address.fromString(address))
 
-  // const payout = expressSC.try_calcPayout(tokenId)
-
-  // if (!payout.reverted) {
-  //   return payout.value
-  // }
-
-  return 0n
+export async function calcPayoutV2(address: string, tokenId: bigint, chainId: number): Promise<bigint> {
+  const {payout} = await calcPayout(address, tokenId, chainId)
+  return payout
 }
 
-export function calcPayoutV3(address: string, tokenId: bigint): bigint {
-  throw new Error("Method not implemented for core type express v3.")
-  // const expressSC = ExpressV3.bind(Address.fromString(address))
-
-  // const payout = expressSC.try_calcPayout(tokenId)
-
-  // if (!payout.reverted) {
-  //   return payout.value
-  // }
-
-  return 0n
+export async function calcPayoutV3(address: string, tokenId: bigint, chainId: number): Promise<bigint> {
+  const {payout} = await calcPayout(address, tokenId, chainId)
+  return payout
 }

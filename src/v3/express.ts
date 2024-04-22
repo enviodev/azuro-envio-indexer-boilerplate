@@ -14,7 +14,9 @@ Expressv3Contract_NewBet_loader(({ event, context }) => {
   context.log.debug(`Expressv3Contract_NewBet_loader: ${event.srcAddress}`)
  });
 Expressv3Contract_NewBet_handler(({ event, context }) => {
-  throw new Error(`express v3 new bet not implemented: ${event.srcAddress}`)
+  context.log.debug(`express v3 new bet not implemented: ${event.srcAddress}`)
+  return
+
   // const expressAddress = event.srcAddress
   // const prematchAddress = context.ExpressPrematchRelation.get(expressAddress)!.prematchAddress
 
@@ -74,9 +76,11 @@ Expressv3Contract_NewBet_handler(({ event, context }) => {
   // )
 });
 
-Expressv3Contract_Transfer_loader(({ event, context }) => { });
+Expressv3Contract_Transfer_loader(({ event, context }) => {
+  const betEntityId = getEntityId(event.srcAddress, event.params.tokenId.toString())
+  context.Bet.load(betEntityId, {})
+ });
 Expressv3Contract_Transfer_handlerAsync(async ({ event, context }) => {
-  throw new Error(`express v3 transfer not implemented: ${event.srcAddress}`)
   await transferBet(
     event.srcAddress,
     null,
@@ -86,5 +90,4 @@ Expressv3Contract_Transfer_handlerAsync(async ({ event, context }) => {
     event.blockNumber,
     context,
   )
-
 });
