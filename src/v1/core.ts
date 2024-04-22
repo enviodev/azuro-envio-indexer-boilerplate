@@ -24,7 +24,7 @@ import { createGame, shiftGame } from "../common/games";
 import { deserialiseConditionV1Result, getConditionV1FromId } from "../contracts/corev1";
 import { getEntityId } from "../utils/schema";
 
-CoreContract_ConditionCreated_loader(async ({ event, context }) => {
+CoreContract_ConditionCreated_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress.toLowerCase(), {})
 });
 CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {

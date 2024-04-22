@@ -60,7 +60,6 @@ FreeBetv3Contract_BettorWin_loader(({ event, context }) => {
   context.CoreContract.load(event.params.core.toLowerCase(), {});
 });
 FreeBetv3Contract_BettorWin_handlerAsync(async ({ event, context }) => {
-  throw new Error('Not implemented')
   const coreContractEntity = context.CoreContract.get(event.params.core.toLowerCase())
 
   if (!coreContractEntity) {
@@ -83,7 +82,6 @@ FreeBetv3Contract_BettorWin_handlerAsync(async ({ event, context }) => {
 
 FreeBetv3Contract_PayoutsResolved_loader(({ event, context }) => { });
 FreeBetv3Contract_PayoutsResolved_handler(({ event, context }) => {
-  throw new Error('Not implemented')
   for (let i = 0; i < event.params.azuroBetId.length; i++) {
     resolveFreebet(
       event.srcAddress,

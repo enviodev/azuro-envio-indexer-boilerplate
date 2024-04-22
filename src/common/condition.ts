@@ -1,5 +1,5 @@
 import { start } from "repl";
-import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionCreatedEvent_handlerContextAsync, CoreContract_ConditionResolvedEvent_handlerContextAsync, CoreContract_ConditionStoppedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContextAsync, Corev2Contract_OddsChangedEvent_handlerContext, Corev3Contract_MarginChangedEvent_handlerContext, Corev3Contract_ReinforcementChangedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity, LiveConditionEntity, LiveCorev1Contract_ConditionCreatedEvent_handlerContext, LiveCorev1Contract_ConditionResolvedEvent_handlerContext, LiveCorev1Contract_ConditionResolvedEvent_loaderContext, LiveOutcomeEntity, OutcomeEntity, outcomeLoaderConfig } from "../../generated/src/Types.gen";
+import { ConditionEntity, CoreContract_ConditionCreatedEvent_handlerContext, CoreContract_ConditionCreatedEvent_handlerContextAsync, CoreContract_ConditionResolvedEvent_handlerContextAsync, CoreContract_ConditionStoppedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContext, Corev2Contract_ConditionCreatedEvent_handlerContextAsync, Corev2Contract_OddsChangedEvent_handlerContext, Corev2Contract_OddsChangedEvent_handlerContextAsync, Corev3Contract_MarginChangedEvent_handlerContext, Corev3Contract_ReinforcementChangedEvent_handlerContext, CountryEntity, GameEntity, LeagueEntity, LiveConditionEntity, LiveCorev1Contract_ConditionCreatedEvent_handlerContext, LiveCorev1Contract_ConditionCreatedEvent_handlerContextAsync, LiveCorev1Contract_ConditionResolvedEvent_handlerContext, LiveCorev1Contract_ConditionResolvedEvent_handlerContextAsync, LiveCorev1Contract_ConditionResolvedEvent_loaderContext, LiveOutcomeEntity, OutcomeEntity, outcomeLoaderConfig } from "../../generated/src/Types.gen";
 import { BASES_VERSIONS, BET_RESULT_LOST, BET_RESULT_WON, BET_STATUS_CANCELED, BET_STATUS_RESOLVED, BET_TYPE_EXPRESS, BET_TYPE_ORDINAR, CONDITION_STATUS_CANCELED, CONDITION_STATUS_CREATED, CONDITION_STATUS_PAUSED, CONDITION_STATUS_RESOLVED, GAME_STATUS_CANCELED, GAME_STATUS_CREATED, GAME_STATUS_PAUSED, GAME_STATUS_RESOLVED, SELECTION_RESULT_LOST, SELECTION_RESULT_WON, VERSION_V2, VERSION_V3 } from "../constants";
 import { removeItem } from "../utils/array";
 import { getOdds, toDecimal } from '../utils/math'
@@ -146,7 +146,7 @@ export function updateConditionOdds(
   outcomesEntities: OutcomeEntity[],
   funds: bigint[],
   block: number,
-  context: Corev2Contract_OddsChangedEvent_handlerContext,
+  context: Corev2Contract_OddsChangedEvent_handlerContextAsync,
 ): ConditionEntity | null {
   const odds = getOdds(
     version,
@@ -308,10 +308,10 @@ export async function resolveCondition(
             let payoutSC: bigint | null = null
 
             if (version === VERSION_V2) {
-              payoutSC = calcPayoutV2(betEntity.core_id, betEntity.betId)
+              payoutSC = await calcPayoutV2(betEntity.core_id, betEntity.betId, chainId)
             }
             else if (version === VERSION_V3) {
-              payoutSC = calcPayoutV3(betEntity.core_id, betEntity.betId)
+              payoutSC = await calcPayoutV3(betEntity.core_id, betEntity.betId, chainId)
             }
 
             if (payoutSC !== null) {
@@ -514,15 +514,15 @@ export function pauseUnpauseCondition(
 }
 
 
-export function resolveLiveCondition(
+export async function resolveLiveCondition(
   liveConditionEntityId: string,
   winningOutcomes: bigint[],
   transactionHash: string,
   blockNumber: bigint,
   blockTimestamp: bigint,
-  context: LiveCorev1Contract_ConditionResolvedEvent_handlerContext,
-): LiveConditionEntity | null {
-  const _liveConditionEntity = context.LiveCondition.get(liveConditionEntityId)!
+  context: LiveCorev1Contract_ConditionResolvedEvent_handlerContextAsync,
+): Promise<LiveConditionEntity | null> {
+  const _liveConditionEntity = (await context.LiveCondition.get(liveConditionEntityId))!
   const liveConditionEntity = deepCopy(_liveConditionEntity)
 
   const isCanceled = winningOutcomes.length === 0 || winningOutcomes[0] === 0n
@@ -541,7 +541,7 @@ export function resolveLiveCondition(
         liveConditionEntity.id,
         winningOutcomes[i].toString(),
       )
-      const liveOutcomeEntity = context.LiveOutcome.get(liveOutcomeEntityId)!.id
+      const liveOutcomeEntity = (await context.LiveOutcome.get(liveOutcomeEntityId))!.id
 
       wonOutcomes = wonOutcomes.concat([liveOutcomeEntity])
     }
@@ -568,7 +568,7 @@ export function resolveLiveCondition(
       liveConditionEntity.id,
       liveConditionEntity.outcomesIds![i].toString(),
     )
-    const liveOutcomeEntity = context.LiveOutcome.get(liveOutcomeEntityId)!
+    const liveOutcomeEntity = (await context.LiveOutcome.get(liveOutcomeEntityId))!
 
     if (liveOutcomeEntity._betsEntityIds!.length === 0) {
       continue
@@ -576,7 +576,7 @@ export function resolveLiveCondition(
 
     for (let j = 0; j < liveOutcomeEntity._betsEntityIds!.length; j++) {
       const livebetEntityId = liveOutcomeEntity._betsEntityIds![j]
-      const _liveBetEntity = context.LiveBet.get(livebetEntityId)!
+      const _liveBetEntity = (await context.LiveBet.get(livebetEntityId))!
       const liveBetEntity = deepCopy(_liveBetEntity)
 
       betsAmount = betsAmount + liveBetEntity.rawAmount
@@ -585,7 +585,7 @@ export function resolveLiveCondition(
         livebetEntityId,
         liveConditionEntity.conditionId.toString(),
       )
-      const _liveSelectionEntity = context.LiveSelection.get(liveSelectionEntityId)!
+      const _liveSelectionEntity = (await context.LiveSelection.get(liveSelectionEntityId))!
       const liveSelectionEntity = deepCopy(_liveSelectionEntity)
 
       if (!isCanceled) {
@@ -662,7 +662,7 @@ export function createLiveCondition(
   txHash: string,
   _createBlockNumber: number,
   _createBlockTimestamp: number,
-  context: LiveCorev1Contract_ConditionCreatedEvent_handlerContext,
+  context: LiveCorev1Contract_ConditionCreatedEvent_handlerContextAsync,
 ): LiveConditionEntity | null {
 
   const createBlockNumber = BigInt(_createBlockNumber)

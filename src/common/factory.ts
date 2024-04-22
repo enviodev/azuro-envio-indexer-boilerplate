@@ -1,5 +1,6 @@
 import { CoreContractEntity, CoreContract_LpChangedEvent_handlerContextAsync, ExpressPrematchRelationEntity, FactoryContract_NewCoreEvent_handlerContext, FactoryContract_NewCoreEvent_handlerContextAsync, FactoryContract_NewPoolEvent_handlerContextAsync, LiquidityPoolContractEntity } from "../../generated/src/Types.gen";
 import { CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_LIVE, CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2 } from "../constants";
+import { getPrematchAddress } from "../contracts/express";
 import { getAzuroBetAddress } from "../contracts/lpv1";
 import { createAzuroBetEntity } from "./azurobet";
 
@@ -23,42 +24,27 @@ export function createCoreEntity(
 }
 
 
-export function getPrematchAddressByExpressAddressV2(
+export async function getPrematchAddressByExpressAddressV2(
   expressAddress: string,
+  chainId: number,
   context: FactoryContract_NewPoolEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext,
-): string | null {
-  context.log.error(`getPrematchAddressByExpressAddressV2 expressAddress = ${expressAddress}`)
-  throw new Error("Method not implemented.")
-  // const expressSC = ExpressAbiV2.bind(Address.fromString(expressAddress))
-  // const prematchCore = expressSC.try_core()
+): Promise<string> {
+  context.log.debug(`getPrematchAddressByExpressAddressV2 expressAddress = ${expressAddress}`)
 
-  // if (prematchCore.reverted) {
-  //   context.log.error('core reverted.')
-  //   return null
-  // }
-
-  // return prematchCore.value.toHexString()
-  return ""
+  const _preMatchCore = await getPrematchAddress(expressAddress, chainId)
+  return _preMatchCore.preMatchAddress
 }
 
 
-export function getPrematchAddressByExpressAddressV3(
+export async function getPrematchAddressByExpressAddressV3(
   expressAddress: string,
+  chainId: number,
   context: FactoryContract_NewCoreEvent_handlerContextAsync,
-): string | null {
-  context.log.error(`getPrematchAddressByExpressAddressV3 expressAddress = ${expressAddress}`)
-  throw new Error("Method not implemented.")
-  // const expressSC = ExpressAbiV3.bind(Address.fromString(expressAddress))
-  // const prematchCore = expressSC.try_core()
+): Promise<string> {
+  context.log.debug(`getPrematchAddressByExpressAddressV3 expressAddress = ${expressAddress}`)
 
-  // if (prematchCore.reverted) {
-  //   context.log.error(`core reverted.`)
-  //   return null
-  // }
-
-  // return prematchCore.value.toHexString()
-
-  return ""
+  const _preMatchCore = await getPrematchAddress(expressAddress, chainId)
+  return _preMatchCore.preMatchAddress
 }
 
 
@@ -82,54 +68,11 @@ export async function connectCore(
   chainId: number,
   context: FactoryContract_NewPoolEvent_handlerContextAsync
 ): Promise<void> {
-  const coreAddressTyped = coreAddress
+  const coreTypes = [CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2, CORE_TYPE_LIVE]
 
-  if (coreType === CORE_TYPE_PRE_MATCH) {
-
-    const azuroBetAddress = await getAzuroBetAddress(coreAddress, chainId)
-
-    createAzuroBetEntity(coreAddress, azuroBetAddress.azuroBetAddress, context)
-  }
-  else if (coreType === CORE_TYPE_PRE_MATCH_V2) {
-    throw new Error("Method not implemented for core type pre match v2.")
-    // CoreV3.create(coreAddressTyped)
-
-    // const coreSC = CoreAbiV3.bind(coreAddressTyped)
-
-    // const azuroBetAddress = coreSC.try_azuroBet()
-
-    // if (azuroBetAddress.reverted) {
-    //   context.log.error(`handleNewPool call azuroBet reverted`)
-    //   return
-    // }
-
-    // createAzuroBetEntity(coreAddress, azuroBetAddress.value.toHexString(), context)
-
-    // AzuroBet.create(azuroBetAddress.value)
-  }
-  else if (coreType === CORE_TYPE_LIVE) {
-    throw new Error("Method not implemented for core type live.")
-    // LiveCoreV1.create(coreAddressTyped)
-
-    // const coreSC = LiveCoreAbiV1.bind(coreAddressTyped)
-
-    // const azuroBetAddress = coreSC.try_azuroBet()
-
-    // if (azuroBetAddress.reverted) {
-    //   context.log.error(`handleNewPool call azuroBet reverted`)
-    //   return
-    // }
-
-    // createAzuroBetEntity(coreAddress, azuroBetAddress.value.toHexString(), context)
-
-    // AzuroBet.create(azuroBetAddress.value)
-  }
-  else if (coreType === CORE_TYPE_EXPRESS) {
-    throw new Error("Method not implemented for core type express.")
-    // ExpressV2.create(coreAddressTyped)
-  }
-  else if (coreType === CORE_TYPE_EXPRESS_V2) {
-    throw new Error("Method not implemented for core type express v2.")
-    // ExpressV3.create(coreAddressTyped)
+  if (coreTypes.includes(coreType)) {
+    const _azuro = await getAzuroBetAddress(coreAddress, chainId)
+    const azuroBetAddress = _azuro.azuroBetAddress
+    createAzuroBetEntity(coreAddress, azuroBetAddress, context)
   }
 }
