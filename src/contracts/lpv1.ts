@@ -15,7 +15,7 @@ export async function getTokenForPool(
   readonly token: string;
 }> {
   const cache = Cache.init(CacheCategory.LPv1, chainId);
-  const lpv1 = cache.read(contractAddress.toLowerCase());
+  const lpv1 = await cache.read(contractAddress.toLowerCase());
 
   if (lpv1) {
     return lpv1;
@@ -46,7 +46,6 @@ export async function getTokenForPool(
   }
 }
 
-
 export async function getAzuroBetAddress(
   contractAddress: string,
   chainId: number
@@ -56,7 +55,7 @@ export async function getAzuroBetAddress(
   // console.log("getAzuroBetAddress", contractAddress)
 
   const cache = Cache.init(CacheCategory.LPv1Bet, chainId);
-  const lpv1 = cache.read(contractAddress.toLowerCase());
+  const lpv1 = await cache.read(contractAddress.toLowerCase());
 
   if (lpv1) {
     return lpv1;
@@ -83,7 +82,7 @@ export async function getAzuroBetAddress(
     return entry;
   } catch (err) {
     console.error("An error occurred", err);
-    throw err
+    throw err;
   }
 }
 
@@ -91,12 +90,12 @@ export async function getAzuroBetAddress(
 export async function getNodeWithdrawAmount(
   contractAddress: string,
   chainId: number,
-  leaf: bigint,
+  leaf: bigint
 ): Promise<{
   readonly withdrawAmount: string;
 }> {
   const cache = Cache.init(CacheCategory.LPv1NodeWithdrawView, chainId);
-  const lpv1 = cache.read(contractAddress.toLowerCase());
+  const lpv1 = await cache.read(contractAddress.toLowerCase());
 
   if (lpv1) {
     return lpv1;
@@ -112,9 +111,11 @@ export async function getNodeWithdrawAmount(
   const _lpv1 = new web3.eth.Contract(contractABI, contractAddress);
 
   try {
-    const _withdrawAmount = await _lpv1.methods.nodeWithdrawView(leaf.toString()).call() as unknown;
+    const _withdrawAmount = (await _lpv1.methods
+      .nodeWithdrawView(leaf.toString())
+      .call()) as unknown;
     const withdrawAmount = _withdrawAmount as bigint;
-    
+
     const entry = {
       withdrawAmount: withdrawAmount.toString(),
     } as const;
@@ -124,6 +125,6 @@ export async function getNodeWithdrawAmount(
     return entry;
   } catch (err) {
     console.error("An error occurred", err);
-    throw err
+    throw err;
   }
 }

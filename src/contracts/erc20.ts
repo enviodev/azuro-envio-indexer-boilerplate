@@ -17,7 +17,7 @@ export async function getErc20TokenDetails(
   readonly symbol: string;
 }> {
   const cache = Cache.init(CacheCategory.Token, chainId);
-  const token = cache.read(contractAddress.toLowerCase());
+  const token = await cache.read(contractAddress.toLowerCase());
 
   if (token) {
     return {
@@ -66,12 +66,12 @@ export async function getErc20TokenBalance(
   tokenAddress: string,
   ownerAddress: string,
   chainId: number,
-  blockNumber: number,
+  blockNumber: number
 ): Promise<bigint> {
   // if blockNumber is = rpc call for latest blockNumber
   // if atHead return
   // else return 0n
-  return 0n
+  return 0n;
 
   // RPC URL
   const rpcURL = CHAIN_CONSTANTS[chainId].rpcURL;
