@@ -10,6 +10,7 @@ AzurobetsContract_Transfer_loader(({ event, context }) => {
   context.AzuroBetContract.load(event.srcAddress, {});
 });
 AzurobetsContract_Transfer_handlerAsync(async ({ event, context }) => {
+  const start = process.hrtime.bigint(); // Get start time
   await transferBet(
     null,
     event.srcAddress,
@@ -18,5 +19,11 @@ AzurobetsContract_Transfer_handlerAsync(async ({ event, context }) => {
     event.params.to,
     event.blockNumber,
     context
-  )
+  );
+
+  const end = process.hrtime.bigint(); // Get end time
+
+  const elapsedTime = Number(end - start) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(`v1, Azurobets, Transfer, ${elapsedTime}, ${event.blockNumber}`);
 });

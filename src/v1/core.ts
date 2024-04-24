@@ -17,31 +17,68 @@ import { getAzuroBetAddress, getTokenForPool } from "../contracts/lpv1";
 
 import { createPoolEntity } from "../common/pool";
 import { createCoreEntity } from "../common/factory";
-import { createCondition, pauseUnpauseCondition, resolveCondition } from "../common/condition";
+import {
+  createCondition,
+  pauseUnpauseCondition,
+  resolveCondition,
+} from "../common/condition";
 import { CORE_TYPE_PRE_MATCH, VERSION_V1 } from "../constants";
 import { createAzuroBetEntity } from "../common/azurobet";
 import { createGame, shiftGame } from "../common/games";
-import { deserialiseConditionV1Result, getConditionV1FromId } from "../contracts/corev1";
+import {
+  deserialiseConditionV1Result,
+  getConditionV1FromId,
+} from "../contracts/corev1";
 import { getEntityId } from "../utils/schema";
 
 CoreContract_ConditionCreated_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
+  context.CoreContract.load(event.srcAddress.toLowerCase(), {});
 });
 CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
-  const coreContractEntity = await context.CoreContract.get(event.srcAddress.toLowerCase());
+  const start = process.hrtime.bigint(); // Get start time
+
+  const coreContractEntity = await context.CoreContract.get(
+    event.srcAddress.toLowerCase()
+  );
 
   if (!coreContractEntity) {
-    context.log.error(`coreContractEntity not found. coreContractEntityId = ${event.srcAddress}`)
-    return
+    context.log.error(
+      `coreContractEntity not found. coreContractEntityId = ${event.srcAddress}`
+    );
+    return;
   }
 
-  const conditionId = event.params.conditionId
-  const startsAt = event.params.timestamp
-  const _conditionData = await getConditionV1FromId(event.srcAddress, event.chainId, conditionId, context)
-  const conditionData = deserialiseConditionV1Result(_conditionData.condition)
+  const endA = process.hrtime.bigint(); // Get end time
 
-  const coreAddress = event.srcAddress
-  const liquidityPoolAddress = coreContractEntity.liquidityPool_id
+  const elapsedTimeA = Number(endA - start) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(
+    `v1, Core, ConditionCreated, ${elapsedTimeA}, ${event.blockNumber}, A`
+  );
+
+  const startB = process.hrtime.bigint(); // Get start time
+
+  const conditionId = event.params.conditionId;
+  const startsAt = event.params.timestamp;
+  const _conditionData = await getConditionV1FromId(
+    event.srcAddress,
+    event.chainId,
+    conditionId,
+    context
+  );
+  const conditionData = deserialiseConditionV1Result(_conditionData.condition);
+
+  const endB = process.hrtime.bigint(); // Get end time
+
+  const elapsedTimeB = Number(endB - startB) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(
+    `v1, Core, ConditionCreated, ${elapsedTimeB}, ${event.blockNumber}, B`
+  );
+
+  const startC = process.hrtime.bigint(); // Get start time
+  const coreAddress = event.srcAddress;
+  const liquidityPoolAddress = coreContractEntity.liquidityPool_id;
 
   const gameEntity = await createGame(
     liquidityPoolAddress,
@@ -54,13 +91,25 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     BigInt(event.blockNumber),
     BigInt(event.blockTimestamp),
     event.chainId,
-    context,
-  )
+    context
+  );
 
   if (!gameEntity) {
-    context.log.error(`v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`)
-    return
+    context.log.error(
+      `v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`
+    );
+    return;
   }
+
+  const endC = process.hrtime.bigint(); // Get end time
+
+  const elapsedTimeC = Number(endC - startC) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(
+    `v1, Core, ConditionCreated, ${elapsedTimeC}, ${event.blockNumber}, C`
+  );
+
+  const startD = process.hrtime.bigint(); // Get start time
 
   await createCondition(
     VERSION_V1,
@@ -78,36 +127,62 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     event.blockNumber,
     event.blockTimestamp,
     context,
-    startsAt,
-  )
+    startsAt
+  );
+
+  const endD = process.hrtime.bigint(); // Get end time
+
+  const elapsedTimeD = Number(endD - startD) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(
+    `v1, Core, ConditionCreated, ${elapsedTimeD}, ${event.blockNumber}, D`
+  );
+
+  const end = process.hrtime.bigint(); // Get end time
+
+  const elapsedTime = Number(end - start) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(
+    `v1, Core, ConditionCreated, ${elapsedTime}, ${event.blockNumber}`
+  );
 });
 
 CoreContract_ConditionResolved_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
-  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
-  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
+  context.CoreContract.load(event.srcAddress.toLowerCase(), {});
+  context.Condition.load(
+    getEntityId(event.srcAddress, event.params.conditionId.toString()),
+    {}
+  );
+  context.LiquidityPoolContract.load(
+    "0xac004b512c33D029cf23ABf04513f1f380B3FD0a"
+  );
   // context.Outcome.load(, {})
 });
 CoreContract_ConditionResolved_handlerAsync(async ({ event, context }) => {
-  const conditionId = event.params.conditionId
-  const coreAddress = event.srcAddress
+  const start = process.hrtime.bigint(); // Get start time
+  const conditionId = event.params.conditionId;
+  const coreAddress = event.srcAddress;
 
-  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
-  const conditionEntity = await context.Condition.get(conditionEntityId)
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
+  const conditionEntity = await context.Condition.get(conditionEntityId);
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v1 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    context.log.error(
+      `v1 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
+    return;
   }
 
-  const coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
+  const coreContractEntity = await context.CoreContract.get(
+    coreAddress.toLowerCase()
+  );
 
   if (!coreContractEntity) {
-    throw new Error(`CoreContract not found. coreAddress = ${coreAddress}`)
+    throw new Error(`CoreContract not found. coreAddress = ${coreAddress}`);
   }
 
-  const liquidityPoolAddress = coreContractEntity.liquidityPool_id
+  const liquidityPoolAddress = coreContractEntity.liquidityPool_id;
 
   await resolveCondition(
     VERSION_V1,
@@ -118,50 +193,84 @@ CoreContract_ConditionResolved_handlerAsync(async ({ event, context }) => {
     event.blockNumber,
     event.blockTimestamp,
     event.chainId,
-    context,
-  )
+    context
+  );
+
+  const end = process.hrtime.bigint(); // Get end time
+
+  const elapsedTime = Number(end - start) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(
+    `v1, Core, ConditionResolved, ${elapsedTime}, ${event.blockNumber}`
+  );
 });
 
 CoreContract_ConditionShifted_loader(({ event, context }) => {
-  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
+  context.Condition.load(
+    getEntityId(event.srcAddress, event.params.conditionId.toString()),
+    {}
+  );
 });
 CoreContract_ConditionShifted_handler(({ event, context }) => {
-  const conditionId = event.params.conditionId
-  const coreAddress = event.srcAddress
+  const start = process.hrtime.bigint(); // Get start time
+  const conditionId = event.params.conditionId;
+  const coreAddress = event.srcAddress;
 
-  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
-  const conditionEntity = context.Condition.get(conditionEntityId)
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
+  const conditionEntity = context.Condition.get(conditionEntityId);
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v1 ConditionShifted conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    context.log.error(
+      `v1 ConditionShifted conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
+    return;
   }
 
-  shiftGame(conditionEntity.game_id, event.params.newTimestamp, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
+  shiftGame(
+    conditionEntity.game_id,
+    event.params.newTimestamp,
+    event.transactionHash,
+    event.blockNumber,
+    event.blockTimestamp,
+    context
+  );
 
   context.Condition.set({
     ...conditionEntity,
     internalStartsAt: event.params.newTimestamp,
     _updatedAt: BigInt(event.blockTimestamp),
-  })
+  });
 
+  const end = process.hrtime.bigint(); // Get end time
+
+  const elapsedTime = Number(end - start) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(
+    `v1, Core, ConditionShifted, ${elapsedTime}, ${event.blockNumber}`
+  );
 });
 
 CoreContract_ConditionStopped_loader(({ event, context }) => {
-  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
+  context.Condition.load(
+    getEntityId(event.srcAddress, event.params.conditionId.toString()),
+    {}
+  );
 });
 CoreContract_ConditionStopped_handler(({ event, context }) => {
-  const conditionId = event.params.conditionId
-  const coreAddress = event.srcAddress
+  const start = process.hrtime.bigint(); // Get start time
+  const conditionId = event.params.conditionId;
+  const coreAddress = event.srcAddress;
 
-  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
-  const conditionEntity = context.Condition.get(conditionEntityId)
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
+  const conditionEntity = context.Condition.get(conditionEntityId);
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v1 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    context.log.error(
+      `v1 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
+    return;
   }
 
   pauseUnpauseCondition(
@@ -169,19 +278,27 @@ CoreContract_ConditionStopped_handler(({ event, context }) => {
     event.params.flag,
     BigInt(event.blockTimestamp),
     context
-  )
+  );
+  const end = process.hrtime.bigint(); // Get end time
+
+  const elapsedTime = Number(end - start) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(
+    `v1, Core, ConditionStopped, ${elapsedTime}, ${event.blockNumber}`
+  );
 });
 
 CoreContract_LpChanged_loader(async ({ event, context }) => {
   await context.contractRegistration.addLP(event.params.newLp);
   context.CoreContract.load(event.srcAddress.toLowerCase(), {});
 
-  const resp = await getAzuroBetAddress(event.params.newLp, event.chainId)
-  await context.contractRegistration.addAzurobets(resp.azuroBetAddress)
+  const resp = await getAzuroBetAddress(event.params.newLp, event.chainId);
+  await context.contractRegistration.addAzurobets(resp.azuroBetAddress);
 });
 
 CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
-  const coreAddress = event.srcAddress
+  const start = process.hrtime.bigint(); // Get start time
+  const coreAddress = event.srcAddress;
   const liquidityPoolAddress = event.params.newLp;
 
   const token = await getTokenForPool(liquidityPoolAddress, event.chainId);
@@ -194,21 +311,29 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
     BigInt(event.blockNumber),
     BigInt(event.blockTimestamp),
     event.chainId,
-    context,
+    context
   );
 
-  const coreContractEntity = await context.CoreContract.get(event.srcAddress.toLowerCase());
+  const coreContractEntity = await context.CoreContract.get(
+    event.srcAddress.toLowerCase()
+  );
 
   if (!coreContractEntity) {
     createCoreEntity(
       event.srcAddress,
       liquidityPool,
       CORE_TYPE_PRE_MATCH,
-      context,
+      context
     );
   }
 
-  const resp = await getAzuroBetAddress(liquidityPoolAddress, event.chainId)
+  const resp = await getAzuroBetAddress(liquidityPoolAddress, event.chainId);
 
-  createAzuroBetEntity(coreAddress, resp.azuroBetAddress, context)
+  createAzuroBetEntity(coreAddress, resp.azuroBetAddress, context);
+
+  const end = process.hrtime.bigint(); // Get end time
+
+  const elapsedTime = Number(end - start) / 1e6; // Calculate elapsed time in milliseconds
+
+  console.log(`v1, Core, LPChanged, ${elapsedTime}, ${event.blockNumber}`);
 });
