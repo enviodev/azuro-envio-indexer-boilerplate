@@ -9,7 +9,8 @@
     "codegen": "envio codegen",
     "dev": "envio dev",
     "test": "pnpm mocha",
-    "start": "ts-node generated/src/Index.bs.js"
+    "start": "ts-node generated/src/Index.bs.js",
+    "migrate": "ts-node src/migrate.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
@@ -25,6 +26,7 @@
     "chai": "4.3.10",
     "envio": "^0.0.38",
     "ethers": "6.8.0",
+    "sqlite3": "^5.1.7",
     "web3": "^4.4.0"
   }
 }
