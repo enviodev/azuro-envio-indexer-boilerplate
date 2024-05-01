@@ -83,9 +83,8 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 });
 
 CoreContract_ConditionResolved_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
+  context.CoreContract.load(event.srcAddress.toLowerCase(), {loadLiquidityPool: true})
   context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
-  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
   // context.Outcome.load(, {})
 });
 CoreContract_ConditionResolved_handlerAsync(async ({ event, context }) => {
@@ -123,7 +122,7 @@ CoreContract_ConditionResolved_handlerAsync(async ({ event, context }) => {
 });
 
 CoreContract_ConditionShifted_loader(({ event, context }) => {
-  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
+  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {loadGame: {}})
 });
 CoreContract_ConditionShifted_handler(({ event, context }) => {
   const conditionId = event.params.conditionId

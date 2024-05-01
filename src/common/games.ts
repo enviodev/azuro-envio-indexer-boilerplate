@@ -8,6 +8,7 @@ import { getEntityId, isPlainObject } from "../utils/schema"
 import { getImageUrl } from "../utils/images"
 import { byte32ToIPFSCIDv0, tryFetchIpfsFile } from "../utils/ipfs"
 import { IPFSMatchDetails } from "../utils/types"
+import { Cache, CacheCategory } from "../lib/cache"
 
 // TODO delete
 const DEFAULT_GAME: GameEntity = {
@@ -41,6 +42,25 @@ const DEFAULT_GAME: GameEntity = {
     _updatedAt: 0n,
 }
 
+function decodeJSON(hexStr: string): IPFSMatchDetails {
+    let plainStr = "";
+    for (let i = 0; i < hexStr.length; i += 2) {
+        const hexByte = hexStr.substring(i, i + 2);
+        plainStr += String.fromCharCode(parseInt(hexByte, 16));
+    }
+
+    // Quick check for JSON-like structures
+    if (plainStr.startsWith("{") || plainStr.includes(":")) {
+        try {
+            return JSON.parse(plainStr);
+        } catch {
+            throw new Error('Invalid JSON');
+        }
+    }
+
+    throw new Error('Invalid JSON');
+}
+
 
 export async function createGame(
     liquidityPoolAddress: string,
@@ -60,13 +80,35 @@ export async function createGame(
 
     // V2
     if (ipfsHashBytes !== null) {
-        const ipfsHash = byte32ToIPFSCIDv0(ipfsHashBytes.slice(2))
-        data = await tryFetchIpfsFile(ipfsHash, chainId, context)
-        if (data === null) {
-            context.log.error(`createGame (v2) IPFS failed to convert to object. Hash: ${ipfsHash}`)
-            return null
+        if (!ipfsHashBytes.startsWith("0x")) {
+            throw new Error('createGame (v2) IPFS hash doesn\'t start with 0x')
+        }
+
+        const hexStr = ipfsHashBytes.slice(2);
+
+        if (hexStr.length == 64) {
+            // Identifier or hash
+            const ipfsHash = byte32ToIPFSCIDv0(hexStr)
+
+            if (ipfsHash[0] !== 'Q') {
+                throw new Error(`createGame (v2) IPFS hash doesn\'t start with Q ${ipfsHash}`)
+            }
+
+            data = await tryFetchIpfsFile(ipfsHash, chainId, context)
+
+            if (data === null) {
+                context.log.error(`createGame (v2) IPFS failed to convert to object. Hash: ${ipfsHash}`)
+                return null
+            }
+        } else {
+            // JSON Data
+            const cache = Cache.init(CacheCategory.IPFSMatchDetails, chainId);
+            data = decodeJSON(hexStr) as IPFSMatchDetails;
+            // no need to cache, can remove
+            // cache.add({ [hexStr]: entry as any });
         }
     }
+
 
     // V3
     if (dataBytes !== null) {

@@ -63,6 +63,7 @@ contracts:
       - event: OddsChanged(uint256 indexed conditionId, uint64[2] newOdds)
         isAsync: true
   - name: Expressv2
+    address: 0x4eE3923484dfdc7Ea2F1c558c2c820a97a727636
     handler: src/v2/express.ts
     events:
       - event: NewBet(address indexed bettor, uint256 indexed betId,(address,uint64,uint128,uint48,bool,(uint256,uint64)[] ,uint64[]) bet) # interesting stress test - struct within struct event emit
@@ -81,7 +82,8 @@ contracts:
       - event: LiquidityManagerChanged(address newLiquidityManager)
       - event: LiquidityRemoved(address indexed account, uint48 indexed depositId, uint256 amount)
         isAsync: true
-      - event: NewGame(uint256 indexed gameId, uint64 startsAt, bytes data) # TODO: This only imported v2 not v3 version which seems to be the same contract
+      # - event: NewGame(uint256 indexed gameId, uint64 startsAt, bytes data) # TODO: This only imported v2 not v3 version which seems to be the same contract
+      - event: NewGame (uint256 indexed gameId, bytes32 ipfsHash, uint64 startsAt)
         isAsync: true
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
       - event: WithdrawTimeoutChanged(uint64 newWithdrawTimeout)

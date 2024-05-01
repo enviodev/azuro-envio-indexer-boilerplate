@@ -10,6 +10,7 @@ AzurobetsContract_Transfer_loader(({ event, context }) => {
   context.AzuroBetContract.load(event.srcAddress, {});
 });
 AzurobetsContract_Transfer_handlerAsync(async ({ event, context }) => {
+  const x = "hi"
   await transferBet(
     null,
     event.srcAddress,

@@ -4,10 +4,10 @@ import sqlite3 from "sqlite3";
 // SQLite database initialization
 const db = new sqlite3.Database(".cache/cache.db");
 
-// const currentCacheFile = ".cache/conditionv1-100.json";
+// const currentCacheFile = "../.cache/conditionv1-100.json";
 // const tableName = "conditionv1100";
-// const currentCacheFile = ".cache/conditionv2-100.json";
-// const tableName = "conditionv2100";
+const currentCacheFile = "../.cache/conditionv2-100.json";
+const tableName = "conditionv2100";
 // const currentCacheFile = ".cache/freebetv1-100.json";
 // const tableName = "freebetv1100";
 // const currentCacheFile = ".cache/ipfsmatchdetails-100.json";
@@ -18,8 +18,8 @@ const db = new sqlite3.Database(".cache/cache.db");
 // const tableName = "lpv1bet100";
 // const currentCacheFile = ".cache/lpv1nodewithdrawview-100.json";
 // const tableName = "lpv1nodewithdrawview100";
-const currentCacheFile = ".cache/token-100.json";
-const tableName = "token100";
+// const currentCacheFile = ".cache/token-100.json";
+// const tableName = "token100";
 
 // Read data from JSON file
 const jsonData = fs.readFileSync(currentCacheFile, "utf8");

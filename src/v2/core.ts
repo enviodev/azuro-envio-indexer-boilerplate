@@ -44,6 +44,7 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!gameEntity) {
+    // throw new Error(`v2 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`)
     context.log.error(`v2 ConditionCreated gameEntity not found, skipping create condition. gameEntityId = ${gameEntityId}`)
     return
   }
@@ -156,6 +157,8 @@ Corev2Contract_NewBet_handlerAsync(async ({ event, context }) => {
   if (!outcomeEntity) {
     throw new Error(`Outcome not found with id ${outcomeEntityId}`)
   }
+
+  const x = 4
 
   await createBet(
     VERSION_V2,

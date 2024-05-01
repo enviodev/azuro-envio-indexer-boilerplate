@@ -104,6 +104,7 @@ export async function createCondition(
     conditionEntity.internalStartsAt = startsAt
   }
   conditionEntity._updatedAt = BigInt(createBlockTimestamp)
+
   context.Condition.set(conditionEntity)
 
   const gameEntity = (await context.Game.get(gameEntityId))!

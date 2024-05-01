@@ -226,6 +226,7 @@ export function resolveFreebet(
   // TODO remove later
   if (!freebetEntity) {
     throw new Error(`resolveFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    return null
   }
 
   context.Freebet.set({

@@ -28,7 +28,8 @@ async function getOrCreateFreebetContract(
   chainId: number,
   context: FreeBetContract_FreeBetMintedEvent_handlerContextAsync,
 ): Promise<FreebetContractEntity | null> {
-  context.log.debug(`v2 getOrCreateFreebetContract freebetContractAddress = ${freebetContractAddress}`)
+  // v2 freebet contract
+  // 0xB425E555492eE36c5A2918481EbbcF04AE73682b
   let freebetContractEntity = await context.FreebetContract.get(freebetContractAddress)
 
   if (freebetContractEntity) {
@@ -158,7 +159,7 @@ FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
     context.log.error(`v2 handleFreeBetRedeemed coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
     return
   }
-
+  
   const freebetEntity = await redeemFreebet(
     event.srcAddress,
     event.params.id,

@@ -128,11 +128,11 @@ LPv2Contract_NewGame_loader(({ event, context }) => {
 LPv2Contract_NewGame_handlerAsync(async ({ event, context }) => {
 
   const network = 'gnosis' // TODO fix
-  context.log.debug(`event.params.data = ${event.params.data}`)
+
   await createGame(
     event.srcAddress,
     event.params.gameId,
-    event.params.data,
+    event.params.ipfsHash,
     null,
     event.params.startsAt,
     network,

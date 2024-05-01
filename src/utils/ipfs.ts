@@ -51,13 +51,13 @@ export async function tryFetchIpfsFile(
   let resp: IPFSMatchDetails | undefined = undefined;
 
   try {
-    resp = await fetchIpfsFile(contentHash, "gateway.ipfs.io", context);
+    resp = await fetchIpfsFile(contentHash, "cloudflare-ipfs.com", context);
   } catch (e) {
     try {
-      resp = await fetchIpfsFile(contentHash, "cloudflare-ipfs.com", context);
+      resp = await fetchIpfsFile(contentHash, "ipfs.io", context);
     } catch (e) {
       try {
-        resp = await fetchIpfsFile(contentHash, "ipfs.io", context);
+        resp = await fetchIpfsFile(contentHash, "gateway.ipfs.io", context);
       } catch (e) {
         context.log.error("Unable to fetch from any IPFS gateway");
       }

@@ -80,7 +80,11 @@ FreeBetv3Contract_BettorWin_handlerAsync(async ({ event, context }) => {
   await withdrawFreebet(freebetEntityId, event.blockTimestamp, context)
 });
 
-FreeBetv3Contract_PayoutsResolved_loader(({ event, context }) => { });
+FreeBetv3Contract_PayoutsResolved_loader(({ event, context }) => {
+  for (let i = 0; i < event.params.azuroBetId.length; i++) {
+    context.Freebet.load(getEntityId(event.srcAddress, event.params.azuroBetId[i].toString()), {});
+  }
+ });
 FreeBetv3Contract_PayoutsResolved_handler(({ event, context }) => {
   for (let i = 0; i < event.params.azuroBetId.length; i++) {
     resolveFreebet(

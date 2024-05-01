@@ -60,8 +60,7 @@ async function getOrCreateFreebetContract(
 }
 
 XYZFreeBetContract_BettorWin_loader(({ event, context }) => { 
-  context.FreebetContract.load(event.srcAddress, {});
-  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
+  context.FreebetContract.load(event.srcAddress, {loadLiquidityPool: true});
   
   const config = getConfigByChainId(event.chainId)
   const coreAddress = config.contracts.Core.addresses[0]
@@ -97,8 +96,7 @@ XYZFreeBetContract_BettorWin_handlerAsync(async ({ event, context }) => {
 });
 
 XYZFreeBetContract_FreeBetMinted_loader(({ event, context }) => {
-  context.FreebetContract.load(event.srcAddress, {});
-  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
+  context.FreebetContract.load(event.srcAddress, {loadLiquidityPool: true});
 });
 XYZFreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
   const freebetContractEntity = await getOrCreateFreebetContract(
@@ -139,8 +137,7 @@ XYZFreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
 });
 
 XYZFreeBetContract_FreeBetMintedBatch_loader(({ event, context }) => {
-  context.FreebetContract.load(event.srcAddress, {});
-  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
+  context.FreebetContract.load(event.srcAddress, {loadLiquidityPool: true});
 });
 XYZFreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
   
@@ -182,9 +179,8 @@ XYZFreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) =>
 });
 
 XYZFreeBetContract_FreeBetRedeemed_loader(({ event, context }) => {
-  context.FreebetContract.load(event.srcAddress, {});
+  context.FreebetContract.load(event.srcAddress, {loadLiquidityPool: true});
   context.Freebet.load(getEntityId(event.srcAddress, event.params.id.toString()), {});
-  context.LiquidityPoolContract.load('0xac004b512c33D029cf23ABf04513f1f380B3FD0a');
 
   const config = getConfigByChainId(event.chainId)
   const coreAddress = config.contracts.Core.addresses[0]

@@ -37,6 +37,7 @@ export async function transferBet(
 
     // TODO remove later
     if (!azuroBetContractEntity) {
+      // SEE 
       context.log.error(`transferBet azuroBetContractEntity not found. azuroBetAddress = ${azuroBetAddress}`)
       return null
     }
@@ -311,6 +312,7 @@ export async function createBet(
     rawSettledOdds: undefined,
     resolvedTxHash: undefined
   }
+
   context.Bet.set(betEntity)
 
   for (let i = 0; i < betOutcomeEntities.length; i++) {
@@ -379,8 +381,6 @@ export function bettorWin(
     if (!betEntity) {
       context.log.error(`v1 handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
       return
-    } else {
-      // context.log.error(`v1 handleBettorWin found!!!!!!`)
     }
 
     context.Bet.set({
