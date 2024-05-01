@@ -12,9 +12,9 @@ export function createCoreEntity(
   context: FactoryContract_NewPoolEvent_handlerContextAsync | CoreContract_LpChangedEvent_handlerContextAsync,
 ): CoreContractEntity {
   const coreContractEntity: CoreContractEntity = {
-    id: coreAddress.toLowerCase(),
+    id: coreAddress,
     liquidityPool_id: liquidityPoolContractEntity.id,
-    address: coreAddress.toLowerCase(),
+    address: coreAddress,
     type_: coreType,
   }
   // 0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d v1

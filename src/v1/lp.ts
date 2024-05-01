@@ -34,7 +34,7 @@ LPContract_BetterWin_loader(({ event, context }) => {
   const config = getConfigByChainId(event.chainId)
   const coreAddress = config.contracts.Core.addresses[0]
   
-  context.CoreContract.load(coreAddress.toLowerCase(), {})
+  context.CoreContract.load(coreAddress, {})
 
   const betEntityId = getEntityId(coreAddress, event.params.tokenId.toString());
   context.Bet.load(betEntityId, {});
@@ -108,13 +108,14 @@ LPContract_NewBet_loader(({ event, context }) => {
   const config = getConfigByChainId(event.chainId)
   const coreAddress = config.contracts.Core.addresses[0]
   
-  context.CoreContract.load(coreAddress.toLowerCase(), {})
+  context.CoreContract.load(coreAddress, {})
   
   const conditionEntityId = getEntityId(coreAddress,event.params.conditionId.toString())
   context.Condition.load(conditionEntityId, {loadGame: {loadLeague: {loadCountry: {}}}});
 
   const outComeEntityId = getEntityId(conditionEntityId, event.params.outcomeId.toString())
   context.Outcome.load(outComeEntityId, {})
+
 });
 LPContract_NewBet_handlerAsync(async ({ event, context }) => {
   const liquidityPoolContractEntity = await context.LiquidityPoolContract.get(event.srcAddress);
@@ -162,6 +163,7 @@ LPContract_NewBet_handlerAsync(async ({ event, context }) => {
     context,
     `lpv1. loaded outcomeEntityId is ${outcomeEntityId}`
   )
+
 });
 
 LPContract_Transfer_loader(({ event, context }) => {

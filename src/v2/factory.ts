@@ -57,7 +57,7 @@ FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
 
   const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(liquidityPoolAddress))!
 
-  let coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
+  let coreContractEntity = await context.CoreContract.get(coreAddress)
 
   context.log.debug(`create core entity ${coreAddress}`)
   if (!coreContractEntity) {
@@ -69,13 +69,15 @@ FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
 
   if (coreType === CORE_TYPE_EXPRESS) {
     prematchAddress = await getPrematchAddressByExpressAddressV2(coreAddress, event.chainId, context)
+    context.log.debug(`prematchAddress express ${prematchAddress}`)
   }
   else if (coreType === CORE_TYPE_EXPRESS_V2) {
     prematchAddress = await getPrematchAddressByExpressAddressV3(coreAddress, event.chainId, context)
+    context.log.debug(`prematchAddress express v2 ${prematchAddress}`)
   }
 
   if (prematchAddress !== null) {
-    const coreContractId = (await context.CoreContract.get(prematchAddress.toLowerCase()))!.id
+    const coreContractId = (await context.CoreContract.get(prematchAddress))!.id
     createExpressPrematchRelationEntity(coreAddress, coreContractId, context)
   }
 });
@@ -142,7 +144,7 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
     context,
   )
 
-  let coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
+  let coreContractEntity = await context.CoreContract.get(coreAddress)
 
   if (!coreContractEntity) {
     createCoreEntity(coreAddress, liquidityPoolContractEntity, coreType, context)
@@ -153,7 +155,7 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
     const prematchAddress = await getPrematchAddressByExpressAddressV2(coreAddress, event.chainId, context)
 
     if (prematchAddress !== null) {
-      const coreContractId = (await context.CoreContract.get(prematchAddress.toLowerCase()))!.id
+      const coreContractId = (await context.CoreContract.get(prematchAddress))!.id
       createExpressPrematchRelationEntity(coreAddress, coreContractId, context)
     }
   }

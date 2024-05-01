@@ -53,10 +53,10 @@ async function getOrCreateFreebetContract(
 }
 
 FreeBetContract_BettorWin_loader(({ event, context }) => {
-  context.CoreContract.load(event.params.core.toLowerCase(), {});
+  context.CoreContract.load(event.params.core, {});
 });
 FreeBetContract_BettorWin_handlerAsync(async ({ event, context }) => {
-  const coreContractEntity = await context.CoreContract.get(event.params.core.toLowerCase())
+  const coreContractEntity = await context.CoreContract.get(event.params.core)
 
   if (!coreContractEntity) {
     context.log.error(`v2 handleBettorWin coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
@@ -150,10 +150,10 @@ FreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
 });
 
 FreeBetContract_FreeBetRedeemed_loader(({ event, context }) => {
-  context.CoreContract.load(event.params.core.toLowerCase(), {});
+  context.CoreContract.load(event.params.core, {});
  });
 FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
-  const coreContractEntity = await context.CoreContract.get(event.params.core.toLowerCase())
+  const coreContractEntity = await context.CoreContract.get(event.params.core)
 
   if (!coreContractEntity) {
     context.log.error(`v2 handleFreeBetRedeemed coreContractEntity not found. coreContractEntityId = ${event.params.core}`)

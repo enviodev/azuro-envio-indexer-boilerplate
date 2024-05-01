@@ -325,6 +325,7 @@ export async function resolveCondition(
               // ),
             }
             else {
+              context.log.debug(`betEntity type = ${betEntity.type_} payoutSC is null`)
               betEntity.rawPayout = 0n
               // payout: 0n,
             }

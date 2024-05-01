@@ -14,7 +14,7 @@ export async function getPrematchAddress(
   readonly preMatchAddress: string;
 }> {
   const cache = Cache.init(CacheCategory.ExpressPrematchAddress, chainId);
-  const _addr = await cache.read(contractAddress.toLowerCase());
+  const _addr = await cache.read(contractAddress);
 
   if (_addr) {
     return _addr;
@@ -34,10 +34,10 @@ export async function getPrematchAddress(
     const preMatchAddress = _address as string;
 
     const entry = {
-      preMatchAddress: preMatchAddress.toLowerCase(),
+      preMatchAddress: preMatchAddress,
     } as const;
 
-    cache.add({ [contractAddress.toLowerCase()]: entry as any });
+    cache.add({ [contractAddress]: entry as any });
 
     return entry;
   } catch (err) {

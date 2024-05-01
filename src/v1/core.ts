@@ -25,10 +25,10 @@ import { deserialiseConditionV1Result, getConditionV1FromId } from "../contracts
 import { getEntityId } from "../utils/schema";
 
 CoreContract_ConditionCreated_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
+  context.CoreContract.load(event.srcAddress, {})
 });
 CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
-  const coreContractEntity = await context.CoreContract.get(event.srcAddress.toLowerCase());
+  const coreContractEntity = await context.CoreContract.get(event.srcAddress);
 
   if (!coreContractEntity) {
     context.log.error(`coreContractEntity not found. coreContractEntityId = ${event.srcAddress}`)
@@ -58,8 +58,7 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   )
 
   if (!gameEntity) {
-    context.log.error(`v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`)
-    return
+    throw new Error(`v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`)
   }
 
   await createCondition(
@@ -83,7 +82,7 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 });
 
 CoreContract_ConditionResolved_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {loadLiquidityPool: true})
+  context.CoreContract.load(event.srcAddress, {loadLiquidityPool: true})
   context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
   // context.Outcome.load(, {})
 });
@@ -100,7 +99,7 @@ CoreContract_ConditionResolved_handlerAsync(async ({ event, context }) => {
     return
   }
 
-  const coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
+  const coreContractEntity = await context.CoreContract.get(coreAddress)
 
   if (!coreContractEntity) {
     throw new Error(`CoreContract not found. coreAddress = ${coreAddress}`)
@@ -173,7 +172,7 @@ CoreContract_ConditionStopped_handler(({ event, context }) => {
 
 CoreContract_LpChanged_loader(async ({ event, context }) => {
   await context.contractRegistration.addLP(event.params.newLp);
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {});
+  context.CoreContract.load(event.srcAddress, {});
 
   const resp = await getAzuroBetAddress(event.params.newLp, event.chainId)
   await context.contractRegistration.addAzurobets(resp.azuroBetAddress)
@@ -196,7 +195,7 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
     context,
   );
 
-  const coreContractEntity = await context.CoreContract.get(event.srcAddress.toLowerCase());
+  const coreContractEntity = await context.CoreContract.get(event.srcAddress);
 
   if (!coreContractEntity) {
     createCoreEntity(

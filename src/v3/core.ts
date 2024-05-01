@@ -33,7 +33,7 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   context.log.debug(`v3 core event address: ${event.srcAddress}`)
   const conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
   
-  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress.toLowerCase()))!.liquidityPool_id
+  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
   const gameEntityId = getEntityId(
     liquidityPoolAddress,
     event.params.gameId.toString(),
@@ -47,8 +47,7 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     return
   }
 
-  context.log.error(`v3 ConditionCreated not implemented, address needed ${event.srcAddress}`)
-  return
+  throw new Error(`v3 ConditionCreated not implemented, address needed ${event.srcAddress}`)
   // await createCondition(
   //   VERSION_V3,
   //   coreAddress,
@@ -84,7 +83,7 @@ Corev3Contract_ConditionResolved_handlerAsync(async ({ event, context }) => {
     return
   }
 
-  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress.toLowerCase()))!.liquidityPool_id
+  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
 
   await resolveCondition(
     VERSION_V3,
@@ -148,7 +147,7 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
     return
   }
 
-  const lp = (await context.CoreContract.get(coreAddress.toLowerCase()))!.liquidityPool_id
+  const lp = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
   const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(lp))!
 
   const outcomeEntityId = getEntityId(
@@ -209,17 +208,15 @@ Corev3Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
     outcomesEntities = outcomesEntities.concat([outcomeEntity])
   }
 
-  context.log.debug(`v3 core event address: ${event.srcAddress}`)
-  return
-
-  // updateConditionOdds(
-  //   VERSION_V3,
-  //   conditionEntity,
-  //   outcomesEntities,
-  //   conditionData.virtualFunds,
-  //   event.blockNumber,
-  //   context,
-  // )
+  updateConditionOdds(
+      VERSION_V3,
+      conditionEntity,
+      outcomesEntities,
+      conditionData.virtualFunds,
+      event.blockNumber,
+      context,
+    )
+  throw new Error(`v3 core event address: ${event.srcAddress}`)
 });
 
 Corev3Contract_MarginChanged_loader(({ event, context }) => {

@@ -14,8 +14,7 @@ Expressv3Contract_NewBet_loader(({ event, context }) => {
   context.log.debug(`Expressv3Contract_NewBet_loader: ${event.srcAddress}`)
  });
 Expressv3Contract_NewBet_handler(({ event, context }) => {
-  context.log.debug(`express v3 new bet not implemented: ${event.srcAddress}`)
-  return
+  throw new Error(`express v3 new bet not implemented: ${event.srcAddress}`)
 
   // const expressAddress = event.srcAddress
   // const prematchAddress = context.ExpressPrematchRelation.get(expressAddress)!.prematchAddress
@@ -52,7 +51,7 @@ Expressv3Contract_NewBet_handler(({ event, context }) => {
   //   conditionOdds[i] = event.params.bet.conditionOdds[i]
   // }
 
-  // const lp = context.CoreContract.get(prematchAddress.toLowerCase())!.liquidityPool_id
+  // const lp = context.CoreContract.get(prematchAddress)!.liquidityPool_id
   // const liquidityPoolContractEntity = context.LiquidityPoolContract.get(lp)!
 
   // await createBet(

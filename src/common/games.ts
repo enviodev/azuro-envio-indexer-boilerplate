@@ -289,6 +289,7 @@ export async function createGame(
     }
 
     const gameEntityId = getEntityId(liquidityPoolAddress, gameId.toString())
+
     let gameEntity = await context.Game.get(gameEntityId)
 
     if (!gameEntity) {

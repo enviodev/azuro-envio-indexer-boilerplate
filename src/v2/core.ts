@@ -23,7 +23,7 @@ import { OutcomeEntity } from "../src/Types.gen";
 import { getEntityId } from "../utils/schema";
 
 Corev2Contract_ConditionCreated_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
+  context.CoreContract.load(event.srcAddress, {})
 });
 Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId
@@ -32,7 +32,7 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const _conditionData = await getConditionV2FromId(event.srcAddress, event.chainId, conditionId, context)
   const conditionData = deserialiseConditionV2Result(_conditionData.condition)
 
-  const coreContractEntity = await context.CoreContract.get(coreAddress.toLowerCase())
+  const coreContractEntity = await context.CoreContract.get(coreAddress)
 
   if (!coreContractEntity) {
     throw new Error(`v2 ConditionCreated coreContractEntity not found. coreAddress = ${coreAddress}`)
@@ -70,7 +70,7 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 });
 
 Corev2Contract_ConditionResolved_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
+  context.CoreContract.load(event.srcAddress, {})
   context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
 });
 Corev2Contract_ConditionResolved_handlerAsync(async({ event, context }) => {
@@ -86,7 +86,7 @@ Corev2Contract_ConditionResolved_handlerAsync(async({ event, context }) => {
     return
   }
 
-  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress.toLowerCase()))!.liquidityPool_id
+  const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
 
   await resolveCondition(
     VERSION_V2,
@@ -102,8 +102,8 @@ Corev2Contract_ConditionResolved_handlerAsync(async({ event, context }) => {
 });
 
 Corev2Contract_ConditionStopped_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
-  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
+  context.CoreContract.load(event.srcAddress, {})
+  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {loadGame: {}})
 });
 Corev2Contract_ConditionStopped_handler(({ event, context }) => {
   const conditionId = event.params.conditionId
@@ -127,7 +127,7 @@ Corev2Contract_ConditionStopped_handler(({ event, context }) => {
 });
 
 Corev2Contract_NewBet_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
+  context.CoreContract.load(event.srcAddress, {})
   
   const conditionEntityId = getEntityId(event.srcAddress, event.params.conditionId.toString())
   context.Condition.load(conditionEntityId, {})
@@ -148,7 +148,7 @@ Corev2Contract_NewBet_handlerAsync(async ({ event, context }) => {
     return
   }
 
-  const lp = (await context.CoreContract.get(coreAddress.toLowerCase()))!.liquidityPool_id
+  const lp = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
   const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(lp))!
 
   const outcomeEntityId = getEntityId(conditionEntity.id, event.params.outcomeId.toString())
@@ -183,7 +183,7 @@ Corev2Contract_NewBet_handlerAsync(async ({ event, context }) => {
 
 Corev2Contract_OddsChanged_loader(({ event, context }) => {
   context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
-  context.CoreContract.load(event.srcAddress.toLowerCase(), {})
+  context.CoreContract.load(event.srcAddress, {})
 });
 Corev2Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId

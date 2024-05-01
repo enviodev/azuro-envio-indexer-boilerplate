@@ -14,6 +14,7 @@ contracts:
       - event: LpChanged(address indexed newLp)
         isAsync: true
   - name: LP
+    address: 0xac004b512c33D029cf23ABf04513f1f380B3FD0a
     handler: src/v1/lp.ts
     events:
       - event: BetterWin(address indexed better, uint256 tokenId, uint256 amount)
@@ -70,7 +71,7 @@ contracts:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
         isAsync: true
   - name: LPv2
-    address: '0x204e7371Ade792c5C006fb52711c50a7efC843ed'
+    address: 0x204e7371Ade792c5C006fb52711c50a7efC843ed
     handler: src/v2/lp.ts
     events:
       - event: BettorWin(address indexed core, address indexed bettor, uint256 tokenId, uint256 amount)

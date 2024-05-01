@@ -31,7 +31,7 @@ import { getNodeWithdrawAmount } from "../contracts/lpv1";
 import { getEntityId } from "../utils/schema";
 
 LPv2Contract_BettorWin_loader(({ event, context }) => {
-  context.CoreContract.load(event.params.core.toLowerCase(), {})
+  context.CoreContract.load(event.params.core, {})
   context.Bet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
   context.LiveBet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
 });

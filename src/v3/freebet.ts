@@ -14,10 +14,10 @@ import { VERSION_V3 } from "../constants";
 import { getEntityId } from "../utils/schema";
 
 FreeBetv3Contract_NewBet_loader(({ event, context }) => {
-  context.CoreContract.load(event.params.core.toLowerCase(), {});
+  context.CoreContract.load(event.params.core, {});
  });
 FreeBetv3Contract_NewBet_handlerAsync(async ({ event, context }) => {
-  const coreContractEntity = await context.CoreContract.get(event.params.core.toLowerCase())
+  const coreContractEntity = await context.CoreContract.get(event.params.core)
 
   if (!coreContractEntity) {
     context.log.error('v3 handleNewBet (freebet) coreContractEntity not found. coreContractEntityId = ${event.params.core}')
@@ -57,10 +57,10 @@ FreeBetv3Contract_NewBet_handlerAsync(async ({ event, context }) => {
 });
 
 FreeBetv3Contract_BettorWin_loader(({ event, context }) => { 
-  context.CoreContract.load(event.params.core.toLowerCase(), {});
+  context.CoreContract.load(event.params.core, {});
 });
 FreeBetv3Contract_BettorWin_handlerAsync(async ({ event, context }) => {
-  const coreContractEntity = context.CoreContract.get(event.params.core.toLowerCase())
+  const coreContractEntity = context.CoreContract.get(event.params.core)
 
   if (!coreContractEntity) {
     context.log.error('v3 handleBettorWin coreContractEntity not found. coreContractEntityId = {event.params.core}')

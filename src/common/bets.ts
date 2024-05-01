@@ -349,18 +349,18 @@ export function bettorWin(
 ): void {
   const betEntityId = getEntityId(coreAddress, tokenId.toString())
 
-  const coreContractEntity = context.CoreContract.get(coreAddress.toLowerCase())
+  const coreContractEntity = context.CoreContract.get(coreAddress)
 
   if (!coreContractEntity) {
     context.log.error('bettorWin coreContractEntity not found. coreContractEntityId = {}')
     return
   }
 
-  if (coreContractEntity.type_ === CORE_TYPE_LIVE) {
+  if (coreContractEntity.type_.toLowerCase() === CORE_TYPE_LIVE) {
     const liveBetEntity = context.LiveBet.get(betEntityId)
 
     if (!liveBetEntity) {
-      context.log.error(`v1 handleBettorWin liveBetEntity not found in bettorWin. betEntity = ${betEntityId}`)
+      context.log.error(`handleBettorWin liveBetEntity not found in bettorWin. betEntity = ${betEntityId}`)
       return
     }
 
@@ -379,10 +379,9 @@ export function bettorWin(
     const betEntity = context.Bet.get(betEntityId)
 
     if (!betEntity) {
-      context.log.error(`v1 handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
+      context.log.error(`handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
       return
     }
-
     context.Bet.set({
       ...betEntity,
       isRedeemed: true,
