@@ -24,6 +24,7 @@ export async function transferBet(
 
   // burn nft
   if (to === ZERO_ADDRESS) {
+    context.log.debug(`trasfer bet burning`)
     return null
   }
 
@@ -37,9 +38,7 @@ export async function transferBet(
 
     // TODO remove later
     if (!azuroBetContractEntity) {
-      // SEE 
-      context.log.error(`transferBet azuroBetContractEntity not found. azuroBetAddress = ${azuroBetAddress}`)
-      return null
+      throw new Error(`transferBet azuroBetContractEntity not found. azuroBetAddress = ${azuroBetAddress}`)
     }
 
     finalCoreAddress = azuroBetContractEntity.core_id
@@ -49,8 +48,7 @@ export async function transferBet(
   const betEntity = await context.Bet.get(betEntityId)
 
   if (!betEntity) {
-    context.log.error(`transferBet betEntity not found. betEntity = ${betEntityId}`)
-    return null
+    throw new Error(`transferBet betEntity not found. betEntity = ${betEntityId}`)
   }
 
   let actor = betEntity.actor

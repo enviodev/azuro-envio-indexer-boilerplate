@@ -127,8 +127,9 @@ LPv2Contract_NewGame_loader(({ event, context }) => {
 }); // new game v2 vs v3? // assuming v2 for now
 LPv2Contract_NewGame_handlerAsync(async ({ event, context }) => {
 
+  
   const network = 'gnosis' // TODO fix
-
+  
   await createGame(
     event.srcAddress,
     event.params.gameId,

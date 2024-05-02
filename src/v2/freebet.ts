@@ -43,10 +43,10 @@ async function getOrCreateFreebetContract(
 
   return createFreebetContractEntity(
     chainId.toString(),
-    freebetContractAddress, 
-    lp, 
-    name, 
-    null, 
+    freebetContractAddress,
+    lp,
+    name,
+    null,
     null,
     context,
   )
@@ -85,6 +85,7 @@ FreeBetContract_FreeBetMinted_loader(({ event, context }) => {
   context.FreebetContract.load(event.srcAddress, {});
 });
 FreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
+
   const freebetContractEntity = await getOrCreateFreebetContract(event.srcAddress, event.chainId, context)
 
   if (!freebetContractEntity) {
@@ -92,6 +93,12 @@ FreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
   }
 
   const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id))!
+
+  // struct Bet {
+  //   uint128 amount; // Maximum bet amount
+  //   uint64 minOdds; // Minimum allowed betting odds
+  //   uint64 durationTime; // Shelf life
+  // }
 
   createFreebet(
     VERSION_V2,
@@ -115,7 +122,7 @@ FreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
 
 FreeBetContract_FreeBetMintedBatch_loader(({ event, context }) => {
   context.FreebetContract.load(event.srcAddress, {});
- });
+});
 FreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
   const freebetContractEntity = await getOrCreateFreebetContract(event.srcAddress, event.chainId, context)
 
@@ -127,6 +134,12 @@ FreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
 
   for (let i = 0; i < event.params.ids.length; i++) {
     // parse FreeBetMintedBatch to multiple FreeBetMinted
+
+    // struct Bet {
+    //   uint128 amount; // Maximum bet amount
+    //   uint64 minOdds; // Minimum allowed betting odds
+    //   uint64 durationTime; // Shelf life
+    // }
 
     createFreebet(
       VERSION_V2,
@@ -151,7 +164,7 @@ FreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) => {
 
 FreeBetContract_FreeBetRedeemed_loader(({ event, context }) => {
   context.CoreContract.load(event.params.core, {});
- });
+});
 FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.params.core)
 
@@ -159,7 +172,7 @@ FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
     context.log.error(`v2 handleFreeBetRedeemed coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
     return
   }
-  
+
   const freebetEntity = await redeemFreebet(
     event.srcAddress,
     event.params.id,
@@ -184,14 +197,14 @@ FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
   )
 });
 
-FreeBetContract_FreeBetReissued_loader(({ event, context }) => { 
+FreeBetContract_FreeBetReissued_loader(({ event, context }) => {
   context.Freebet.load(getEntityId(event.srcAddress, event.params.id.toString()), {});
 });
 FreeBetContract_FreeBetReissued_handler(({ event, context }) => {
   reissueFreebet(event.srcAddress, event.params.id, event.blockNumber, context)
 });
 
-FreeBetContract_Transfer_loader(({ event, context }) => { 
+FreeBetContract_Transfer_loader(({ event, context }) => {
   context.Freebet.load(getEntityId(event.srcAddress, event.params.tokenId.toString()), {});
 });
 FreeBetContract_Transfer_handler(({ event, context }) => {

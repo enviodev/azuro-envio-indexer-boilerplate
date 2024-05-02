@@ -74,7 +74,7 @@ export async function createGame(
     createBlockTimestamp: bigint,
     chainId: number,
     context: CoreContract_ConditionCreatedEvent_handlerContextAsync | LPv2Contract_NewGameEvent_handlerContext,
-): Promise<GameEntity | null> {
+): Promise<GameEntity> {
 
     let data: IPFSMatchDetails | null = null
 
@@ -86,50 +86,39 @@ export async function createGame(
 
         const hexStr = ipfsHashBytes.slice(2);
 
-        if (hexStr.length == 64) {
-            // Identifier or hash
-            const ipfsHash = byte32ToIPFSCIDv0(hexStr)
+        // Identifier or hash
+        const ipfsHash = byte32ToIPFSCIDv0(hexStr)
 
-            if (ipfsHash[0] !== 'Q') {
-                throw new Error(`createGame (v2) IPFS hash doesn\'t start with Q ${ipfsHash}`)
-            }
+        if (ipfsHash[0] !== 'Q') {
+            throw new Error(`createGame (v2) IPFS hash doesn\'t start with Q ${ipfsHash}`)
+        }
 
-            data = await tryFetchIpfsFile(ipfsHash, chainId, context)
+        data = await tryFetchIpfsFile(ipfsHash, chainId, context)
 
-            if (data === null) {
-                context.log.error(`createGame (v2) IPFS failed to convert to object. Hash: ${ipfsHash}`)
-                return null
-            }
-        } else {
-            // JSON Data
-            const cache = Cache.init(CacheCategory.IPFSMatchDetails, chainId);
-            data = decodeJSON(hexStr) as IPFSMatchDetails;
-            // no need to cache, can remove
-            // cache.add({ [hexStr]: entry as any });
+        if (data === null) {
+            throw new Error(`createGame (v2) IPFS failed to convert to object. Hash: ${ipfsHash}`)
         }
     }
-
 
     // V3
     if (dataBytes !== null) {
-        context.log.debug(`v3 createGame bytes data: ${dataBytes}`)
         try {
-            data = JSON.parse(dataBytes) as IPFSMatchDetails;
+            // JSON Data already
+            data = decodeJSON(dataBytes.slice(2)) as IPFSMatchDetails;
         } catch (error) {
-            context.log.error(`createGame (v3) bytes data failed to parse json. data: ${dataBytes}. \n${error}`,);
-            return null;
+            throw new Error(`createGame (v3) bytes data failed to parse json. data: ${dataBytes}. \n${error}`,);
         }
 
         if (data === null) {
-            context.log.error(`createGame (v3) bytes data failed to convert to object. data: ${dataBytes}`);
-            return null;
+            throw new Error(`createGame (v3) bytes data failed to convert to object. data: ${dataBytes}`);
         }
         // Proceed with using 'data' as a JavaScript object
+
+        context.log.debug(`v3 data: ${JSON.stringify(data)}`)
     }
 
     if (data === null) {
-        throw new Error('Couldn\'t fetch createGame data from IPFS')
-        // return null
+        throw new Error('createGame data is null')
     }
 
     let sportId: bigint | null = null
@@ -147,8 +136,7 @@ export async function createGame(
     }
 
     if (sportId === null) {
-        context.log.error('createGame sportId is null')
-        return null
+        throw new Error('createGame sportId is null')
     }
 
     let countryName = DEFAULT_COUNTRY
@@ -191,15 +179,13 @@ export async function createGame(
     }
 
     if (leagueName === null) {
-        context.log.error('createGame leagueName is null')
-        return null
+        throw new Error('createGame leagueName is null')
     }
 
     const sportHubName = sportHubs.get(sportId)
 
     if (!sportHubName) {
-        context.log.error('createGame sportHubName is null')
-        return null
+        throw new Error('createGame sportHubName is null')
     }
 
     let sportHubEntity = await context.SportHub.get(sportHubName!)
@@ -218,8 +204,7 @@ export async function createGame(
     if (!sportEntity) {
         const sportName = sports.get(sportId)
         if (!sportName) {
-            context.log.error('createGame sportName is null')
-            return null
+            throw new Error('createGame sportName is null')
         }
 
         sportEntity = {
@@ -269,8 +254,7 @@ export async function createGame(
     if (gameId === null) {
         const gameIdObjectField = data.gameId
         if (!gameIdObjectField || typeof gameIdObjectField !== 'number') {
-            context.log.error('createGame gameIdObjectField is null')
-            return null
+            throw new Error('createGame gameIdObjectField is null')
         }
         gameId = BigInt(gameIdObjectField)
     }

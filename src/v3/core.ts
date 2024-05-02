@@ -208,14 +208,14 @@ Corev3Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
     outcomesEntities = outcomesEntities.concat([outcomeEntity])
   }
 
-  updateConditionOdds(
-      VERSION_V3,
-      conditionEntity,
-      outcomesEntities,
-      conditionData.virtualFunds,
-      event.blockNumber,
-      context,
-    )
+  // updateConditionOdds(
+  //     VERSION_V3,
+  //     conditionEntity,
+  //     outcomesEntities,
+  //     conditionData.virtualFunds,
+  //     event.blockNumber,
+  //     context,
+  //   )
   throw new Error(`v3 core event address: ${event.srcAddress}`)
 });
 

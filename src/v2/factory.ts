@@ -8,14 +8,19 @@ import {
 } from "../../generated/src/Handlers.gen";
 import { connectCore, createCoreEntity, createExpressPrematchRelationEntity, getPrematchAddressByExpressAddressV2, getPrematchAddressByExpressAddressV3 } from "../common/factory";
 import { createPoolEntity } from "../common/pool";
-import { CORE_TYPES, CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_LIVE, CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2, VERSION_V2 } from "../constants";
+import { CORE_TYPES, CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_LIVE, CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2, LPV3_CREATION_BLOCK, VERSION_V2 } from "../constants";
 import { getAzuroBetAddress, getTokenForPool } from "../contracts/lpv1";
 import { LP_WHITELIST } from "../whitelists";
 
 FactoryContract_NewCore_loader(async ({ event, context }) => {
   const coreAddress = event.params.core
   const chainId = event.chainId
-  const coreType = event.params.coreType.toLowerCase()
+  const coreType = CORE_TYPES.get(event.params.coreType)
+
+  if (!coreType) {
+    throw new Error(`no core type!!!! ${coreType} ${event.params.coreType} ${event.params.core}`)
+  }
+
   const coreTypes = [CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2, CORE_TYPE_LIVE]
 
   if (coreTypes.includes(coreType)) {
@@ -37,6 +42,9 @@ FactoryContract_NewCore_loader(async ({ event, context }) => {
   }
   else if (coreType === CORE_TYPE_EXPRESS_V2) {
     context.contractRegistration.addExpressv3(coreAddress);
+  } else {
+    context.log.debug(`transaction hash: ${event.transactionHash}`)
+    throw new Error(`unknown core type in factory v2: ${coreType}`)
   }
 
 });
@@ -51,8 +59,8 @@ FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
 
   const coreType = CORE_TYPES.get(event.params.coreType)
 
-  if (coreType === null) {
-    return
+  if (!coreType) {
+    throw new Error(`no core type!!!! ${coreType} ${event.params.coreType} ${event.params.core}`)
   }
 
   const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(liquidityPoolAddress))!
@@ -83,11 +91,20 @@ FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
 });
 
 FactoryContract_NewPool_loader(async ({ event, context }) => {
-  context.contractRegistration.addLPv2(event.params.lp);
+  if (event.blockNumber < LPV3_CREATION_BLOCK) {
+    context.contractRegistration.addLPv2(event.params.lp);
+  } else {
+    context.contractRegistration.addLPv3(event.params.lp);
+  }
+
+  const coreType = CORE_TYPES.get(event.params.coreType)
+  if (!coreType) {
+    throw new Error(`no core type!!!! ${coreType} ${event.params.coreType} ${event.params.core}`)
+  }
 
   const coreAddress = event.params.core
   const chainId = event.chainId
-  const coreType = event.params.coreType.toLowerCase()
+  
   const coreTypes = [CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2, CORE_TYPE_LIVE]
 
   if (coreTypes.includes(coreType)) {
@@ -109,6 +126,9 @@ FactoryContract_NewPool_loader(async ({ event, context }) => {
   }
   else if (coreType === CORE_TYPE_EXPRESS_V2) {
     context.contractRegistration.addExpressv3(coreAddress);
+  } else {
+    context.log.debug(`transaction hash: ${event.transactionHash}`)
+    throw new Error(`unknown core type in factory v2: ${coreType}`)
   }
 
 });
@@ -125,7 +145,7 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
 
   const coreType = CORE_TYPES.get(event.params.coreType)
 
-  if (coreType === null) {
+  if (!coreType) {
     context.log.debug(`no core type!!!!`)
     throw new Error(`no core type!!!! ${coreType} ${event.params.coreType} ${event.params.core}`)
     return

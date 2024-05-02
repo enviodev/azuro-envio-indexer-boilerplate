@@ -41,6 +41,7 @@ contracts:
       - event: FreeBetReissued(address indexed receiver, uint256 indexed id, (uint128,uint64,uint64) bet)
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - name: Azurobets
+    address: 0xFd9E5A2A1bfc8B57A288A3e12E2c601b0Cc7e476
     handler: src/v1/azurobets.ts
     events:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
@@ -68,6 +69,7 @@ contracts:
     handler: src/v2/express.ts
     events:
       - event: NewBet(address indexed bettor, uint256 indexed betId,(address,uint64,uint128,uint48,bool,(uint256,uint64)[] ,uint64[]) bet) # interesting stress test - struct within struct event emit
+        isAsync: true
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
         isAsync: true
   - name: LPv2
@@ -83,9 +85,29 @@ contracts:
       - event: LiquidityManagerChanged(address newLiquidityManager)
       - event: LiquidityRemoved(address indexed account, uint48 indexed depositId, uint256 amount)
         isAsync: true
-      # - event: NewGame(uint256 indexed gameId, uint64 startsAt, bytes data) # TODO: This only imported v2 not v3 version which seems to be the same contract
-      - event: NewGame (uint256 indexed gameId, bytes32 ipfsHash, uint64 startsAt)
+      # - event: NewGame(uint256 indexed gameId, uint64 startsAt, bytes data) # v3
+      #   isAsync: true
+      - event: NewGame (uint256 indexed gameId, bytes32 ipfsHash, uint64 startsAt) # v2
         isAsync: true
+      - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+      - event: WithdrawTimeoutChanged(uint64 newWithdrawTimeout)
+  - name: LPv3
+    # address: 
+    handler: src/v3/lp.ts
+    events:
+      - event: BettorWin(address indexed core, address indexed bettor, uint256 tokenId, uint256 amount)
+      - event: GameCanceled(uint256 indexed gameId)
+      - event: GameShifted(uint256 indexed gameId, uint64 newStart)
+      - event: LiquidityAdded(address indexed account, uint48 indexed depositId, uint256 amount)
+        isAsync: true
+      - event: LiquidityDonated(address indexed account, uint48 indexed depositId, uint256 amount)
+      - event: LiquidityManagerChanged(address newLiquidityManager)
+      - event: LiquidityRemoved(address indexed account, uint48 indexed depositId, uint256 amount)
+        isAsync: true
+      - event: NewGame(uint256 indexed gameId, uint64 startsAt, bytes data) # v3
+        isAsync: true
+      # - event: NewGame (uint256 indexed gameId, bytes32 ipfsHash, uint64 startsAt) # v2
+      #   isAsync: true
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
       - event: WithdrawTimeoutChanged(uint64 newWithdrawTimeout)
   - name: Factory
@@ -96,6 +118,7 @@ contracts:
       - event: NewPool(address indexed lp, address indexed core, string indexed coreType, address access)
         isAsync: true
   - name: FreeBet
+    address: 0xB425E555492eE36c5A2918481EbbcF04AE73682b
     handler: src/v2/freebet.ts
     events:
       - event: BettorWin(address indexed core, address indexed bettor, uint256 indexed azuroBetId, uint128 amount)
