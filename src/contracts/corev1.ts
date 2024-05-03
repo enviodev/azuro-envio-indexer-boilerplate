@@ -1,6 +1,6 @@
 import { Web3 } from "web3";
 
-import { Cache, CacheCategory } from "../lib/cache";
+import { Cache, CacheCategory } from "../lib/cacheConditionv1";
 
 import { CHAIN_CONSTANTS } from "../constants";
 import { ConditionV1, ConditionV1Response } from "../utils/types";
