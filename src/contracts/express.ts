@@ -13,7 +13,7 @@ export async function getPrematchAddress(
 ): Promise<{
   readonly preMatchAddress: string;
 }> {
-  const cache = Cache.init(CacheCategory.ExpressPrematchAddress, chainId);
+  const cache = await Cache.init(CacheCategory.ExpressPrematchAddress, chainId);
   const _addr = await cache.read(contractAddress);
 
   if (_addr) {
@@ -51,13 +51,13 @@ export async function calcPayout(
   tokenId: bigint,
   chainId: number
 ): Promise<{
-  readonly payout: bigint;
+  readonly payout: string;
 }> {
-  const cache = Cache.init(CacheCategory.ExpressCalcPayout, chainId);
-  const _addr = await cache.read(contractAddress.toLowerCase());
+  const cache = await Cache.init(CacheCategory.ExpressCalcPayout, chainId);
+  const _payout = await cache.read(contractAddress.toLowerCase());
 
-  if (_addr) {
-    return _addr;
+  if (_payout) {
+    return _payout;
   }
 
   // RPC URL
@@ -70,13 +70,16 @@ export async function calcPayout(
   const express = new web3.eth.Contract(contractABI, contractAddress);
 
   try {
-    const _payout = (await express.methods
+    const payout = (await express.methods
       .calcPayout(tokenId)
-      .call()) as unknown;
-    const payout = _payout as bigint;
+      .call()) as unknown as bigint;
+
+    if (!payout) {
+      throw new Error("payout is not a valid number");
+    }
 
     const entry = {
-      payout: BigInt(payout),
+      payout: payout.toString(),
     } as const;
 
     cache.add({ [contractAddress.toLowerCase()]: entry as any });

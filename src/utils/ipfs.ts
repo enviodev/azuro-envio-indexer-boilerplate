@@ -41,7 +41,7 @@ export async function tryFetchIpfsFile(
 ): Promise<IPFSMatchDetails | null> {
   // https://gateway.ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1
 
-  const cache = Cache.init(CacheCategory.IPFSMatchDetails, chainId);
+  const cache = await Cache.init(CacheCategory.IPFSMatchDetails, chainId);
   const matchDetails = await cache.read(contentHash);
 
   if (matchDetails) {

@@ -16,7 +16,7 @@ export async function getErc20TokenDetails(
   readonly decimals: number;
   readonly symbol: string;
 }> {
-  const cache = Cache.init(CacheCategory.Token, chainId);
+  const cache = await Cache.init(CacheCategory.Token, chainId);
   const token = await cache.read(contractAddress.toLowerCase());
 
   if (token) {

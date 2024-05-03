@@ -33,6 +33,7 @@ FactoryContract_NewCore_loader(async ({ event, context }) => {
   }
   else if (coreType === CORE_TYPE_PRE_MATCH_V2) {
     context.contractRegistration.addCorev3(coreAddress);
+    // context.contractRegistration.addCorev3('0xa416b49C0E513FFdd25198F709Ccb553256642dc')
   }
   else if (coreType === CORE_TYPE_LIVE) {
     context.contractRegistration.addLiveCorev1(coreAddress);
@@ -43,12 +44,12 @@ FactoryContract_NewCore_loader(async ({ event, context }) => {
   else if (coreType === CORE_TYPE_EXPRESS_V2) {
     context.contractRegistration.addExpressv3(coreAddress);
   } else {
-    context.log.debug(`transaction hash: ${event.transactionHash}`)
-    throw new Error(`unknown core type in factory v2: ${coreType}`)
+    throw new Error(`unknown core type in factory v2: ${coreType} transactionHash ${event.transactionHash}`)
   }
 
 });
 FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
+  context.log.debug(`new factory address ${event.srcAddress}`)
   const liquidityPoolAddress = event.params.lp
 
   if (LP_WHITELIST.indexOf(liquidityPoolAddress.toLowerCase()) === -1) {
@@ -91,6 +92,7 @@ FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
 });
 
 FactoryContract_NewPool_loader(async ({ event, context }) => {
+  context.log.debug(`factory address ${event.srcAddress}`)
   if (event.blockNumber < LPV3_CREATION_BLOCK) {
     context.contractRegistration.addLPv2(event.params.lp);
   } else {
@@ -117,6 +119,7 @@ FactoryContract_NewPool_loader(async ({ event, context }) => {
   }
   else if (coreType === CORE_TYPE_PRE_MATCH_V2) {
     context.contractRegistration.addCorev3(coreAddress);
+    // context.contractRegistration.addCorev3('0xa416b49C0E513FFdd25198F709Ccb553256642dc')
   }
   else if (coreType === CORE_TYPE_LIVE) {
     context.contractRegistration.addLiveCorev1(coreAddress);
@@ -127,13 +130,14 @@ FactoryContract_NewPool_loader(async ({ event, context }) => {
   else if (coreType === CORE_TYPE_EXPRESS_V2) {
     context.contractRegistration.addExpressv3(coreAddress);
   } else {
-    context.log.debug(`transaction hash: ${event.transactionHash}`)
-    throw new Error(`unknown core type in factory v2: ${coreType}`)
+    throw new Error(`unknown core type in factory v2: ${coreType} transactionHash ${event.transactionHash}`)
   }
 
 });
 FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
   const liquidityPoolAddress = event.params.lp
+
+  context.log.debug(`factory address ${event.srcAddress}`)
 
   if (LP_WHITELIST.indexOf(liquidityPoolAddress.toLowerCase()) === -1) {
     context.log.warn(`v2 handleNewPool skip ${liquidityPoolAddress} because it isn\'t whitelisted`)

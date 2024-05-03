@@ -15,7 +15,7 @@ export const CHAIN_CONSTANTS: Record<number, chainConstants> = {
   100: GOERLI_CHAIN_CONSTANTS,
 };
 
-export const LPV3_CREATION_BLOCK=30176898
+export const LPV3_CREATION_BLOCK=30_176_898
 
 export const VERSION_V1 = "V1";
 export const VERSION_V2 = "V2";

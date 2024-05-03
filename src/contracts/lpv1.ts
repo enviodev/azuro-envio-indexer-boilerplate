@@ -14,7 +14,7 @@ export async function getTokenForPool(
 ): Promise<{
   readonly token: string;
 }> {
-  const cache = Cache.init(CacheCategory.LPv1, chainId);
+  const cache = await Cache.init(CacheCategory.LPv1, chainId);
   const lpv1 = await cache.read(contractAddress.toLowerCase());
 
   if (lpv1) {
@@ -52,10 +52,8 @@ export async function getAzuroBetAddress(
 ): Promise<{
   readonly azuroBetAddress: string;
 }> {
-  // console.log("getAzuroBetAddress", contractAddress)
-
-  const cache = Cache.init(CacheCategory.LPv1Bet, chainId);
-  const lpv1 = await cache.read(contractAddress.toLowerCase());
+  const cache = await Cache.init(CacheCategory.LPv1Bet, chainId);
+  const lpv1 = await cache.read(contractAddress);
 
   if (lpv1) {
     return lpv1;
@@ -71,13 +69,17 @@ export async function getAzuroBetAddress(
   const _lpv1 = new web3.eth.Contract(contractABI, contractAddress);
 
   try {
-    const azuroBetAddress = await _lpv1.methods.azuroBet().call();
+    const azuroBetAddress = await _lpv1.methods.azuroBet().call() as unknown as string;
+
+    if (!azuroBetAddress) {
+      throw new Error("azuroBetAddress is not a valid address");
+    }
 
     const entry = {
-      azuroBetAddress: azuroBetAddress?.toString().toLowerCase() || "",
+      azuroBetAddress: azuroBetAddress,
     } as const;
 
-    cache.add({ [contractAddress.toLowerCase()]: entry as any });
+    cache.add({ [contractAddress]: entry as any });
 
     return entry;
   } catch (err) {
@@ -94,7 +96,7 @@ export async function getNodeWithdrawAmount(
 ): Promise<{
   readonly withdrawAmount: string;
 }> {
-  const cache = Cache.init(CacheCategory.LPv1NodeWithdrawView, chainId);
+  const cache = await Cache.init(CacheCategory.LPv1NodeWithdrawView, chainId);
   const lpv1 = await cache.read(contractAddress.toLowerCase());
 
   if (lpv1) {

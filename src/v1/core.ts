@@ -84,7 +84,6 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 CoreContract_ConditionResolved_loader(({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {loadLiquidityPool: true})
   context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
-  // context.Outcome.load(, {})
 });
 CoreContract_ConditionResolved_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId

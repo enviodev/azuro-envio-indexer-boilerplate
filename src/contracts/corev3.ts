@@ -23,7 +23,7 @@ export async function getConditionV3FromId(
     _conditionId
   );
   const conditionId = _conditionId.toString();
-  const cache = Cache.init(CacheCategory.ConditionV3, chainId);
+  const cache = await Cache.init(CacheCategory.ConditionV3, chainId);
   const _condition = await cache.read(conditionId);
 
   if (_condition) {

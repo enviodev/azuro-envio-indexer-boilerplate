@@ -19,6 +19,15 @@ export function createCoreEntity(
   }
   // 0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d v1
   // 0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e v2
+  // 0x7f3F3f19c4e4015fd9Db2f22e653c766154091EF v3
+
+  // if (coreAddress.toLowerCase() === '0x7f3F3f19c4e4015fd9Db2f22e653c766154091EF'.toLowerCase()) {
+  //   context.CoreContract.set({
+  //     ...coreContractEntity,
+  //     id: '0xa416b49C0E513FFdd25198F709Ccb553256642dc',
+  //   })
+  // }
+  context.log.debug(`create core entity ${coreAddress}`)
   context.CoreContract.set(coreContractEntity) 
   return coreContractEntity
 }

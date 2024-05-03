@@ -143,8 +143,7 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v3 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    throw new Error(`v3 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
   }
 
   const lp = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
@@ -155,6 +154,8 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
     event.params.outcomeId.toString(),
   )
   const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!
+
+  context.log.debug(`creating v3 bet with id ${getEntityId(coreAddress, event.params.tokenId.toString())}`)
 
   await createBet(
     VERSION_V3,
@@ -175,6 +176,8 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
     event.params.funds,
     context
   )
+
+  throw new Error(`v3 is logging new bet: ${event.srcAddress}`)
 });
 
 Corev3Contract_OddsChanged_loader(({ event, context }) => { });

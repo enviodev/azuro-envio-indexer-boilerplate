@@ -19,7 +19,7 @@ export async function getLiveConditionFromId(
   console.log("livecore", contractAddress);
 
   const conditionId = _conditionId.toString();
-  const cache = Cache.init(CacheCategory.LiveCondition, chainId);
+  const cache = await Cache.init(CacheCategory.LiveCondition, chainId);
   const _condition = await cache.read(conditionId);
 
   if (_condition) {

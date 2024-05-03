@@ -15,13 +15,13 @@ import { getEntityId } from "../utils/schema";
 
 FreeBetv3Contract_NewBet_loader(({ event, context }) => {
   context.CoreContract.load(event.params.core, {});
+  context.FreebetContract.load(event.srcAddress, {loadLiquidityPool: true});
  });
 FreeBetv3Contract_NewBet_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.params.core)
 
   if (!coreContractEntity) {
-    context.log.error('v3 handleNewBet (freebet) coreContractEntity not found. coreContractEntityId = ${event.params.core}')
-    return
+    throw new Error(`v3 handleNewBet (freebet) coreContractEntity not found. coreContractEntityId = ${event.params.core} freebetAddress = ${event.srcAddress}`)
   }
 
   const freebetContractEntity = (await context.FreebetContract.get(event.srcAddress))!
@@ -63,9 +63,7 @@ FreeBetv3Contract_BettorWin_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = context.CoreContract.get(event.params.core)
 
   if (!coreContractEntity) {
-    context.log.error('v3 handleBettorWin coreContractEntity not found. coreContractEntityId = {event.params.core}')
-
-    return
+    throw new Error(`v3 handleBettorWin coreContractEntity not found in bettorWin. coreContractEntityId = ${event.params.core} FreebetAddress = ${event.srcAddress}`)
   }
 
   const freebetEntityId = getEntityId(event.srcAddress, event.params.freeBetId.toString())
@@ -73,8 +71,7 @@ FreeBetv3Contract_BettorWin_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!freebetEntity) {
-    context.log.error(`v3 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
-    return
+    throw new Error(`v3 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId} freebetAddress = ${event.srcAddress}`)
   }
 
   await withdrawFreebet(freebetEntityId, event.blockTimestamp, context)

@@ -16,7 +16,7 @@ export async function getLPAndNameOfFreebetV2Details(
   readonly name: string;
   readonly lp: string;
 }> {
-  const cache = Cache.init(CacheCategory.FreebetV1Contract, chainId);
+  const cache = await Cache.init(CacheCategory.FreebetV1Contract, chainId);
   const details = await cache.read(contractAddress.toLowerCase());
 
   if (details) {

@@ -22,12 +22,15 @@ import {
   LPv2Contract_LiquidityRemoved_handlerAsync,
   LPv2Contract_NewGame_handlerAsync,
   LPv2Contract_LiquidityAdded_handlerAsync,
+  LPv2Contract_Upgraded_handler,
+  LPv2Contract_Upgraded_loader,
 } from "../../generated/src/Handlers.gen";
 import { bettorWin } from "../common/bets";
 import { cancelGame, createGame, shiftGame } from "../common/games";
 import { changeWithdrawalTimeout, depositLiquidity, transferLiquidity, updateLiquidityManager, withdrawLiquidity } from "../common/pool";
 import { ZERO_ADDRESS } from "../constants";
 import { getNodeWithdrawAmount } from "../contracts/lpv1";
+import { LP } from "../src/TestHelpers.gen";
 import { getEntityId } from "../utils/schema";
 
 LPv2Contract_BettorWin_loader(({ event, context }) => {
@@ -127,7 +130,6 @@ LPv2Contract_NewGame_loader(({ event, context }) => {
 }); // new game v2 vs v3? // assuming v2 for now
 LPv2Contract_NewGame_handlerAsync(async ({ event, context }) => {
 
-  
   const network = 'gnosis' // TODO fix
   
   await createGame(
@@ -162,3 +164,10 @@ LPv2Contract_WithdrawTimeoutChanged_loader(({ event, context }) => {
 LPv2Contract_WithdrawTimeoutChanged_handler(({ event, context }) => {
   changeWithdrawalTimeout(event.srcAddress, event.params.newWithdrawTimeout, context)
 });
+
+// LPv2Contract_Upgraded_loader(({ event, context }) => {
+//   throw new Error(`LPv2Contract_Upgraded_loader not implemented ${event.srcAddress}`)
+// })
+// LPv2Contract_Upgraded_handler(({ event, context }) => {
+//   throw new Error('LPv2Contract_Upgraded_handler not implemented')
+// })

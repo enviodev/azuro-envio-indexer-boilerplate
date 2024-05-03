@@ -64,10 +64,10 @@ type ShapeIPFSMatchDetails = Shape &
 type ShapeExpressPreMatchAddress = Shape &
   Record<Address, { preMatchAddress: string }>;
 
-type ShapeExpressCalcPayout = Shape & Record<Address, { payout: bigint }>;
+type ShapeExpressCalcPayout = Shape & Record<Address, { payout: string }>;
 
 export class Cache {
-  static init<C = CacheCategory>(
+  static async init<C = CacheCategory>(
     category: C,
     chainId: number | string | bigint
   ) {
@@ -101,6 +101,7 @@ export class Cache {
       ? ShapeExpressCalcPayout
       : ShapeRoot;
     const entry = new Entry<S>(`${category}${chainId.toString()}`);
+    await entry.createTableIfNotExists(); // Ensure the table is created before returning the entry
     return entry;
   }
 }
@@ -113,10 +114,9 @@ export class Entry<T extends Shape> {
 
   constructor(key: string) {
     this.key = key;
-    this.createTableIfNotExists();
   }
 
-  private async createTableIfNotExists() {
+  async createTableIfNotExists() {
     const query = `
       CREATE TABLE IF NOT EXISTS ${this.key} (
         id TEXT PRIMARY KEY,
