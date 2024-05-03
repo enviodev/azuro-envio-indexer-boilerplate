@@ -25,7 +25,7 @@ FactoryContract_NewCore_loader(async ({ event, context }) => {
 
   if (coreTypes.includes(coreType)) {
     const resp = await getAzuroBetAddress(coreAddress, chainId)
-    context.contractRegistration.addAzurobets(resp.azuroBetAddress)
+    context.contractRegistration.addAzurobetv2(resp.azuroBetAddress)
   }
 
   if (coreType === CORE_TYPE_PRE_MATCH) {
@@ -92,12 +92,7 @@ FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
 });
 
 FactoryContract_NewPool_loader(async ({ event, context }) => {
-  context.log.debug(`factory address ${event.srcAddress}`)
-  if (event.blockNumber < LPV3_CREATION_BLOCK) {
-    context.contractRegistration.addLPv2(event.params.lp);
-  } else {
-    context.contractRegistration.addLPv3(event.params.lp);
-  }
+  context.contractRegistration.addLPv2(event.params.lp);
 
   const coreType = CORE_TYPES.get(event.params.coreType)
   if (!coreType) {
@@ -111,7 +106,7 @@ FactoryContract_NewPool_loader(async ({ event, context }) => {
 
   if (coreTypes.includes(coreType)) {
     const resp = await getAzuroBetAddress(coreAddress, chainId)
-    context.contractRegistration.addAzurobets(resp.azuroBetAddress)
+    context.contractRegistration.addAzurobetv2(resp.azuroBetAddress)
   }
 
   if (coreType === CORE_TYPE_PRE_MATCH) {
