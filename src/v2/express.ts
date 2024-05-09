@@ -50,8 +50,7 @@ Expressv2Contract_NewBet_handlerAsync(async ({ event, context }) => {
 
     // TODO remove later
     if (!conditionEntity) {
-      context.log.error(`v2 handleNewBet express conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-      return
+      throw new Error(`v2 handleNewBet express conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
     }
 
     conditionEntities[i] = conditionEntity
@@ -61,8 +60,7 @@ Expressv2Contract_NewBet_handlerAsync(async ({ event, context }) => {
 
     // TODO remove later
     if (!outcomeEntity) {
-      context.log.error(`v2 handleNewBet express outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
-      return
+      throw new Error(`v2 handleNewBet express outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
     }
 
     outcomeEntities[i] = outcomeEntity

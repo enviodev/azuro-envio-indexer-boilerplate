@@ -130,7 +130,7 @@ LPContract_NewBet_handlerAsync(async ({ event, context }) => {
   const conditionEntity = await context.Condition.get(conditionEntityId)
 
   if (!conditionEntity) {
-    context.log.error(`v1 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+    throw new Error(`v1 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
     return
   }
 
@@ -138,9 +138,7 @@ LPContract_NewBet_handlerAsync(async ({ event, context }) => {
   const outcomeEntity = await context.Outcome.get(outcomeEntityId)
 
   if (!outcomeEntity) {
-    // throw new Error(`Outcome not found with id ${outcomeEntityId}`)
-    context.log.debug(`outcome entity not found with id ${outcomeEntityId}`)
-    return
+    throw new Error(`Outcome not found with id ${outcomeEntityId}`)
   }
 
   await createBet(

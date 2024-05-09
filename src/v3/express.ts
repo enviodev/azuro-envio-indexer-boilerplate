@@ -31,7 +31,7 @@
 
 //   //   // TODO remove later
 //   //   if (!conditionEntity) {
-//   //     context.log.error(`v3 handleNewBet express conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+//   //     throw new Error(`v3 handleNewBet express conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
 //   //     return
 //   //   }
 
@@ -42,7 +42,7 @@
 
 //   //   // TODO remove later
 //   //   if (!outcomeEntity) {
-//   //     context.log.error(`v3 handleNewBet express outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
+//   //     throw new Error(`v3 handleNewBet express outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
 //   //     return
 //   //   }
 

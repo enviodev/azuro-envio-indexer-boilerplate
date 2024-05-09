@@ -22,8 +22,8 @@ import {
   LPv2Contract_LiquidityRemoved_handlerAsync,
   LPv2Contract_NewGame_handlerAsync,
   LPv2Contract_LiquidityAdded_handlerAsync,
-  LPv2Contract_Upgraded_handler,
-  LPv2Contract_Upgraded_loader,
+  // LPv2Contract_Upgraded_handler,
+  // LPv2Contract_Upgraded_loader,
 } from "../../generated/src/Handlers.gen";
 import { bettorWin } from "../common/bets";
 import { cancelGame, createGame, shiftGame } from "../common/games";
@@ -86,9 +86,9 @@ LPv2Contract_LiquidityManagerChanged_loader(({ event, context }) => {
   context.LiquidityPoolContract.load(event.srcAddress)
 });
 LPv2Contract_LiquidityManagerChanged_handler(({ event, context }) => {
-  let newAddress: string | null = null
+  let newAddress: string | undefined = undefined
 
-  if (event.params.newLiquidityManager != ZERO_ADDRESS) {
+  if (event.params.newLiquidityManager !== ZERO_ADDRESS) {
     newAddress = event.params.newLiquidityManager
   }
 
@@ -129,9 +129,8 @@ LPv2Contract_LiquidityRemoved_handlerAsync(async ({ event, context }) => {
 LPv2Contract_NewGame_loader(({ event, context }) => {
 }); // new game v2 vs v3? // assuming v2 for now
 LPv2Contract_NewGame_handlerAsync(async ({ event, context }) => {
+  const network = 'gnosis'
 
-  const network = 'gnosis' // TODO fix
-  
   await createGame(
     event.srcAddress,
     event.params.gameId,
@@ -151,7 +150,7 @@ LPv2Contract_Transfer_loader(({ event, context }) => {
   context.LiquidityPoolNft.load(getEntityId(event.srcAddress, event.params.tokenId.toString()), {})
 });
 LPv2Contract_Transfer_handler(({ event, context }) => {
-  if (event.params.from != ZERO_ADDRESS) {
+  if (event.params.from === ZERO_ADDRESS) {
     return
   }
 

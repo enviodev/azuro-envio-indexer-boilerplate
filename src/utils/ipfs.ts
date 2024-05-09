@@ -59,7 +59,7 @@ export async function tryFetchIpfsFile(
       try {
         resp = await fetchIpfsFile(contentHash, "gateway.ipfs.io", context);
       } catch (e) {
-        context.log.error("Unable to fetch from any IPFS gateway");
+        throw new Error("Unable to fetch from any IPFS gateway");
       }
     }
   }
@@ -92,7 +92,7 @@ async function fetchIpfsFile(
       return resp;
     }
   } catch (e) {
-    context.log.error(`Unable to fetch IPFS data from ${baseUrl}`);
+    throw new Error(`Unable to fetch IPFS data from ${baseUrl}`);
     throw e;
   }
 }

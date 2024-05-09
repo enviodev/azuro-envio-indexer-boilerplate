@@ -44,9 +44,7 @@ Corev2Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!gameEntity) {
-    // throw new Error(`v2 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`)
-    context.log.error(`v2 ConditionCreated gameEntity not found, skipping create condition. gameEntityId = ${gameEntityId}`)
-    return
+    throw new Error(`v2 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`)
   }
 
   await createCondition(
@@ -82,8 +80,7 @@ Corev2Contract_ConditionResolved_handlerAsync(async({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v2 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    throw new Error(`v2 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
   }
 
   const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
@@ -114,8 +111,7 @@ Corev2Contract_ConditionStopped_handler(({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v2 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    throw new Error(`v2 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
   }
 
   pauseUnpauseCondition(
@@ -144,8 +140,7 @@ Corev2Contract_NewBet_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v2 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    throw new Error(`v2 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
   }
 
   const lp = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
@@ -197,7 +192,7 @@ Corev2Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v2 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`)
+    throw new Error(`v2 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`)
     return
   }
 

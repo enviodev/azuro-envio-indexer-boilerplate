@@ -14,7 +14,7 @@ contracts:
       - event: LpChanged(address indexed newLp)
         isAsync: true
   - name: LP
-    address: 0xac004b512c33D029cf23ABf04513f1f380B3FD0a
+    # address: 0xac004b512c33D029cf23ABf04513f1f380B3FD0a
     handler: src/v1/lp.ts
     events:
       - event: BetterWin(address indexed better, uint256 tokenId, uint256 amount)
@@ -42,18 +42,19 @@ contracts:
       - event: FreeBetReissued(address indexed receiver, uint256 indexed id, (uint128,uint64,uint64) bet)
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - name: Azurobets
-    address: 0xFd9E5A2A1bfc8B57A288A3e12E2c601b0Cc7e476
+    # address: 0xFd9E5A2A1bfc8B57A288A3e12E2c601b0Cc7e476
     handler: src/v1/azurobets.ts
     events:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
         isAsync: true
   - name: Azurobetv2
+    # address: 0xA3A1B460c68dc91c5B3f71f5487A76fac42858bf
     handler: src/v2/azurobet.ts
     events:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
         isAsync: true
   - name: Corev2
-    address: 0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e
+    # address: 0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e
     handler: src/v2/core.ts
     events:
       - event: ConditionCreated(uint256 indexed gameId, uint256 indexed conditionId)
@@ -66,7 +67,7 @@ contracts:
       - event: OddsChanged(uint256 indexed conditionId, uint64[2] newOdds)
         isAsync: true
   - name: Expressv2
-    address: 0x4eE3923484dfdc7Ea2F1c558c2c820a97a727636
+    # address: 0x4eE3923484dfdc7Ea2F1c558c2c820a97a727636
     handler: src/v2/express.ts
     events:
       - event: NewBet(address indexed bettor, uint256 indexed betId,(address,uint64,uint128,uint48,bool,(uint256,uint64)[] ,uint64[]) bet) # interesting stress test - struct within struct event emit
@@ -74,16 +75,15 @@ contracts:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
         isAsync: true
   - name: LPv2
-    address: 0x204e7371Ade792c5C006fb52711c50a7efC843ed
+    # address: 0x204e7371Ade792c5C006fb52711c50a7efC843ed
     handler: src/v2/lp.ts
     events:
-      - event: Upgraded(address indexed implementation)
       - event: BettorWin(address indexed core, address indexed bettor, uint256 tokenId, uint256 amount)
       - event: GameCanceled(uint256 indexed gameId)
       - event: GameShifted(uint256 indexed gameId, uint64 newStart)
       - event: LiquidityAdded(address indexed account, uint48 indexed depositId, uint256 amount)
         isAsync: true
-      - event: LiquidityDonated(address indexed account, uint48 indexed depositId, uint256 amount)
+      - event: LiquidityDonated(address indexed account, uint48 indexed depositId, uint256 amount) # not in TheGraph?
       - event: LiquidityManagerChanged(address newLiquidityManager)
       - event: LiquidityRemoved(address indexed account, uint48 indexed depositId, uint256 amount)
         isAsync: true
@@ -135,7 +135,7 @@ contracts:
       - event: FreeBetReissued(address indexed receiver, uint256 indexed id, (uint128,uint64,uint64) bet)
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - name: Corev3
-    address: 0x7f3F3f19c4e4015fd9Db2f22e653c766154091EF
+    # address: 0x7f3F3f19c4e4015fd9Db2f22e653c766154091EF
     handler: src/v3/core.ts
     events:
       - event: ConditionCreated(uint256 indexed gameId, uint256 indexed conditionId, uint64[] outcomes)
@@ -156,7 +156,7 @@ contracts:
       - event: Transfer( address indexed from,  address indexed to, uint256 indexed tokenId)
         isAsync: true
   - name: FreeBetv3
-    address: 0xAC2476Db1FD2f3E7D1dA7ccC3fAC7D1bD1c4B5a2
+    # address: 0xAC2476Db1FD2f3E7D1dA7ccC3fAC7D1bD1c4B5a2
     handler: src/v3/freebet.ts
     events:
       - event: NewBet(uint256 indexed freeBetId,address indexed core,address indexed bettor,uint256 azuroBetId,uint128 amount,uint64 minOdds,uint64 expiresAt)
@@ -176,6 +176,11 @@ contracts:
     handler: src/v3/freebetFactory.ts
     events:
       - event: NewFreeBet(address indexed freeBetAddress, address indexed lpAddress, address affiliate, address manager)
+  - name: UpgradeableBeacon
+    address: 0x68762711e7bea5716c715a9bb3978e56a842043a
+    handler: src/v2/upgradeableBeacon.ts
+    events:
+      - event: Upgraded(address indexed implementation)
 networks:
   - id: 100
     start_block: 0  
@@ -199,8 +204,8 @@ networks:
         address:
           - 0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e
       - name: Azurobetv2
-        address:
-          - 0xA3A1B460c68dc91c5B3f71f5487A76fac42858bf
+        # address:
+        #   - 0xA3A1B460c68dc91c5B3f71f5487A76fac42858bf
       - name: Expressv2
       - name: FreeBetFactory
         address:
@@ -209,5 +214,9 @@ networks:
       - name: Expressv3
       - name: FreeBetv3
       - name: LiveCorev1
+      - name: UpgradeableBeacon
+        address:
+          - 0x68762711e7bea5716c715a9bb3978e56a842043a
+
 
 # https://docs.bookmaker.xyz/

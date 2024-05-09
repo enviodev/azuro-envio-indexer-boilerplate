@@ -59,16 +59,14 @@ FreeBetContract_BettorWin_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.params.core)
 
   if (!coreContractEntity) {
-    context.log.error(`v2 handleBettorWin coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
-    return
+    throw new Error(`v2 handleBettorWin coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
   }
 
   const betEntityId = getEntityId(coreContractEntity.id, event.params.azuroBetId.toString())
   const betEntity = await context.Bet.get(betEntityId)
 
   if (!betEntity) {
-    context.log.error(`v2 handleBettorWin betEntity not found. betEntity = ${betEntityId}`)
-    return
+    throw new Error(`v2 handleBettorWin betEntity not found. betEntity = ${betEntityId}`)
   }
 
   const freebetEntityId = betEntity.freebet_id!
@@ -76,8 +74,7 @@ FreeBetContract_BettorWin_handlerAsync(async ({ event, context }) => {
   const freebetEntity = await withdrawFreebet(freebetEntityId, event.blockTimestamp, context)
 
   if (!freebetEntity) {
-    context.log.error(`v2 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
-    return
+    throw new Error(`v2 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
   }
 });
 
@@ -169,8 +166,7 @@ FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.params.core)
 
   if (!coreContractEntity) {
-    context.log.error(`v2 handleFreeBetRedeemed coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
-    return
+    throw new Error(`v2 handleFreeBetRedeemed coreContractEntity not found. coreContractEntityId = ${event.params.core}`)
   }
 
   const freebetEntity = await redeemFreebet(
@@ -183,8 +179,7 @@ FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
   )
 
   if (!freebetEntity) {
-    context.log.error(`v2 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id.toString()}`)
-    return
+    throw new Error(`v2 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id.toString()}`)
   }
 
   await linkBetWithFreeBet(

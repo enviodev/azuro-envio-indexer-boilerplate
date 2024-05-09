@@ -22,7 +22,7 @@ importers:
         version: 5.1.7
       web3:
         specifier: ^4.4.0
-        version: 4.4.0(typescript@5.2.2)
+        version: 4.4.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4)
     devDependencies:
       '@types/chai':
         specifier: ^4.3.11
@@ -62,7 +62,7 @@ importers:
         version: 0.2.0
       '@rescript/react':
         specifier: 0.12.1
-        version: 0.12.1(react-dom@18.2.0)(react@18.2.0)
+        version: 0.12.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@ryyppy/rescript-promise':
         specifier: 2.1.0
         version: 2.1.0
@@ -80,16 +80,16 @@ importers:
         version: 3.2.0(react@18.2.0)
       ink-big-text:
         specifier: 1.2.0
-        version: 1.2.0(ink@3.2.0)(react@18.2.0)
+        version: 1.2.0(ink@3.2.0(react@18.2.0))(react@18.2.0)
       ink-spinner:
         specifier: 4.0.3
-        version: 4.0.3(ink@3.2.0)(react@18.2.0)
+        version: 4.0.3(ink@3.2.0(react@18.2.0))(react@18.2.0)
       js-sdsl:
         specifier: 4.4.2
         version: 4.4.2
       node-fetch:
         specifier: 2.7.0
-        version: 2.7.0
+        version: 2.7.0(encoding@0.1.13)
       pino:
         specifier: 8.16.1
         version: 8.16.1
@@ -107,7 +107,7 @@ importers:
         version: 18.2.0
       rescript-envsafe:
         specifier: 1.3.0
-        version: 1.3.0(rescript-struct@4.1.1)(rescript@11.0.1)
+        version: 1.3.0(rescript-struct@4.1.1(rescript@11.0.1))(rescript@11.0.1)
       rescript-express:
         specifier: 0.4.1
         version: 0.4.1(express@4.19.2)
@@ -119,7 +119,7 @@ importers:
         version: 4.1.1(rescript@11.0.1)
       viem:
         specifier: 1.16.6
-        version: 1.16.6(typescript@5.2.2)
+        version: 1.16.6(typescript@5.2.2)(zod@3.22.4)
       yargs:
         specifier: 17.7.2
         version: 17.7.2
@@ -1742,9 +1742,6 @@ packages:
 
   sqlite3@5.1.7:
     resolution: {integrity: sha512-GGIyOiFaG+TUra3JIfkI/zGP8yZYLPQ0pl1bH+ODjiX57sPhrLU5sQJn1y9bDKZUFYkX1crlrPfSYt0BKKdkog==}
-    peerDependenciesMeta:
-      node-gyp:
-        optional: true
 
   ssri@8.0.1:
     resolution: {integrity: sha512-97qShzy1AiyxvPNIkLWoGua7xoQzzPjQ0HAH4B0rWKo7SZ6USuPcrUiAFrws0UH8RrbWmgq3LMTObhPIHbbBeQ==}
@@ -2236,7 +2233,7 @@ snapshots:
 
   '@opentelemetry/api@1.7.0': {}
 
-  '@rescript/react@0.12.1(react-dom@18.2.0)(react@18.2.0)':
+  '@rescript/react@0.12.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -2324,13 +2321,16 @@ snapshots:
   abbrev@1.1.1:
     optional: true
 
-  abitype@0.7.1(typescript@5.2.2):
+  abitype@0.7.1(typescript@5.2.2)(zod@3.22.4):
     dependencies:
       typescript: 5.2.2
+    optionalDependencies:
+      zod: 3.22.4
 
-  abitype@0.9.8(typescript@5.2.2):
-    dependencies:
+  abitype@0.9.8(typescript@5.2.2)(zod@3.22.4):
+    optionalDependencies:
       typescript: 5.2.2
+      zod: 3.22.4
 
   abort-controller@3.0.0:
     dependencies:
@@ -2646,9 +2646,9 @@ snapshots:
 
   create-require@1.1.1: {}
 
-  cross-fetch@4.0.0:
+  cross-fetch@4.0.0(encoding@0.1.13):
     dependencies:
-      node-fetch: 2.7.0
+      node-fetch: 2.7.0(encoding@0.1.13)
     transitivePeerDependencies:
       - encoding
 
@@ -2663,6 +2663,7 @@ snapshots:
   debug@4.3.4(supports-color@8.1.1):
     dependencies:
       ms: 2.1.2
+    optionalDependencies:
       supports-color: 8.1.1
 
   decamelize@4.0.0: {}
@@ -3064,14 +3065,14 @@ snapshots:
 
   ini@1.3.8: {}
 
-  ink-big-text@1.2.0(ink@3.2.0)(react@18.2.0):
+  ink-big-text@1.2.0(ink@3.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       cfonts: 2.10.1
       ink: 3.2.0(react@18.2.0)
       prop-types: 15.8.1
       react: 18.2.0
 
-  ink-spinner@4.0.3(ink@3.2.0)(react@18.2.0):
+  ink-spinner@4.0.3(ink@3.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       cli-spinners: 2.9.2
       ink: 3.2.0(react@18.2.0)
@@ -3421,9 +3422,11 @@ snapshots:
 
   node-addon-api@7.1.0: {}
 
-  node-fetch@2.7.0:
+  node-fetch@2.7.0(encoding@0.1.13):
     dependencies:
       whatwg-url: 5.0.0
+    optionalDependencies:
+      encoding: 0.1.13
 
   node-gyp@8.4.1:
     dependencies:
@@ -3676,7 +3679,7 @@ snapshots:
 
   require-directory@2.1.1: {}
 
-  rescript-envsafe@1.3.0(rescript-struct@4.1.1)(rescript@11.0.1):
+  rescript-envsafe@1.3.0(rescript-struct@4.1.1(rescript@11.0.1))(rescript@11.0.1):
     dependencies:
       rescript: 11.0.1
       rescript-struct: 4.1.1(rescript@11.0.1)
@@ -4040,28 +4043,29 @@ snapshots:
 
   vary@1.1.2: {}
 
-  viem@1.16.6(typescript@5.2.2):
+  viem@1.16.6(typescript@5.2.2)(zod@3.22.4):
     dependencies:
       '@adraffy/ens-normalize': 1.9.4
       '@noble/curves': 1.2.0
       '@noble/hashes': 1.3.2
       '@scure/bip32': 1.3.2
       '@scure/bip39': 1.2.1
-      abitype: 0.9.8(typescript@5.2.2)
+      abitype: 0.9.8(typescript@5.2.2)(zod@3.22.4)
       isows: 1.0.3(ws@8.13.0)
-      typescript: 5.2.2
       ws: 8.13.0
+    optionalDependencies:
+      typescript: 5.2.2
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
       - zod
 
-  web3-core@4.3.2:
+  web3-core@4.3.2(encoding@0.1.13):
     dependencies:
       web3-errors: 1.1.4
       web3-eth-accounts: 4.1.1
       web3-eth-iban: 4.0.7
-      web3-providers-http: 4.1.0
+      web3-providers-http: 4.1.0(encoding@0.1.13)
       web3-providers-ws: 4.0.7
       web3-types: 1.3.1
       web3-utils: 4.1.1
@@ -4077,9 +4081,9 @@ snapshots:
     dependencies:
       web3-types: 1.3.1
 
-  web3-eth-abi@4.2.0(typescript@5.2.2):
+  web3-eth-abi@4.2.0(typescript@5.2.2)(zod@3.22.4):
     dependencies:
-      abitype: 0.7.1(typescript@5.2.2)
+      abitype: 0.7.1(typescript@5.2.2)(zod@3.22.4)
       web3-errors: 1.1.4
       web3-types: 1.3.1
       web3-utils: 4.1.1
@@ -4098,12 +4102,12 @@ snapshots:
       web3-utils: 4.1.1
       web3-validator: 2.0.4
 
-  web3-eth-contract@4.2.0(typescript@5.2.2):
+  web3-eth-contract@4.2.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4):
     dependencies:
-      web3-core: 4.3.2
+      web3-core: 4.3.2(encoding@0.1.13)
       web3-errors: 1.1.4
-      web3-eth: 4.4.0(typescript@5.2.2)
-      web3-eth-abi: 4.2.0(typescript@5.2.2)
+      web3-eth: 4.4.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4)
+      web3-eth-abi: 4.2.0(typescript@5.2.2)(zod@3.22.4)
       web3-types: 1.3.1
       web3-utils: 4.1.1
       web3-validator: 2.0.4
@@ -4114,14 +4118,14 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3-eth-ens@4.0.8(typescript@5.2.2):
+  web3-eth-ens@4.0.8(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4):
     dependencies:
       '@adraffy/ens-normalize': 1.10.0
-      web3-core: 4.3.2
+      web3-core: 4.3.2(encoding@0.1.13)
       web3-errors: 1.1.4
-      web3-eth: 4.4.0(typescript@5.2.2)
-      web3-eth-contract: 4.2.0(typescript@5.2.2)
-      web3-net: 4.0.7
+      web3-eth: 4.4.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4)
+      web3-eth-contract: 4.2.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4)
+      web3-net: 4.0.7(encoding@0.1.13)
       web3-types: 1.3.1
       web3-utils: 4.1.1
       web3-validator: 2.0.4
@@ -4139,11 +4143,11 @@ snapshots:
       web3-utils: 4.1.1
       web3-validator: 2.0.4
 
-  web3-eth-personal@4.0.8(typescript@5.2.2):
+  web3-eth-personal@4.0.8(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4):
     dependencies:
-      web3-core: 4.3.2
-      web3-eth: 4.4.0(typescript@5.2.2)
-      web3-rpc-methods: 1.1.4
+      web3-core: 4.3.2(encoding@0.1.13)
+      web3-eth: 4.4.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4)
+      web3-rpc-methods: 1.1.4(encoding@0.1.13)
       web3-types: 1.3.1
       web3-utils: 4.1.1
       web3-validator: 2.0.4
@@ -4154,16 +4158,16 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3-eth@4.4.0(typescript@5.2.2):
+  web3-eth@4.4.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4):
     dependencies:
       setimmediate: 1.0.5
-      web3-core: 4.3.2
+      web3-core: 4.3.2(encoding@0.1.13)
       web3-errors: 1.1.4
-      web3-eth-abi: 4.2.0(typescript@5.2.2)
+      web3-eth-abi: 4.2.0(typescript@5.2.2)(zod@3.22.4)
       web3-eth-accounts: 4.1.1
-      web3-net: 4.0.7
+      web3-net: 4.0.7(encoding@0.1.13)
       web3-providers-ws: 4.0.7
-      web3-rpc-methods: 1.1.4
+      web3-rpc-methods: 1.1.4(encoding@0.1.13)
       web3-types: 1.3.1
       web3-utils: 4.1.1
       web3-validator: 2.0.4
@@ -4174,10 +4178,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3-net@4.0.7:
+  web3-net@4.0.7(encoding@0.1.13):
     dependencies:
-      web3-core: 4.3.2
-      web3-rpc-methods: 1.1.4
+      web3-core: 4.3.2(encoding@0.1.13)
+      web3-rpc-methods: 1.1.4(encoding@0.1.13)
       web3-types: 1.3.1
       web3-utils: 4.1.1
     transitivePeerDependencies:
@@ -4185,9 +4189,9 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  web3-providers-http@4.1.0:
+  web3-providers-http@4.1.0(encoding@0.1.13):
     dependencies:
-      cross-fetch: 4.0.0
+      cross-fetch: 4.0.0(encoding@0.1.13)
       web3-errors: 1.1.4
       web3-types: 1.3.1
       web3-utils: 4.1.1
@@ -4213,9 +4217,9 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  web3-rpc-methods@1.1.4:
+  web3-rpc-methods@1.1.4(encoding@0.1.13):
     dependencies:
-      web3-core: 4.3.2
+      web3-core: 4.3.2(encoding@0.1.13)
       web3-types: 1.3.1
       web3-validator: 2.0.4
     transitivePeerDependencies:
@@ -4240,21 +4244,21 @@ snapshots:
       web3-types: 1.3.1
       zod: 3.22.4
 
-  web3@4.4.0(typescript@5.2.2):
+  web3@4.4.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4):
     dependencies:
-      web3-core: 4.3.2
+      web3-core: 4.3.2(encoding@0.1.13)
       web3-errors: 1.1.4
-      web3-eth: 4.4.0(typescript@5.2.2)
-      web3-eth-abi: 4.2.0(typescript@5.2.2)
+      web3-eth: 4.4.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4)
+      web3-eth-abi: 4.2.0(typescript@5.2.2)(zod@3.22.4)
       web3-eth-accounts: 4.1.1
-      web3-eth-contract: 4.2.0(typescript@5.2.2)
-      web3-eth-ens: 4.0.8(typescript@5.2.2)
+      web3-eth-contract: 4.2.0(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4)
+      web3-eth-ens: 4.0.8(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4)
       web3-eth-iban: 4.0.7
-      web3-eth-personal: 4.0.8(typescript@5.2.2)
-      web3-net: 4.0.7
-      web3-providers-http: 4.1.0
+      web3-eth-personal: 4.0.8(encoding@0.1.13)(typescript@5.2.2)(zod@3.22.4)
+      web3-net: 4.0.7(encoding@0.1.13)
+      web3-providers-http: 4.1.0(encoding@0.1.13)
       web3-providers-ws: 4.0.7
-      web3-rpc-methods: 1.1.4
+      web3-rpc-methods: 1.1.4(encoding@0.1.13)
       web3-types: 1.3.1
       web3-utils: 4.1.1
       web3-validator: 2.0.4

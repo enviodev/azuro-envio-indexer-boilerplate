@@ -193,8 +193,7 @@ export async function resolveCondition(
   const _conditionEntity = await context.Condition.get(conditionEntityId)
 
   if (!_conditionEntity) {
-    context.log.error(`resolveCondition conditionEntity not found with id = ${conditionEntityId}`)
-    return null
+    throw new Error(`resolveCondition conditionEntity not found with id = ${conditionEntityId}`)
   }
 
   const conditionEntity = deepCopy(_conditionEntity)
@@ -230,8 +229,7 @@ export async function resolveCondition(
 
   // TODO remove later
   if (!conditionEntity.outcomesIds) {
-    context.log.error(`resolveCondition outcomesIds is empty.`)
-    return null
+    throw new Error(`resolveCondition outcomesIds is empty.`)
   }
 
   for (let i = 0; i < conditionEntity.outcomesIds!.length; i++) {
@@ -561,8 +559,7 @@ export async function resolveLiveCondition(
   context.LiveCondition.set(liveConditionEntity)
 
   if (!liveConditionEntity.outcomesIds) {
-    context.log.error('resolveCondition outcomesIds is empty.')
-    return null
+    throw new Error('resolveCondition outcomesIds is empty.')
   }
 
   for (let i = 0; i < liveConditionEntity.outcomesIds!.length; i++) {

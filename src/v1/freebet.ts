@@ -82,7 +82,7 @@ XYZFreeBetContract_BettorWin_handlerAsync(async ({ event, context }) => {
   const betEntity = await context.Bet.get(betEntityId)
 
   if (!betEntity) {
-    context.log.error(`v1 handleBettorWin betEntity not found in handler of bettorwin. betEntity = ${betEntityId}`)
+    throw new Error(`v1 handleBettorWin betEntity not found in handler of bettorwin. betEntity = ${betEntityId}`)
     return
   }
 
@@ -90,7 +90,7 @@ XYZFreeBetContract_BettorWin_handlerAsync(async ({ event, context }) => {
   const freebetEntity = await withdrawFreebet(freebetEntityId, event.blockTimestamp, context)
 
   if (!freebetEntity) {
-    context.log.error(`v1 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    throw new Error(`v1 handleBettorWin freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
     return
   }
 });
@@ -108,7 +108,7 @@ XYZFreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
   const liquidityPoolContractEntity = await context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id);
 
   if (!liquidityPoolContractEntity) {
-    context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${freebetContractEntity.liquidityPool_id}`)
+    throw new Error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${freebetContractEntity.liquidityPool_id}`)
     return
   }
 
@@ -150,7 +150,7 @@ XYZFreeBetContract_FreeBetMintedBatch_handlerAsync(async ({ event, context }) =>
   const liquidityPoolContractEntity = await context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id);
 
   if (!liquidityPoolContractEntity) {
-    context.log.error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${freebetContractEntity.liquidityPool_id}`)
+    throw new Error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${freebetContractEntity.liquidityPool_id}`)
     return
   }
 
@@ -211,8 +211,7 @@ XYZFreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
   )
 
   if (!freebetEntity) {
-    context.log.error(`v1 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id}`)
-    return
+    throw new Error(`v1 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id}`)
   }
 
   await linkBetWithFreeBet(

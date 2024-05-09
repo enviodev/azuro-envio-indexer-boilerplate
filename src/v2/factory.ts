@@ -10,7 +10,15 @@ import { connectCore, createCoreEntity, createExpressPrematchRelationEntity, get
 import { createPoolEntity } from "../common/pool";
 import { CORE_TYPES, CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_LIVE, CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2, LPV3_CREATION_BLOCK, VERSION_V2 } from "../constants";
 import { getAzuroBetAddress, getTokenForPool } from "../contracts/lpv1";
+import { FactoryContract_NewCoreEvent_loaderContext } from "../src/Types.gen";
 import { LP_WHITELIST } from "../whitelists";
+
+
+async function registerAzuroBetContract(coreAddress: string, context: FactoryContract_NewCoreEvent_loaderContext, chainId: number) {
+  const resp = await getAzuroBetAddress(coreAddress, chainId)
+  context.contractRegistration.addAzurobetv2(resp.azuroBetAddress)
+}
+
 
 FactoryContract_NewCore_loader(async ({ event, context }) => {
   const coreAddress = event.params.core
@@ -21,22 +29,18 @@ FactoryContract_NewCore_loader(async ({ event, context }) => {
     throw new Error(`no core type!!!! ${coreType} ${event.params.coreType} ${event.params.core}`)
   }
 
-  const coreTypes = [CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2, CORE_TYPE_LIVE]
-
-  if (coreTypes.includes(coreType)) {
-    const resp = await getAzuroBetAddress(coreAddress, chainId)
-    context.contractRegistration.addAzurobetv2(resp.azuroBetAddress)
-  }
-
   if (coreType === CORE_TYPE_PRE_MATCH) {
     context.contractRegistration.addCorev2(coreAddress);
+    registerAzuroBetContract(coreAddress, context, chainId)
   }
   else if (coreType === CORE_TYPE_PRE_MATCH_V2) {
     context.contractRegistration.addCorev3(coreAddress);
+    registerAzuroBetContract(coreAddress, context, chainId)
     // context.contractRegistration.addCorev3('0xa416b49C0E513FFdd25198F709Ccb553256642dc')
   }
   else if (coreType === CORE_TYPE_LIVE) {
     context.contractRegistration.addLiveCorev1(coreAddress);
+    registerAzuroBetContract(coreAddress, context, chainId)
   }
   else if (coreType === CORE_TYPE_EXPRESS) {
     context.contractRegistration.addExpressv2(coreAddress);
@@ -68,7 +72,6 @@ FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
 
   let coreContractEntity = await context.CoreContract.get(coreAddress)
 
-  context.log.debug(`create core entity ${coreAddress}`)
   if (!coreContractEntity) {
     createCoreEntity(coreAddress, liquidityPoolContractEntity, coreType, context)
     await connectCore(event.params.core, coreType, event.chainId, context)
@@ -101,23 +104,19 @@ FactoryContract_NewPool_loader(async ({ event, context }) => {
 
   const coreAddress = event.params.core
   const chainId = event.chainId
-  
-  const coreTypes = [CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2, CORE_TYPE_LIVE]
-
-  if (coreTypes.includes(coreType)) {
-    const resp = await getAzuroBetAddress(coreAddress, chainId)
-    context.contractRegistration.addAzurobetv2(resp.azuroBetAddress)
-  }
 
   if (coreType === CORE_TYPE_PRE_MATCH) {
     context.contractRegistration.addCorev2(coreAddress);
+    registerAzuroBetContract(coreAddress, context, chainId)
   }
   else if (coreType === CORE_TYPE_PRE_MATCH_V2) {
     context.contractRegistration.addCorev3(coreAddress);
+    registerAzuroBetContract(coreAddress, context, chainId)
     // context.contractRegistration.addCorev3('0xa416b49C0E513FFdd25198F709Ccb553256642dc')
   }
   else if (coreType === CORE_TYPE_LIVE) {
     context.contractRegistration.addLiveCorev1(coreAddress);
+    registerAzuroBetContract(coreAddress, context, chainId)
   }
   else if (coreType === CORE_TYPE_EXPRESS) {
     context.contractRegistration.addExpressv2(coreAddress);
@@ -132,12 +131,8 @@ FactoryContract_NewPool_loader(async ({ event, context }) => {
 FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
   const liquidityPoolAddress = event.params.lp
 
-  context.log.debug(`factory address ${event.srcAddress}`)
-
   if (LP_WHITELIST.indexOf(liquidityPoolAddress.toLowerCase()) === -1) {
-    context.log.warn(`v2 handleNewPool skip ${liquidityPoolAddress} because it isn\'t whitelisted`)
-    throw new Error('not whitelisted!!!!!')
-    return
+    throw new Error(`v2 newPool: ${liquidityPoolAddress} not whitelisted`)
   }
 
   const coreAddress = event.params.core
@@ -145,9 +140,7 @@ FactoryContract_NewPool_handlerAsync(async ({ event, context }) => {
   const coreType = CORE_TYPES.get(event.params.coreType)
 
   if (!coreType) {
-    context.log.debug(`no core type!!!!`)
     throw new Error(`no core type!!!! ${coreType} ${event.params.coreType} ${event.params.core}`)
-    return
   }
 
   const token = await getTokenForPool(liquidityPoolAddress, event.chainId)

@@ -31,7 +31,7 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.srcAddress);
 
   if (!coreContractEntity) {
-    context.log.error(`coreContractEntity not found. coreContractEntityId = ${event.srcAddress}`)
+    throw new Error(`coreContractEntity not found. coreContractEntityId = ${event.srcAddress}`)
     return
   }
 
@@ -94,7 +94,7 @@ CoreContract_ConditionResolved_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v1 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+    throw new Error(`v1 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
     return
   }
 
@@ -131,7 +131,7 @@ CoreContract_ConditionShifted_handler(({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v1 ConditionShifted conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+    throw new Error(`v1 ConditionShifted conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
     return
   }
 
@@ -157,7 +157,7 @@ CoreContract_ConditionStopped_handler(({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    context.log.error(`v1 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+    throw new Error(`v1 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
     return
   }
 

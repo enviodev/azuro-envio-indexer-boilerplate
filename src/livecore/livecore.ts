@@ -73,7 +73,7 @@ LiveCorev1Contract_ConditionResolved_handlerAsync(async ({ event, context }) => 
 
     // TODO remove later
     if (!liveConditionEntity) {
-        context.log.error(`handleConditionResolved liveConditionEntity not found. liveConditionEntityId = ${liveConditionEntityId}`)
+        throw new Error(`handleConditionResolved liveConditionEntity not found. liveConditionEntityId = ${liveConditionEntityId}`)
         return
     }
 
@@ -117,8 +117,7 @@ LiveCorev1Contract_NewLiveBet_handler(({ event, context }) => {
     const liveConditionEntity = context.LiveCondition.get(liveConditionEntityId)
 
     if (!liveConditionEntity) {
-        context.log.error('handleNewLiveBet liveConditionEntity not found. liveConditionEntityId = ${liveConditionEntityId}')
-        return
+        throw new Error('handleNewLiveBet liveConditionEntity not found. liveConditionEntityId = ${liveConditionEntityId}')
     }
 
     const liquidityPoolAddress = context.CoreContract.get(coreAddress)!.liquidityPool_id

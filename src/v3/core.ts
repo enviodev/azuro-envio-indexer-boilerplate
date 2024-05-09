@@ -43,7 +43,7 @@
   
 //   // TODO remove later
 //   if (!gameEntity) {
-//     context.log.error(`v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`)
+//     throw new Error(`v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`)
 //     return
 //   }
 
@@ -77,7 +77,7 @@
 
 //   // TODO remove later
 //   if (!conditionEntity) {
-//     context.log.error(
+//     throw new Error(
 //       `v3 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`,
 //     )
 //     return
@@ -110,7 +110,7 @@
 
 //   // TODO remove later
 //   if (!conditionEntity) {
-//     context.log.error(`v3 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+//     throw new Error(`v3 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
 //     return
 //   }
 
@@ -194,7 +194,7 @@
 
 //   // TODO remove later
 //   if (!conditionEntity) {
-//     context.log.error(
+//     throw new Error(
 //       `v3 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`)
 //     return
 //   }
@@ -244,7 +244,7 @@
 
 //   // TODO remove later
 //   if (!conditionEntity) {
-//     context.log.error(`v3 handleMarginChanged conditionEntity not found. conditionEntityId = {conditionEntityId}`)
+//     throw new Error(`v3 handleMarginChanged conditionEntity not found. conditionEntityId = {conditionEntityId}`)
 //     return
 //   }
 
@@ -275,7 +275,7 @@
 
 //   // TODO remove later
 //   if (!conditionEntity) {
-//     context.log.error(`v3 handleReinforcementChanged conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+//     throw new Error(`v3 handleReinforcementChanged conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
 //     return
 //   }
 

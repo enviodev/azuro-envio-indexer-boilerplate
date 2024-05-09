@@ -95,8 +95,7 @@ export function reissueFreebet(
   const freebetEntity = context.Freebet.get(freebetEntityId)
 
   if (!freebetEntity) {
-    context.log.error(`freebetEntity not found. freebetentityId = ${freebetEntityId}`)
-    return null
+    throw new Error(`freebetEntity not found. freebetentityId = ${freebetEntityId}`)
   }
 
   context.Freebet.set({
@@ -125,7 +124,7 @@ export async function redeemFreebet(
 
   // TODO remove later
   if (!freebetEntity) {
-    context.log.error(`redeemFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    throw new Error(`redeemFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
     return null
   }
 
@@ -151,7 +150,7 @@ export async function withdrawFreebet(
 
   // TODO remove later
   if (!freebetEntity) {
-    context.log.error(`withdrawFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    throw new Error(`withdrawFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
 
     return null
   }
@@ -179,7 +178,7 @@ export function transferFreebet(
 
   // TODO remove later
   if (!freebetEntity) {
-    context.log.error(`transferFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    throw new Error(`transferFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
     return null
   }
 
@@ -198,7 +197,7 @@ export function transferFreebet(
 
     // TODO remove later
     if (!betEntity) {
-      context.log.error(`transferFreebet betEntity not found. betEntityId = ${betEntityId}`)
+      throw new Error(`transferFreebet betEntity not found. betEntityId = ${betEntityId}`)
       return null
     }
 

@@ -74,14 +74,13 @@ export async function linkBetWithFreeBet(
   freebetOwner: string,
   blockTimestamp: number,
   context: XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync,
-): Promise<BetEntity | null> {
+): Promise<BetEntity> {
 
   const betEntityId = getEntityId(coreAddress, tokenId.toString())
   const betEntity = await context.Bet.get(betEntityId)
 
   if (!betEntity) {
-    context.log.error(`linkBetWithFreeBet betEntity not found. betEntity = ${betEntityId}`)
-    return null
+    throw new Error(`linkBetWithFreeBet betEntity not found. betEntity = ${betEntityId}`)
   }
 
   context.Bet.set({
@@ -344,7 +343,7 @@ export function bettorWin(
   blockNumber: number,
   blockTimestamp: number,
   context: LPv2Contract_BettorWinEvent_handlerContext,
-): void {
+): void | null {
   const betEntityId = getEntityId(coreAddress, tokenId.toString())
 
   const coreContractEntity = context.CoreContract.get(coreAddress)
@@ -375,8 +374,7 @@ export function bettorWin(
     const betEntity = context.Bet.get(betEntityId)
 
     if (!betEntity) {
-      context.log.error(`handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
-      return
+      throw new Error(`handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
     }
     context.Bet.set({
       ...betEntity,
