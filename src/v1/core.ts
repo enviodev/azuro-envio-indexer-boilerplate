@@ -174,7 +174,7 @@ CoreContract_LpChanged_loader(async ({ event, context }) => {
   context.CoreContract.load(event.srcAddress, {});
 
   const resp = await getAzuroBetAddress(event.params.newLp, event.chainId)
-  await context.contractRegistration.addAzurobets(resp.azuroBetAddress)
+  await context.contractRegistration.addAzurobetv1(resp.azuroBetAddress)
 });
 
 CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {

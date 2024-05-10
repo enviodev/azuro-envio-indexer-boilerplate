@@ -19,27 +19,27 @@ LiveCorev1Contract_ConditionCreated_loader(({ event, context }) => {
     context.log.debug(`LiveCorev1Contract_ConditionCreated_loader: ${event.srcAddress}`)
 });
 LiveCorev1Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
-    const conditionId = event.params.conditionId
-    const coreAddress = event.srcAddress
+    // const conditionId = event.params.conditionId
+    // const coreAddress = event.srcAddress
 
-    context.log.debug(`livecore.ts: handleConditionCreated not implemented, address needed ${event.srcAddress}`)
+    // context.log.error(`livecore.ts: handleConditionCreated not implemented, address needed ${event.srcAddress}`)
     
-    const _conditionData = await getLiveConditionFromId(event.srcAddress, event.chainId, conditionId)
-    const conditionData = deserialiseConditionV3Result(_conditionData.condition)
+    // const _conditionData = await getLiveConditionFromId(event.srcAddress, event.chainId, conditionId)
+    // const conditionData = deserialiseConditionV3Result(_conditionData.condition)
     
-    console.log("LiveCoreV1 address", event.srcAddress)
-    createLiveCondition(
-        coreAddress,
-        conditionId,
-        event.params.gameId,
-        event.params.outcomes,
-        1, // conditionData.value.winningOutcomesCount
-        event.transactionHash,
-        event.blockNumber,
-        event.blockTimestamp,
-        context,
-    )
-    throw new Error(`livecore.ts: handleConditionCreated not implemented, address needed ${event.srcAddress}`)
+    // console.log("LiveCoreV1 address", event.srcAddress)
+    // createLiveCondition(
+    //     coreAddress,
+    //     conditionId,
+    //     event.params.gameId,
+    //     event.params.outcomes,
+    //     1, // conditionData.value.winningOutcomesCount
+    //     event.transactionHash,
+    //     event.blockNumber,
+    //     event.blockTimestamp,
+    //     context,
+    // )
+    // throw new Error(`livecore.ts: handleConditionCreated not implemented, address needed ${event.srcAddress}`)
 });
 
 LiveCorev1Contract_ConditionResolved_loader(({ event, context }) => {

@@ -22,12 +22,15 @@ import {
     LPv3Contract_LiquidityRemoved_handlerAsync,
     LPv3Contract_NewGame_handlerAsync,
     LPv3Contract_LiquidityAdded_handlerAsync,
+    // LPv3Contract_Upgraded_handler,
+    // LPv3Contract_Upgraded_loader,
 } from "../../generated/src/Handlers.gen";
 import { bettorWin } from "../common/bets";
 import { cancelGame, createGame, shiftGame } from "../common/games";
 import { changeWithdrawalTimeout, depositLiquidity, transferLiquidity, updateLiquidityManager, withdrawLiquidity } from "../common/pool";
 import { ZERO_ADDRESS } from "../constants";
 import { getNodeWithdrawAmount } from "../contracts/lpv1";
+import { LP } from "../src/TestHelpers.gen";
 import { getEntityId } from "../utils/schema";
 
 LPv3Contract_BettorWin_loader(({ event, context }) => {
@@ -85,7 +88,7 @@ LPv3Contract_LiquidityManagerChanged_loader(({ event, context }) => {
 LPv3Contract_LiquidityManagerChanged_handler(({ event, context }) => {
     let newAddress: string | undefined = undefined
 
-    if (event.params.newLiquidityManager != ZERO_ADDRESS) {
+    if (event.params.newLiquidityManager !== ZERO_ADDRESS) {
         newAddress = event.params.newLiquidityManager
     }
 
@@ -126,7 +129,9 @@ LPv3Contract_LiquidityRemoved_handlerAsync(async ({ event, context }) => {
 LPv3Contract_NewGame_loader(({ event, context }) => {
 }); // new game v2 vs v3? // assuming v2 for now
 LPv3Contract_NewGame_handlerAsync(async ({ event, context }) => {
-    const network = 'gnosis' // TODO fix
+    context.log.debug(`New game event LPv3 address: ${event.srcAddress} `)
+
+    const network = 'gnosis'
 
     await createGame(
         event.srcAddress,
@@ -141,15 +146,13 @@ LPv3Contract_NewGame_handlerAsync(async ({ event, context }) => {
         event.chainId,
         context,
     )
-
-    throw new Error('caught v3 game!!!')
 });
 
 LPv3Contract_Transfer_loader(({ event, context }) => {
     context.LiquidityPoolNft.load(getEntityId(event.srcAddress, event.params.tokenId.toString()), {})
 });
 LPv3Contract_Transfer_handler(({ event, context }) => {
-    if (event.params.from != ZERO_ADDRESS) {
+    if (event.params.from === ZERO_ADDRESS) {
         return
     }
 

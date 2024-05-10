@@ -95,36 +95,37 @@ export type ConditionV2Response = {
 }
 
 
-// TODO
 export type ConditionV3 = {
   gameId: bigint;
-  funds: [bigint, bigint];
+  payouts: [bigint, bigint];
   virtualFunds: [bigint, bigint];
+  totalNetBets: bigint;
   reinforcement: bigint;
-  affiliatesReward: bigint;
-  outcomes: [bigint, bigint];
-  outcomeWin: bigint;
+  fund: bigint;
   margin: bigint;
-  oracle: string;
   endsAt: bigint;
+  lastDepositId: bigint;
+  winningOutcomesCount: bigint;
   state: bigint;
-  leaf: bigint;
+  oracle: string;
+  isExpressForbidden: boolean;
 };
 
 export type ConditionV3Response = {
   gameId: string;
-  funds: [string, string];
+  payouts: [string, string];
   virtualFunds: [string, string];
+  totalNetBets: string;
   reinforcement: string;
-  affiliatesReward: string;
-  outcomes: [string, string];
-  outcomeWin: string;
+  fund: string;
   margin: string;
-  oracle: string;
   endsAt: string;
+  lastDepositId: string;
+  winningOutcomesCount: string;
   state: string;
-  leaf: string;
-}
+  oracle: string;
+  isExpressForbidden: string;
+};
 
 // TODO
 export type LiveCondition = {
@@ -141,7 +142,7 @@ export type LiveCondition = {
   state: bigint;
   leaf: bigint;
 };
-
+// TODO
 export type LiveConditionResponse = {
   gameId: string;
   funds: [string, string];

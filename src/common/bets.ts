@@ -133,28 +133,23 @@ export async function createBet(
     }
 
     if (gameEntity.startsAt > approxSettledAt) {
-      approxSettledAt = gameEntity.startsAt + BigInt("7200")
+      approxSettledAt = gameEntity.startsAt + 7200n
     }
   }
-
-  err_msg += `\n length of outcomeEntities = ${betOutcomeEntities.length}`
 
   // update outcomes, condition and game turnover for ordinar bets
   if (betType === BET_TYPE_ORDINAR) {
     const conditionEntity = await context.Condition.get(conditionEntitiesIds[0])
-    err_msg += `\n length of conditionEntities = ${conditionEntities.length}`
 
     if (!conditionEntity) {
       throw new Error(`Condition not found (in createBet) with id ${conditionEntitiesIds[0]}`)
     }
 
-    err_msg += `\n original conditionEntity. OutcomeEntityIds = ${conditionEntity.outcomesIds}`
     context.Condition.set({
       ...conditionEntity,
       turnover: conditionEntity.turnover + amount,
       _updatedAt: createdBlockTimestamp,
     })
-    err_msg += `\n updated conditionEntity. OutcomeEntityIds = ${conditionEntity.outcomesIds}`
 
     const gameEntity = await context.Game.get(conditionEntities[0].game_id)
 
@@ -189,8 +184,6 @@ export async function createBet(
       ...countryEntity,
       turnover: countryEntity.turnover + amount,
     })
-  } else {
-    err_msg += `\n not ordinar bet, context not changed`
   }
 
   const potentialPayout = safeDiv(amount * odds, (MULTIPLIERS_VERSIONS.get(version)!))
@@ -203,7 +196,6 @@ export async function createBet(
 
     // double-check of sorting by sortOrder field
     for (let j = 0; j < conditionEntity.outcomesIds!.length; j++) {
-      err_msg += `\n conditionEntity.outcomesIds!.length = ${conditionEntity.outcomesIds?.length}`
       const outcomeId = conditionEntity.outcomesIds![j]
 
       const outcomeEntityId = getEntityId(conditionEntity.id, outcomeId.toString())
@@ -349,7 +341,7 @@ export function bettorWin(
   const coreContractEntity = context.CoreContract.get(coreAddress)
 
   if (!coreContractEntity) {
-    throw new Error('bettorWin coreContractEntity not found. coreContractEntityId = {}')
+    throw new Error(`bettorWin coreContractEntity not found. coreContractEntityId = ${coreAddress}`)
   }
 
   if (coreContractEntity.type_.toLowerCase() === CORE_TYPE_LIVE) {
@@ -374,8 +366,11 @@ export function bettorWin(
     const betEntity = context.Bet.get(betEntityId)
 
     if (!betEntity) {
-      throw new Error(`handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
+      context.log.error(`handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
+      return null
+      // throw new Error(`handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}. core type: ${coreContractEntity.type_}`)
     }
+
     context.Bet.set({
       ...betEntity,
       isRedeemed: true,

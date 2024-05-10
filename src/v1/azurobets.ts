@@ -1,16 +1,15 @@
 import {
-  AzurobetsContract_Transfer_loader,
-  AzurobetsContract_Transfer_handler,
-  AzurobetsContract_Transfer_handlerAsync,
+  Azurobetv1Contract_Transfer_loader,
+  Azurobetv1Contract_Transfer_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { transferBet } from "../common/bets";
 import { getEntityId } from "../utils/schema";
 
-AzurobetsContract_Transfer_loader(({ event, context }) => {
+Azurobetv1Contract_Transfer_loader(({ event, context }) => {
   context.AzuroBetContract.load(event.srcAddress, {});
 });
-AzurobetsContract_Transfer_handlerAsync(async ({ event, context }) => {
-  const x = 5
+Azurobetv1Contract_Transfer_handlerAsync(async ({ event, context }) => {
+  const x = 8
   await transferBet(
     null,
     event.srcAddress,

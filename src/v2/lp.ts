@@ -163,10 +163,3 @@ LPv2Contract_WithdrawTimeoutChanged_loader(({ event, context }) => {
 LPv2Contract_WithdrawTimeoutChanged_handler(({ event, context }) => {
   changeWithdrawalTimeout(event.srcAddress, event.params.newWithdrawTimeout, context)
 });
-
-// LPv2Contract_Upgraded_loader(({ event, context }) => {
-//   throw new Error(`LPv2Contract_Upgraded_loader not implemented ${event.srcAddress}`)
-// })
-// LPv2Contract_Upgraded_handler(({ event, context }) => {
-//   throw new Error('LPv2Contract_Upgraded_handler not implemented')
-// })

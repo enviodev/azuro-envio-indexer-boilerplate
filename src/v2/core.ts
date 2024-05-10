@@ -153,8 +153,6 @@ Corev2Contract_NewBet_handlerAsync(async ({ event, context }) => {
     throw new Error(`Outcome not found with id ${outcomeEntityId}`)
   }
 
-  const x = 4
-
   await createBet(
     VERSION_V2,
     BET_TYPE_ORDINAR,
