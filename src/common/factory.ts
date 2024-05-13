@@ -36,8 +36,6 @@ export async function getPrematchAddressByExpressAddressV2(
   chainId: number,
   context: FactoryContract_NewPoolEvent_handlerContextAsync | FactoryContract_NewCoreEvent_handlerContext,
 ): Promise<string> {
-  context.log.debug(`getPrematchAddressByExpressAddressV2 expressAddress = ${expressAddress}`)
-
   const _preMatchCore = await getPrematchAddress(expressAddress, chainId)
   return _preMatchCore.preMatchAddress
 }

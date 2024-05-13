@@ -2,9 +2,13 @@ import { UpgradeableBeaconContract_Upgraded_handler, UpgradeableBeaconContract_U
 
 
 UpgradeableBeaconContract_Upgraded_loader(({ event, context }) => {
-    context.contractRegistration.addLPv3(event.params.implementation)
-
-    context.log.error(`UpgradeableBeaconContract_Upgraded_loader: ${event.params.implementation}`)
+    // 30_179_675
+    // if (event.blockNumber === 29_704_715){
+    //     context.contractRegistration.addLPv3(event.params.implementation)
+    //     context.log.error(`UpgradeableBeaconContract_Upgraded_loader found in correct block: ${event.params.implementation}`)
+    // } else {
+    //     context.log.debug(`UpgradeableBeaconContract_Upgraded_loader outside correct block: ${event.params.implementation}`)
+    // }
 })
 UpgradeableBeaconContract_Upgraded_handler(({ event, context }) => {
     // do nothing

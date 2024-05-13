@@ -81,11 +81,9 @@ FactoryContract_NewCore_handlerAsync(async ({ event, context }) => {
 
   if (coreType === CORE_TYPE_EXPRESS) {
     prematchAddress = await getPrematchAddressByExpressAddressV2(coreAddress, event.chainId, context)
-    context.log.debug(`prematchAddress express ${prematchAddress}`)
   }
   else if (coreType === CORE_TYPE_EXPRESS_V2) {
     prematchAddress = await getPrematchAddressByExpressAddressV3(coreAddress, event.chainId, context)
-    context.log.debug(`prematchAddress express v2 ${prematchAddress}`)
   }
 
   if (prematchAddress !== null) {
