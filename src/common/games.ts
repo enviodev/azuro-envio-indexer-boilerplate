@@ -10,38 +10,6 @@ import { byte32ToIPFSCIDv0, tryFetchIpfsFile } from "../utils/ipfs"
 import { IPFSMatchDetails } from "../utils/types"
 import { Cache, CacheCategory } from "../lib/cache"
 
-// TODO delete
-const DEFAULT_GAME: GameEntity = {
-    id: "1",
-    liquidityPool_id: "",
-    gameId: 0n,
-    title: "",
-    slug: "",
-    league_id: "1",
-    sport_id: "",
-    status: "Created",
-    // # participants: [Participant!]! @derivedFrom(field: "game"),
-    // # conditions: [Condition!]! @derivedFrom(field: "game"),
-    hasActiveConditions: false,
-    _activeConditionsEntityIds: ["1"],
-    _resolvedConditionsEntityIds: [""],
-    _canceledConditionsEntityIds: [""],
-    _pausedConditionsEntityIds: [""],
-    startsAt: 0n,
-    provider: 0n,
-    turnover: 0n,
-    createdBlockNumber: 0n,
-    createdBlockTimestamp: 0n,
-    createdTxHash: "",
-    shiftedBlockNumber: 0n,
-    shiftedBlockTimestamp: 0n,
-    shiftedTxHash: "",
-    resolvedBlockNumber: 0n,
-    resolvedBlockTimestamp: 0n,
-    resolvedTxHash: "",
-    _updatedAt: 0n,
-}
-
 function decodeJSON(hexStr: string): IPFSMatchDetails {
     let plainStr = "";
     for (let i = 0; i < hexStr.length; i += 2) {
