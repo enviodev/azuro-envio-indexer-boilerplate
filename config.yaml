@@ -203,9 +203,9 @@ networks:
       - name: Factory
         address:
           - 0x8EA1a7241537F10fa73363FDC6380F3FC8619c03
-      # - name: LPv2
-      #   address: 
-      #     - 0x204e7371Ade792c5C006fb52711c50a7efC843ed
+      - name: LPv2
+        address: 
+          - 0x204e7371Ade792c5C006fb52711c50a7efC843ed
       - name: FreeBet
         address:
           - 0xB425E555492eE36c5A2918481EbbcF04AE73682b
