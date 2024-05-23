@@ -1,4 +1,5 @@
-import { C1e9, C1e12, VERSION_V2, VERSION_V3 } from '../constants'
+import { C1e9, C1e12, VERSION_V2, VERSION_V3, VERSION_V1 } from '../constants'
+import { Version } from './types';
 
 export function safeDiv(numerator: bigint, divisor: bigint): bigint {
   const bigNumerator = BigInt(numerator);
@@ -10,7 +11,6 @@ export function safeDiv(numerator: bigint, divisor: bigint): bigint {
     return bigNumerator / bigDivisor;
   }
 }
-
 
 export function sqrtBigInt(n: bigint): bigint {
   if (n < 0n) {
@@ -36,13 +36,13 @@ export function sqrtBigInt(n: bigint): bigint {
 
 function addMargin(odds: bigint, margin: bigint, decimals: bigint): bigint {
   const revertedOdds = safeDiv(decimals ** BigInt(2), (decimals - (safeDiv(decimals ** BigInt(2), odds))))
-  const marginEUR = decimals + (margin)
+  const marginEUR = decimals + margin
   const a = safeDiv(marginEUR * (revertedOdds - decimals), (odds - decimals))
 
-  const b = safeDiv(safeDiv((revertedOdds - (decimals)) * (decimals), ((odds - decimals) * margin) + (decimals * (margin))), decimals)
-  const c = decimals * 2n - (marginEUR)
+  const b = safeDiv((safeDiv((revertedOdds - decimals) * decimals, ((odds - decimals))) * margin) + (decimals * margin), decimals)
+  const c = decimals * 2n - marginEUR
 
-  const newOdds = safeDiv((BigInt(sqrtBigInt((b ** BigInt(2)) + (BigInt('4') * (a) * (c)))) - b) * decimals, (2n * (a)) + decimals)
+  const newOdds = safeDiv((sqrtBigInt((b ** BigInt(2)) + (4n * a * c)) - b) * decimals, (2n * a) + decimals)
 
   return newOdds
 }
@@ -64,41 +64,40 @@ function ceil(a: bigint, m: bigint, decimals: bigint): bigint {
     return decimals
   }
 
-  return a + m - (BigInt('1')) / (m) * (m)
+  return (a + m - 1n) / m * m
 }
 
 function v1(fund1: bigint, fund2: bigint, outcomeIndex: number, margin: bigint, decimals: bigint): bigint {
 
-  const amount = BigInt('0')
+  const amount = 0n
 
   if (outcomeIndex === 0) {
-    const pe1 = (fund1 + (amount)) / (fund1 + (fund2) + (amount))
-    const ps1 = fund1 / (fund1 + fund2)
-    const cAmount = ceil(amount * (decimals) / (fund1 / (BigInt('100'))), decimals, decimals) / (decimals)
+    const pe1 = safeDiv((fund1 + amount) * decimals, (fund1 + fund2 + amount))
+    const ps1 = safeDiv(fund1 * decimals, (fund1 + fund2))
+    const cAmount = safeDiv(ceil(safeDiv(amount * decimals, safeDiv(fund1, 100n)), decimals, decimals), decimals)
 
-    if (cAmount === (BigInt('1'))) {
-      const left = (ps1 === 0n) ? 0n : decimals ** BigInt(2) / ps1;
-      return addMargin(left, margin, decimals)
+    if (cAmount === 1n) {
+      return addMargin(safeDiv(decimals ** BigInt(2), ps1), margin, decimals)
     }
 
-    const odds = (decimals ** BigInt(3)) / (
-      (pe1 * (cAmount) + (ps1 * (BigInt('2'))) - (pe1 * (BigInt('2')))) * (decimals) / (cAmount)
-    )
+    const odds = safeDiv((decimals ** BigInt(3)), (
+      safeDiv(((((pe1 * cAmount) + (ps1 * 2n) - (pe1 * 2n)))) * decimals, cAmount)
+    ))
     return addMargin(odds, margin, decimals)
   }
 
   if (outcomeIndex === 1) {
-    const pe2 = fund2 + (amount) * (decimals) / (fund1 + (fund2) + (amount))
-    const ps2 = fund2 * (decimals) / (fund1 + (fund2))
-    const cAmount = ceil(amount * (decimals) / (fund2 / (BigInt('100'))), decimals, decimals) / decimals
+    const pe2 = safeDiv((fund2 + amount) * decimals, (fund1 + fund2 + amount))
+    const ps2 = safeDiv(fund2 * decimals, (fund1 + fund2))
+    const cAmount = safeDiv(ceil(safeDiv(amount * decimals, safeDiv(fund2, 100n)), decimals, decimals), decimals)
 
-    if (cAmount === (BigInt('1'))) {
-      return addMargin(decimals ** BigInt(2) / (ps2), margin, decimals)
+    if (cAmount === 1n) {
+      return addMargin(safeDiv(decimals ** BigInt(2), ps2), margin, decimals)
     }
 
-    const odds = (decimals ** BigInt(3)) / (
-      (pe2 * (cAmount) + (ps2 * (BigInt('2'))) - (pe2 * (BigInt('2')))) * (decimals) / (cAmount)
-    )
+    const odds = safeDiv(decimals ** BigInt(3), (
+      safeDiv((((pe2 * cAmount) + (ps2 * 2n) - (pe2 * 2n))) * decimals, cAmount)
+    ))
 
     return addMargin(odds, margin, decimals)
   }
@@ -111,10 +110,10 @@ function v2(fund1: bigint, fund2: bigint, outcomeIndex: number, margin: bigint, 
 
   const activeFund = outcomeIndex === 0 ? fund1 : fund2
 
-  const odds = safeDiv((fund1 + (fund2) + (amount)) * (C1e12), activeFund + amount)
+  const odds = safeDiv((fund1 + fund2 + amount) * C1e12, activeFund + amount)
 
   if (odds == C1e12) {
-    return BigInt('0')
+    return 0n
   }
 
   return addMargin(odds, margin, decimals)
@@ -123,7 +122,7 @@ function v2(fund1: bigint, fund2: bigint, outcomeIndex: number, margin: bigint, 
 // v3
 const MAX_ITERATIONS = 32
 const MAX_ODDS = 100n * C1e12
-const PRECISION = BigInt('1000000') // million
+const PRECISION = 1_000_000n // million
 
 function sum(items: bigint[]): bigint {
 
@@ -145,17 +144,19 @@ function div(self: bigint, other: bigint): bigint {
 }
 
 function ratio(self: bigint, other: bigint): bigint {
-  return (self > other) ? safeDiv(self, other) : safeDiv(other, self)
+  return (self > other) ? div(self, other) : div(other, self)
 }
 
 function calcProbability(outcomeFund: bigint, fund: bigint, winningOutcomesCount: number): bigint | null {
-  const probability = safeDiv(outcomeFund * BigInt(winningOutcomesCount), fund)
+  const probability = div(outcomeFund * BigInt(winningOutcomesCount), fund)
 
-  if (probability < 1000n || probability > C1e12) {
-    console.error(`v3 odds probability lower than 100 or greater than 1^12, outcomeFund is ${outcomeFund.toString()}`)
-    return null
+  if (probability < 1000n){
+    throw new Error(`v3 odds probability lower than 1000, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
   }
 
+  if (probability >= C1e12) {
+    throw new Error(`v3 odds probability greater than 1^12, probability is ${probability}, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
+  }
   return probability
 }
 
@@ -164,7 +165,7 @@ function calcProbability(outcomeFund: bigint, fund: bigint, winningOutcomesCount
 //  * @notice The sigmoid function is commonly used in machine learning to limit output values within a range of 0 to 1.
 //  */
 function sigmoid(self: bigint): bigint {
-  return safeDiv(self, self + C1e12)
+  return div(self, self + C1e12)
 }
 
 function getOddsFromProbabilities(probabilities: bigint[], margin: bigint, winningOutcomesCount: number): bigint[] | null {
@@ -174,17 +175,19 @@ function getOddsFromProbabilities(probabilities: bigint[], margin: bigint, winni
   const odds: bigint[] = []
   const spreads: bigint[] = []
 
-  if (margin < 0n) {
+  console.log(`v3 margin is ${margin}`)
+    
+  if (margin <= 0n) {
 
     for (let i = 0; i < length; i++) {
-      odds[i] = C1e12 * safeDiv(C1e12, probabilities[i])
+      odds[i] = safeDiv(C1e12 * C1e12, probabilities[i])
     }
 
     return odds
   }
 
   for (let i = 0; i < length; i++) {
-    spreads[i] = mul(C1e12 - (probabilities[i]), margin)
+    spreads[i] = mul(C1e12 - probabilities[i], margin)
   }
 
   let error = margin
@@ -197,29 +200,27 @@ function getOddsFromProbabilities(probabilities: bigint[], margin: bigint, winni
       let spread = 0n
 
       for (let i = 0; i < length; i++) {
-        const price = safeDiv(C1e12 - (spreads[i]), probabilities[i])
+        const price = div(C1e12 - spreads[i], probabilities[i])
         odds[i] = price
-        spread = spread + (safeDiv(C1e12, price))
+        spread = spread + div(C1e12, price)
       }
 
-      oddsSpread = C1e12 - (safeDiv(spreadMultiplier, spread))
+      oddsSpread = C1e12 - div(spreadMultiplier, spread)
     }
 
     if ((ratio(margin, oddsSpread) - C1e12) < PRECISION) {
       return odds
     }
 
-    if (margin < oddsSpread) {
-      console.error('margin <= oddsSpread', [])
-      return null
+    if (margin <= oddsSpread) {
+      throw new Error('margin <= oddsSpread')
     }
 
-    const newError = margin - (oddsSpread)
+    const newError = margin - oddsSpread
 
     if (newError === error) {
-      if ((div(margin, oddsSpread) - C1e12) > PRECISION) {
-        console.error('margin / oddsSpread - 1 >= precision', [])
-        return null
+      if ((div(margin, oddsSpread) - C1e12) >= PRECISION) {
+        throw new Error('margin / oddsSpread - 1 >= precision')
       }
       return odds
     }
@@ -229,13 +230,13 @@ function getOddsFromProbabilities(probabilities: bigint[], margin: bigint, winni
     for (let i = 0; i < length; i++) {
 
       const sig = sigmoid(
-        safeDiv(
-          safeDiv(
-            safeDiv(
+        div(
+          div(
+            div(
               mul(error, spreads[i]),
-              C1e12 - (safeDiv(C1e12, odds[i])),
+              C1e12 - div(C1e12, odds[i]),
             ),
-            C1e12 - (margin),
+            C1e12 - margin,
           ),
           oddsSpread,
         ),
@@ -256,9 +257,8 @@ export function v3(funds: bigint[], margin: bigint, winningOutcomesCount: number
   const probabilities: bigint[] = []
   const totalFund = sum(funds)
 
-  if (totalFund == 0n) {
-    console.error('v3 totalFund is 0')
-    return null
+  if (totalFund === 0n) {
+    throw new Error('v3 totalFund is 0')
   }
 
   for (let i = 0; i < funds.length; i++) {
@@ -266,8 +266,7 @@ export function v3(funds: bigint[], margin: bigint, winningOutcomesCount: number
     const probability = calcProbability(funds[i], totalFund, winningOutcomesCount)
 
     if (probability === null) {
-      console.error(`v3 odds probability is null, fund[{}] is ${i.toString(), funds[i].toString()}`)
-      return null
+      throw new Error(`v3 odds probability is null, fund[{}] is ${i.toString(), funds[i].toString()}`)
     }
 
     probabilities[i] = probability
@@ -286,8 +285,7 @@ export function v3(funds: bigint[], margin: bigint, winningOutcomesCount: number
     }
 
     if (odds[i] <= C1e12) {
-      console.error(`v3 odds[{}] {} lower than 1^12, fund[{}] is ${i.toString(), odds[i].toString(), i.toString(), funds[i].toString()}`)
-      return null
+      throw new Error(`v3 odds lower than 1^12, fund is ${funds[i]}. Odds are ${odds[i]}. i is ${i}. Odds list is ${odds}`)
     }
   }
 
@@ -295,14 +293,14 @@ export function v3(funds: bigint[], margin: bigint, winningOutcomesCount: number
 
 }
 
-export function getOdds(version: string, funds: bigint[], margin: bigint, winningOutcomesCount: number): bigint[] | null {
+export function getOdds(version: Version, funds: bigint[], margin: bigint, winningOutcomesCount: number): bigint[] | null {
   if (version === VERSION_V3) {
     return v3(funds, margin, winningOutcomesCount)
-  }
-
-  if (version === VERSION_V2) {
+  } else if (version === VERSION_V2) {
     return [v2(funds[0], funds[1], 0, margin, C1e12), v2(funds[0], funds[1], 1, margin, C1e12)]
+  } else if (version === VERSION_V1) {
+    return [v1(funds[0], funds[1], 0, margin, C1e9), v1(funds[0], funds[1], 1, margin, C1e9)]
+  } else {
+    throw new Error(`Unsupported version: ${version}`)
   }
-
-  return [v1(funds[0], funds[1], 0, margin, C1e9), v1(funds[0], funds[1], 1, margin, C1e9)]
 }
