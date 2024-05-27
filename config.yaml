@@ -178,15 +178,15 @@ contracts:
     events:
       - event: Upgraded(address indexed implementation)
 networks:
-  - id: 100000000
-    start_block: 0
-    end_block: 26624343
-    hypersync_config:
-      url: https://gnosis.hypersync.xyz/
-    contracts:
-      - name: LPv2
-        address: 
-          - 0x204e7371Ade792c5C006fb52711c50a7efC843ed
+  # - id: 100000000
+  #   start_block: 0
+  #   end_block: 26624343
+  #   hypersync_config:
+  #     url: https://gnosis.hypersync.xyz/
+  #   contracts:
+  #     - name: LPv2
+  #       address: 
+  #         - 0x204e7371Ade792c5C006fb52711c50a7efC843ed
   - id: 100
     start_block: 0  
     contracts:
