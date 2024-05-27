@@ -30,7 +30,6 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  context.log.debug(`v3 core event address: ${event.srcAddress}`)
   const _conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
   const conditionData = deserialiseConditionV3Result(_conditionData.condition)
 
@@ -39,13 +38,16 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     liquidityPoolAddress,
     event.params.gameId.toString(),
   )
+
+  if (event.params.gameId === undefined) {
+    throw new Error(`v3 ConditionCreated gameId is undefined`)
+  }
   
   const gameEntity = await context.Game.get(gameEntityId)
   
   // TODO remove later
   if (!gameEntity) {
     throw new Error(`v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`)
-    return
   }
 
   await createCondition(
@@ -77,10 +79,7 @@ Corev3Contract_ConditionResolved_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
-      `v3 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`,
-    )
-    return
+    throw new Error(`v3 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
   }
 
   const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!.liquidityPool_id
@@ -155,7 +154,7 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
   )
   const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!
 
-  context.log.debug(`creating v3 bet with id ${getEntityId(coreAddress, event.params.tokenId.toString())}`)
+  // context.log.debug(`creating v3 bet with id ${getEntityId(coreAddress, event.params.tokenId.toString())}`)
 
   await createBet(
     VERSION_V3,
@@ -176,8 +175,6 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
     event.params.funds,
     context
   )
-
-  throw new Error(`v3 is logging new bet: ${event.srcAddress}`)
 });
 
 Corev3Contract_OddsChanged_loader(({ event, context }) => { });
@@ -185,18 +182,19 @@ Corev3Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId
   const coreAddress = event.srcAddress
 
-  const conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
+  const _conditionData = await getConditionV3FromId(event.srcAddress, event.chainId, conditionId)
+  const conditionData = deserialiseConditionV3Result(_conditionData.condition)
+
   const conditionEntityId = getEntityId(
     coreAddress,
     conditionId.toString(),
   )
-  const conditionEntity = await context.Condition.get(conditionEntityId)
 
+
+  const conditionEntity = await context.Condition.get(conditionEntityId)
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
-      `v3 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    throw new Error(`v3 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`)
   }
 
   let outcomesEntities: OutcomeEntity[] = []
@@ -211,15 +209,14 @@ Corev3Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
     outcomesEntities = outcomesEntities.concat([outcomeEntity])
   }
 
-  // updateConditionOdds(
-  //     VERSION_V3,
-  //     conditionEntity,
-  //     outcomesEntities,
-  //     conditionData.virtualFunds,
-  //     event.blockNumber,
-  //     context,
-  //   )
-  throw new Error(`v3 core event address: ${event.srcAddress}`)
+  updateConditionOdds(
+      VERSION_V3,
+      conditionEntity,
+      outcomesEntities,
+      conditionData.virtualFunds,
+      event.blockNumber,
+      context,
+    )
 });
 
 Corev3Contract_MarginChanged_loader(({ event, context }) => {
@@ -245,7 +242,6 @@ Corev3Contract_MarginChanged_handler(({ event, context }) => {
   // TODO remove later
   if (!conditionEntity) {
     throw new Error(`v3 handleMarginChanged conditionEntity not found. conditionEntityId = {conditionEntityId}`)
-    return
   }
 
   updateConditionMargin(conditionEntity, event.params.newMargin, event.blockTimestamp, context)

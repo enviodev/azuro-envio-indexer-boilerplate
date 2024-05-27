@@ -155,7 +155,8 @@ function calcProbability(outcomeFund: bigint, fund: bigint, winningOutcomesCount
   }
 
   if (probability >= C1e12) {
-    throw new Error(`v3 odds probability greater than 1^12, probability is ${probability}, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
+    // TODO throw error
+    console.log(`v3 odds probability greater than 1^12, probability is ${probability}, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
   }
   return probability
 }
@@ -175,8 +176,6 @@ function getOddsFromProbabilities(probabilities: bigint[], margin: bigint, winni
   const odds: bigint[] = []
   const spreads: bigint[] = []
 
-  console.log(`v3 margin is ${margin}`)
-    
   if (margin <= 0n) {
 
     for (let i = 0; i < length; i++) {
@@ -285,7 +284,8 @@ export function v3(funds: bigint[], margin: bigint, winningOutcomesCount: number
     }
 
     if (odds[i] <= C1e12) {
-      throw new Error(`v3 odds lower than 1^12, fund is ${funds[i]}. Odds are ${odds[i]}. i is ${i}. Odds list is ${odds}`)
+      // TODO throw error
+      console.log(`v3 odds lower than 1^12, fund is ${funds[i]}. Odds are ${odds[i]}. i is ${i}. Odds list is ${odds}`)
     }
   }
 

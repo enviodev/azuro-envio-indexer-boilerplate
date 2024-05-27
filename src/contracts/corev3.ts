@@ -20,6 +20,12 @@ export async function getConditionV3FromId(
   const cache = await Cache.init(CacheCategory.ConditionV3, chainId);
   const _condition = await cache.read(conditionId);
 
+  console.log("getConditionV3FromId conditionId: ", conditionId)
+
+  // if (conditionId === '100100000000000015773606830000000000000238804883'){
+  //   console.log(_condition)
+  // }
+
   if (_condition) {
     return _condition;
   }
@@ -40,8 +46,6 @@ export async function getConditionV3FromId(
       .getCondition(conditionId)
       .call()) as unknown as ConditionV3;
     
-    console.log("result getConditionv3", result);
-
     const condition: ConditionV3Response = {
       gameId: result.gameId.toString(),
       payouts: [

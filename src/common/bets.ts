@@ -4,7 +4,7 @@ import { Azurobetv2Contract_TransferEvent_handlerContextAsync, BetEntity, Corev2
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal, safeDiv } from "../utils/math"
 import { getEntityId } from "../utils/schema"
-import { Mutable } from "../utils/types"
+import { Mutable, Version } from "../utils/types"
 import { deepCopy } from "../utils/mapping"
 
 
@@ -96,7 +96,7 @@ export async function linkBetWithFreeBet(
 }
 
 export async function createBet(
-  version: string,
+  version: Version,
   betType: typeof BET_TYPE_ORDINAR | typeof BET_TYPE_EXPRESS,
   conditionEntities: ConditionEntity[],
   betOutcomeEntities: OutcomeEntity[],

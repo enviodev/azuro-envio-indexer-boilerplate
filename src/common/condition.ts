@@ -7,11 +7,11 @@ import { calcPayoutV2, calcPayoutV3 } from "./express";
 import { countConditionResolved } from "./pool";
 import { Condition, LiveCondition } from "../src/DbFunctions.bs";
 import { getEntityId } from "../utils/schema";
-import { Mutable } from "../utils/types";
+import { Mutable, Version } from "../utils/types";
 import { deepCopy } from "../utils/mapping";
 
 export async function createCondition(
-  version: string,
+  version: Version,
   coreAddress: string,
   conditionId: bigint,
   gameEntityId: string,
@@ -64,7 +64,7 @@ export async function createCondition(
   )
 
   if (newOdds === null) {
-    throw new Error(`createCondition getOdds returned null, conditionId {}`)
+    throw new Error(`createCondition getOdds returned null, conditionId ${conditionEntityId}, version is ${version}`)
   }
 
   let outcomeIds: bigint[] = []
@@ -95,8 +95,10 @@ export async function createCondition(
   }
 
   // TODO remove
+  // Does throw in v3
   if (outcomes.length !== 2) {
-    throw new Error(`createCondition outcomeIds.length !== 2`)
+    context.log.debug(`createCondition outcomeIds.length !== 2 length is ${outcomes.length}`)
+    // throw new Error(`createCondition outcomeIds.length !== 2`)
   }
 
   conditionEntity.outcomesIds = outcomeIds
@@ -142,7 +144,7 @@ export async function createCondition(
 
 
 export function updateConditionOdds(
-  version: string,
+  version: Version,
   conditionEntity: ConditionEntity,
   outcomesEntities: OutcomeEntity[],
   funds: bigint[],

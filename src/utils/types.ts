@@ -1,6 +1,10 @@
+import { VERSION_V1, VERSION_V2, VERSION_V3 } from "../constants";
+
 export type Mutable<T> = {
   -readonly [P in keyof T]: T[P];
 };
+
+export type Version = typeof VERSION_V1 | typeof VERSION_V2 | typeof VERSION_V3
 
 export type IPFSMatchDetails = {
   titleLeague: string | null;
