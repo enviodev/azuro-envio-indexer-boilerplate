@@ -43,6 +43,10 @@ export function createFreebet(
 ): FreebetEntity {
   const freebetEntityId = getEntityId(freebetContractAddress, freebetId.toString())
 
+  if (!freebetId) {
+    throw new Error(`freebetId is null`)
+  }
+
   let _status: typeof FREEBET_STATUS_REDEEMED | typeof FREEBET_STATUS_CREATED;
 
   if (coreAddress !== null && azuroBetId !== null) {
@@ -151,8 +155,6 @@ export async function withdrawFreebet(
   // TODO remove later
   if (!freebetEntity) {
     throw new Error(`withdrawFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
-
-    return null
   }
 
   context.Freebet.set({
@@ -225,7 +227,6 @@ export function resolveFreebet(
   // TODO remove later
   if (!freebetEntity) {
     throw new Error(`resolveFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
-    return null
   }
 
   context.Freebet.set({

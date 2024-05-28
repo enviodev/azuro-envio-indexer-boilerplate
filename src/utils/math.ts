@@ -264,7 +264,7 @@ export function v3(funds: bigint[], margin: bigint, winningOutcomesCount: number
 
     const probability = calcProbability(funds[i], totalFund, winningOutcomesCount)
 
-    if (probability === null) {
+    if (!probability) {
       throw new Error(`v3 odds probability is null, fund[{}] is ${i.toString(), funds[i].toString()}`)
     }
 
@@ -273,7 +273,8 @@ export function v3(funds: bigint[], margin: bigint, winningOutcomesCount: number
 
   const odds = getOddsFromProbabilities(probabilities, margin, winningOutcomesCount)
 
-  if (odds === null) {
+  if (!odds) {
+    console.log('v3 odds is null')
     return null
   }
 

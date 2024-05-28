@@ -101,7 +101,6 @@ LPv3Contract_LiquidityManagerChanged_handler(({ event, context }) => {
 
 LPv3Contract_LiquidityRemoved_loader(({ event, context }) => {
     context.LiquidityPoolContract.load(event.srcAddress)
-    context.LiquidityPoolNft.load(getEntityId(event.srcAddress, event.params.depositId.toString()), {})
 });
 LPv3Contract_LiquidityRemoved_handlerAsync(async ({ event, context }) => {
     let isFullyWithdrawn = false
@@ -129,8 +128,6 @@ LPv3Contract_LiquidityRemoved_handlerAsync(async ({ event, context }) => {
 LPv3Contract_NewGame_loader(({ event, context }) => {
 });
 LPv3Contract_NewGame_handlerAsync(async ({ event, context }) => {
-    context.log.debug(`New game event LPv3 address: ${event.srcAddress} `)
-
     const network = 'gnosis'
 
     await createGame(

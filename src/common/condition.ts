@@ -31,6 +31,10 @@ export async function createCondition(
 
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
 
+  if (!conditionEntityId) {
+    throw new Error(`createCondition conditionEntityId is empty, conditionId ${conditionId}`)
+  }
+
   const conditionEntity: Mutable<ConditionEntity> = {
     id: conditionEntityId,
     core_id: coreAddress,
@@ -63,7 +67,7 @@ export async function createCondition(
     conditionEntity._winningOutcomesCount,
   )
 
-  if (newOdds === null) {
+  if (!newOdds) {
     throw new Error(`createCondition getOdds returned null, conditionId ${conditionEntityId}, version is ${version}`)
   }
 
@@ -73,6 +77,10 @@ export async function createCondition(
     outcomeIds = outcomeIds.concat([outcomes[i]])
 
     const outcomeId = outcomes[i].toString()
+
+    if (!outcomeId) {
+      throw new Error(`createCondition outcomeId is empty, conditionId ${conditionEntityId}`)
+    }
 
     const outcomeEntityId = getEntityId(conditionEntityId, outcomeId)
 
@@ -97,7 +105,7 @@ export async function createCondition(
   // TODO remove
   // Does throw in v3
   if (outcomes.length !== 2) {
-    context.log.debug(`createCondition outcomeIds.length !== 2 length is ${outcomes.length}`)
+    // context.log.debug(`createCondition outcomeIds.length !== 2 length is ${outcomes.length}`)
     // throw new Error(`createCondition outcomeIds.length !== 2`)
   }
 
@@ -158,7 +166,8 @@ export function updateConditionOdds(
     conditionEntity._winningOutcomesCount,
   )
 
-  if (odds === null) {
+  if (!odds) {
+    context.log.error(`updateConditionOdds odds is null, conditionId = ${conditionEntity.id}`)
     return null
   }
 
@@ -254,7 +263,10 @@ export async function resolveCondition(
       betsAmount = betsAmount + betEntity.rawAmount
 
       const selectionEntityId = getEntityId(betEntityId, conditionEntity.conditionId.toString())
-      const _selectionEntity = (await context.Selection.get(selectionEntityId))!
+      const _selectionEntity = await context.Selection.get(selectionEntityId)
+      if (!_selectionEntity) {
+        throw new Error(`resolveCondition selectionEntity not found with id = ${selectionEntityId}`)
+      }
       const selectionEntity = deepCopy(_selectionEntity)
 
       if (!isCanceled) {

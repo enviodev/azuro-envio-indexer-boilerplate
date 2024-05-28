@@ -167,7 +167,6 @@ export async function depositLiquidity(
   // TODO remove later
   if (!liquidityPoolContractEntity) {
     throw new Error(`depositLiquidity liquidityPoolContractEntity not found. liquidityPoolAddress = ${liquidityPoolAddress}`);
-    return null;
   }
 
   const depositedAmount = liquidityPoolContractEntity.depositedAmount + amount;
@@ -192,6 +191,10 @@ export async function depositLiquidity(
     chainId,
     context
   );
+
+  if (!leaf) {
+    throw new Error(`depositLiquidity leaf is falsy. liquidityPoolAddress = ${liquidityPoolAddress}`);
+  }
 
   const liquidityPoolNftEntityId = getEntityId(liquidityPoolAddress, leaf.toString());
   const liquidityPoolNftEntity: LiquidityPoolNftEntity = {
@@ -241,7 +244,7 @@ export async function withdrawLiquidity(
   chainId: number,
   context: LPv2Contract_LiquidityRemovedEvent_handlerContextAsync
 ): Promise<LiquidityPoolTransactionEntity | null> {
-  const liquidityPoolContractEntity: LiquidityPoolContractEntity = (await context.LiquidityPoolContract.get(liquidityPoolAddress))!;
+  const liquidityPoolContractEntity = await context.LiquidityPoolContract.get(liquidityPoolAddress)
 
   // TODO remove later
   if (!liquidityPoolContractEntity) {
@@ -332,6 +335,8 @@ export function transferLiquidity(
       liquidityPoolNftEntity.historicalOwners = addUniqueItem(liquidityPoolNftEntity.historicalOwners,to)
   }
 
+  context.LiquidityPoolNft.set(liquidityPoolNftEntity);
+
   return liquidityPoolNftEntity;
 }
 
@@ -347,7 +352,6 @@ export function changeWithdrawalTimeout(
     throw new Error(
       `changeWithdrawalTimeout liquidityPoolContractEntity not found. liquidityPoolAddress = ${liquidityPoolAddress}`
     );
-    return null;
   }
 
   context.LiquidityPoolContract.set({
@@ -374,7 +378,6 @@ export async function countConditionResolved(
     throw new Error(
       `countConditionResolved liquidityPoolContractEntity not found. liquidityPoolAddress = ${liquidityPoolAddress}`
     );
-    return null;
   }
 
   context.LiquidityPoolContract.set({

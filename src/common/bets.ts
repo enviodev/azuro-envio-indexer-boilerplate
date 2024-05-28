@@ -1,5 +1,5 @@
 import { zeroPadBytes } from "ethers"
-import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE, BET_TYPE_EXPRESS } from "../constants"
+import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE, BET_TYPE_EXPRESS, CORE_TYPE_PRE_MATCH_V2, CORE_TYPE_PRE_MATCH, CORE_TYPE_EXPRESS_V2, CORE_TYPE_EXPRESS } from "../constants"
 import { Azurobetv2Contract_TransferEvent_handlerContextAsync, BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPContract_NewBetEvent_handlerContextAsync, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal, safeDiv } from "../utils/math"
@@ -42,6 +42,8 @@ export async function transferBet(
     }
 
     finalCoreAddress = azuroBetContractEntity.core_id
+  } else {
+    throw new Error(`transferBet coreAddress and azuroBetAddress are null`)
   }
 
   const betEntityId = getEntityId(finalCoreAddress, tokenId.toString())
@@ -190,6 +192,10 @@ export async function createBet(
   
   const betEntityId = getEntityId(coreAddress, tokenId.toString())
 
+  if (!betEntityId) {
+    throw new Error(`Bet entity id is not defined. coreAddress: ${coreAddress}, tokenId: ${tokenId}`)
+  }
+
   for (let k = 0; k < conditionEntities.length; k++) {
     const conditionEntity = conditionEntities[k]
     const outcomeEntities: OutcomeEntity[] = []
@@ -285,7 +291,7 @@ export async function createBet(
     createdTxHash: txHash,
     createdBlockNumber: BigInt(createdBlockNumber),
     createdBlockTimestamp: BigInt(createdBlockTimestamp),
-    status: BET_STATUS_ACCEPTED.toString() as "Accepted",
+    status: BET_STATUS_ACCEPTED,
     isRedeemed: false,
     isRedeemable: false,
     _isFreebet: false,
@@ -306,6 +312,10 @@ export async function createBet(
 
   for (let i = 0; i < betOutcomeEntities.length; i++) {
     const betOutcomeEntity: OutcomeEntity = betOutcomeEntities[i]
+
+    if (!conditionEntities[i].conditionId.toString()) {
+      throw new Error(`createBet conditionId is not defined. coreAddress: ${coreAddress}, tokenId: ${tokenId}`)
+    }
 
     const selectionEntityId = getEntityId(betEntityId, conditionEntities[i].conditionId.toString())
     const selectionEntity: SelectionEntity = {
@@ -362,7 +372,7 @@ export function bettorWin(
       redeemedTxHash: txHash,
       _updatedAt: BigInt(blockTimestamp),
     })
-  } else {
+  } else if([CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2].includes(coreContractEntity.type_.toLowerCase())) {
     const betEntity = context.Bet.get(betEntityId)
 
     if (!betEntity) {
@@ -382,6 +392,8 @@ export function bettorWin(
       redeemedTxHash: txHash,
       _updatedAt: BigInt(blockTimestamp),
     })
+  } else {
+    throw new Error(`unknown core type in bettorWin: ${coreContractEntity.type_}`)
   }
 }
 

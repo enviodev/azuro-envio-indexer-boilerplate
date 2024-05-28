@@ -103,8 +103,8 @@ export async function createGame(
         sportId = BigInt(sportIdField)
     }
 
-    if (sportId === null) {
-        throw new Error('createGame sportId is null')
+    if (!sportId) {
+        throw new Error('createGame sportId is null or undefined')
     }
 
     let countryName = DEFAULT_COUNTRY
@@ -219,7 +219,7 @@ export async function createGame(
 
     // V1 - gameId from ipfs
     let gameId = rawGameId
-    if (gameId === null) {
+    if (!gameId) {
         const gameIdObjectField = data.gameId
         if (!gameIdObjectField || typeof gameIdObjectField !== 'number') {
             throw new Error('createGame gameIdObjectField is null')
@@ -348,6 +348,10 @@ export async function createGame(
     const gameTitle = participantsNames[0].concat(' - ').concat(participantsNames[1])
     const gameSlug = gameTitle.concat('-').concat(gameEntity.gameId.toString())
 
+    if (!gameEntity.gameId) {
+        throw new Error('createGame gameId is null')
+    }
+
     context.Game.set({
         ...gameEntity,
         title: gameTitle,
@@ -371,7 +375,6 @@ export function shiftGame(
     // TODO remove later
     if (!gameEntity) {
         throw new Error(`shiftGame gameEntity not found. gameEntityId = ${gameEntityId}`)
-        return null
     }
 
     context.Game.set({
@@ -398,7 +401,6 @@ export function cancelGame(
     // TODO remove later
     if (!gameEntity) {
         throw new Error(`cancelGame gameEntity not found. gameEntityId = ${gameEntityId}`)
-        return null
     }
 
     context.Game.set({

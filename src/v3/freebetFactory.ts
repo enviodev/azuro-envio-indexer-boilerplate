@@ -16,8 +16,19 @@ FreeBetFactoryContract_NewFreeBet_handler(({ event, context }) => {
   const affiliate = event.params.affiliate.toString();
   const manager = event.params.manager.toString();
 
+  // check that each of the above are not empty
+  if (!freeBetAddress || !liquidityPoolAddress || !affiliate || !manager) {
+    throw new Error(`freeBetAddress, liquidityPoolAddress, affiliate, or manager is null ${freeBetAddress}, ${liquidityPoolAddress}, ${affiliate}, ${manager}`);
+  }
+
+  const chainId = event.chainId.toString();
+
+  if (!chainId) {
+    throw new Error(`chainId is null`);
+  }
+
   createFreebetContractEntity(
-    event.chainId.toString(),
+    chainId,
     freeBetAddress,
     liquidityPoolAddress,
     null,

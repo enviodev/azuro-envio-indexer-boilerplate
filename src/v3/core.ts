@@ -39,10 +39,6 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     event.params.gameId.toString(),
   )
 
-  if (event.params.gameId === undefined) {
-    throw new Error(`v3 ConditionCreated gameId is undefined`)
-  }
-  
   const gameEntity = await context.Game.get(gameEntityId)
   
   // TODO remove later
@@ -110,7 +106,6 @@ Corev3Contract_ConditionStopped_handler(({ event, context }) => {
   // TODO remove later
   if (!conditionEntity) {
     throw new Error(`v3 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
   }
 
   pauseUnpauseCondition(
@@ -152,7 +147,11 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
     conditionEntity.id,
     event.params.outcomeId.toString(),
   )
-  const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!
+  const outcomeEntity = await context.Outcome.get(outcomeEntityId)
+
+  if (!outcomeEntity) {
+    throw new Error(`v3 handleNewBet outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
+  }
 
   // context.log.debug(`creating v3 bet with id ${getEntityId(coreAddress, event.params.tokenId.toString())}`)
 
@@ -190,7 +189,6 @@ Corev3Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
     conditionId.toString(),
   )
 
-
   const conditionEntity = await context.Condition.get(conditionEntityId)
   // TODO remove later
   if (!conditionEntity) {
@@ -204,7 +202,11 @@ Corev3Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
       conditionEntity.id,
       conditionEntity.outcomesIds![i].toString(),
     )
-    const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!
+    const outcomeEntity = await context.Outcome.get(outcomeEntityId)
+
+    if (!outcomeEntity) {
+      throw new Error(`v3 handleOddsChanged outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
+    }
 
     outcomesEntities = outcomesEntities.concat([outcomeEntity])
   }

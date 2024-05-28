@@ -20,12 +20,6 @@ export async function getConditionV3FromId(
   const cache = await Cache.init(CacheCategory.ConditionV3, chainId);
   const _condition = await cache.read(conditionId);
 
-  console.log("getConditionV3FromId conditionId: ", conditionId)
-
-  // if (conditionId === '100100000000000015773606830000000000000238804883'){
-  //   console.log(_condition)
-  // }
-
   if (_condition) {
     return _condition;
   }
@@ -39,7 +33,7 @@ export async function getConditionV3FromId(
   // Create LPv1 contract instance
   const corev3Contract = new web3.eth.Contract(contractABI, contractAddress);
   
-  console.log("getCondtionv3 conditionId: ", conditionId);
+  console.log("getCondtionv3 from rpc conditionId: ", conditionId);
 
   try {
     const result = (await corev3Contract.methods
