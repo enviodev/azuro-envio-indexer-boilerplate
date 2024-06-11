@@ -183,7 +183,7 @@ FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
   )
 
   if (!freebetEntity) {
-    throw new Error(`v2 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id.toString()}`)
+    throw new Error(`v2 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id}`)
   }
 
   await linkBetWithFreeBet(

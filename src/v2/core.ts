@@ -191,7 +191,6 @@ Corev2Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
   // TODO remove later
   if (!conditionEntity) {
     throw new Error(`v2 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`)
-    return
   }
 
   let outcomesEntities: OutcomeEntity[] = []

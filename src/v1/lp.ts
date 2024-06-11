@@ -17,6 +17,7 @@ import {
   LPContract_LiquidityRemoved_handlerAsync,
   LPContract_NewBet_handlerAsync,
   LPContract_LiquidityAdded_handlerAsync,
+  LPContract_BetterWin_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 
 import { createBet, bettorWin } from "../common/bets";
@@ -29,23 +30,28 @@ import { getNodeWithdrawAmount } from "../contracts/lpv1";
 import { getConfigByChainId } from "../../generated/src/ConfigYAML.bs.js"
 
 LPContract_BetterWin_loader(({ event, context }) => {
-  context.LiquidityPoolContract.load(event.srcAddress);
+  // context.LiquidityPoolContract.load(event.srcAddress);
   
-  const config = getConfigByChainId(event.chainId)
-  const coreAddress = config.contracts.Core.addresses[0]
+  // const config = getConfigByChainId(event.chainId)
+  // const coreAddress = config.contracts.Core.addresses[0]
   
-  context.CoreContract.load(coreAddress, {})
+  // context.CoreContract.load(coreAddress, {})
 
-  const betEntityId = getEntityId(coreAddress, event.params.tokenId.toString());
-  context.Bet.load(betEntityId, {});
-  context.LiveBet.load(betEntityId, {});
+  // const betEntityId = getEntityId(coreAddress, event.params.tokenId.toString());
+  // context.Bet.load(betEntityId, {});
+  // context.LiveBet.load(betEntityId, {});
 });
-LPContract_BetterWin_handler(({ event, context }) => {
-  const liquidityPoolContractEntity = context.LiquidityPoolContract.get(event.srcAddress)!;
+LPContract_BetterWin_handlerAsync(async ({ event, context }) => {
+  const liquidityPoolContractEntity = await context.LiquidityPoolContract.get(event.srcAddress);
+
+  if (!liquidityPoolContractEntity) {
+    throw new Error(`liquidityPoolContractEntity not found. liquidityPoolContractEntityId = ${event.srcAddress}`);
+  }
+
   // hack for V1
   const coreAddress = liquidityPoolContractEntity.coreAddresses![0]
 
-  bettorWin(
+  await bettorWin(
     coreAddress,
     event.params.tokenId,
     event.params.amount,

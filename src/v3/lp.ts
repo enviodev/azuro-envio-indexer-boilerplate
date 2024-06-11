@@ -22,6 +22,7 @@ import {
     LPv3Contract_LiquidityRemoved_handlerAsync,
     LPv3Contract_NewGame_handlerAsync,
     LPv3Contract_LiquidityAdded_handlerAsync,
+    LPv3Contract_BettorWin_handlerAsync,
     // LPv3Contract_Upgraded_handler,
     // LPv3Contract_Upgraded_loader,
 } from "../../generated/src/Handlers.gen";
@@ -34,13 +35,13 @@ import { LP } from "../src/TestHelpers.gen";
 import { getEntityId } from "../utils/schema";
 
 LPv3Contract_BettorWin_loader(({ event, context }) => {
-    context.CoreContract.load(event.params.core, {})
-    context.Bet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
-    context.LiveBet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
+    // context.CoreContract.load(event.params.core, {})
+    // context.Bet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
+    // context.LiveBet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
 });
-LPv3Contract_BettorWin_handler(({ event, context }) => {
+LPv3Contract_BettorWin_handlerAsync(async ({ event, context }) => {
     const coreAddress = event.params.core
-    bettorWin(coreAddress, event.params.tokenId, event.params.amount, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
+    await bettorWin(coreAddress, event.params.tokenId, event.params.amount, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
 });
 
 LPv3Contract_GameCanceled_loader(({ event, context }) => {

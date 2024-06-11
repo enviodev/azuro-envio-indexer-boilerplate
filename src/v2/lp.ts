@@ -22,6 +22,7 @@ import {
   LPv2Contract_LiquidityRemoved_handlerAsync,
   LPv2Contract_NewGame_handlerAsync,
   LPv2Contract_LiquidityAdded_handlerAsync,
+  LPv2Contract_BettorWin_handlerAsync,
   // LPv2Contract_Upgraded_handler,
   // LPv2Contract_Upgraded_loader,
 } from "../../generated/src/Handlers.gen";
@@ -34,17 +35,17 @@ import { LP } from "../src/TestHelpers.gen";
 import { getEntityId } from "../utils/schema";
 
 LPv2Contract_BettorWin_loader(({ event, context }) => {
-  context.CoreContract.load(event.params.core, {})
-  context.Bet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
-  context.LiveBet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
+  // context.CoreContract.load(event.params.core, {})
+  // context.Bet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
+  // context.LiveBet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
 });
-LPv2Contract_BettorWin_handler(({ event, context }) => {
+LPv2Contract_BettorWin_handlerAsync(async ({ event, context }) => {
   if (!event.params.tokenId) {
     throw new Error('LPv2Contract_BettorWin_handler: tokenId is null')
   }
 
   const coreAddress = event.params.core
-  bettorWin(coreAddress, event.params.tokenId, event.params.amount, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
+  await bettorWin(coreAddress, event.params.tokenId, event.params.amount, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
 });
 
 LPv2Contract_GameCanceled_loader(({ event, context }) => {

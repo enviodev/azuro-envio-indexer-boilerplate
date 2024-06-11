@@ -151,12 +151,12 @@ function calcProbability(outcomeFund: bigint, fund: bigint, winningOutcomesCount
   const probability = div(outcomeFund * BigInt(winningOutcomesCount), fund)
 
   if (probability < 1000n){
-    throw new Error(`v3 odds probability lower than 1000, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
+    // throw new Error(`v3 odds probability lower than 1000, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
   }
 
   if (probability >= C1e12) {
     // TODO throw error
-    console.log(`v3 odds probability greater than 1^12, probability is ${probability}, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
+    // console.log(`v3 odds probability greater than 1^12, probability is ${probability}, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
   }
   return probability
 }
@@ -286,7 +286,7 @@ export function v3(funds: bigint[], margin: bigint, winningOutcomesCount: number
 
     if (odds[i] <= C1e12) {
       // TODO throw error
-      console.log(`v3 odds lower than 1^12, fund is ${funds[i]}. Odds are ${odds[i]}. i is ${i}. Odds list is ${odds}`)
+      //console.log(`v3 odds lower than 1^12, fund is ${funds[i]}. Odds are ${odds[i]}. i is ${i}. Odds list is ${odds}`)
     }
   }
 

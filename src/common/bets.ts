@@ -1,6 +1,6 @@
 import { zeroPadBytes } from "ethers"
 import { ZERO_ADDRESS, BET_TYPE_ORDINAR, MULTIPLIERS_VERSIONS, BASES_VERSIONS, BET_STATUS_ACCEPTED, CORE_TYPE_LIVE, BET_TYPE_EXPRESS, CORE_TYPE_PRE_MATCH_V2, CORE_TYPE_PRE_MATCH, CORE_TYPE_EXPRESS_V2, CORE_TYPE_EXPRESS } from "../constants"
-import { Azurobetv2Contract_TransferEvent_handlerContextAsync, BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPContract_NewBetEvent_handlerContextAsync, LPv2Contract_BettorWinEvent_handlerContext, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync } from "../src/Types.gen"
+import { Azurobetv2Contract_TransferEvent_handlerContextAsync, BetEntity, Corev2Contract_NewBetEvent_handlerContext, Expressv2Contract_TransferEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContext, GameEntity, LPContract_NewBetEvent_handlerContext, LPContract_NewBetEvent_handlerContextAsync, LPv2Contract_BettorWinEvent_handlerContext, LPv2Contract_BettorWinEvent_handlerContextAsync, LiveBetEntity, LiveConditionEntity, LiveCorev1Contract_NewLiveBetEvent_handlerContext, LiveOutcomeEntity, SelectionEntity, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync } from "../src/Types.gen"
 import { ConditionEntity, OutcomeEntity } from "../src/Types.gen"
 import { getOdds, toDecimal, safeDiv } from "../utils/math"
 import { getEntityId } from "../utils/schema"
@@ -337,25 +337,25 @@ export async function createBet(
   return betEntity
 }
 
-export function bettorWin(
+export async function bettorWin(
   coreAddress: string,
   tokenId: bigint,
   amount: bigint,
   txHash: string,
   blockNumber: number,
   blockTimestamp: number,
-  context: LPv2Contract_BettorWinEvent_handlerContext,
-): void | null {
+  context: LPv2Contract_BettorWinEvent_handlerContext | LPv2Contract_BettorWinEvent_handlerContextAsync,
+): Promise<void | null> {
   const betEntityId = getEntityId(coreAddress, tokenId.toString())
 
-  const coreContractEntity = context.CoreContract.get(coreAddress)
+  const coreContractEntity = await context.CoreContract.get(coreAddress)
 
   if (!coreContractEntity) {
     throw new Error(`bettorWin coreContractEntity not found. coreContractEntityId = ${coreAddress}`)
   }
 
   if (coreContractEntity.type_.toLowerCase() === CORE_TYPE_LIVE) {
-    const liveBetEntity = context.LiveBet.get(betEntityId)
+    const liveBetEntity = await context.LiveBet.get(betEntityId)
 
     if (!liveBetEntity) {
       throw new Error(`handleBettorWin liveBetEntity not found in bettorWin. betEntity = ${betEntityId}`)
@@ -373,7 +373,7 @@ export function bettorWin(
       _updatedAt: BigInt(blockTimestamp),
     })
   } else if([CORE_TYPE_EXPRESS, CORE_TYPE_EXPRESS_V2, CORE_TYPE_PRE_MATCH, CORE_TYPE_PRE_MATCH_V2].includes(coreContractEntity.type_.toLowerCase())) {
-    const betEntity = context.Bet.get(betEntityId)
+    const betEntity = await context.Bet.get(betEntityId)
 
     if (!betEntity) {
       context.log.error(`handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`)
