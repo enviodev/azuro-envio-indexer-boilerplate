@@ -36,6 +36,10 @@ async function getOrCreateFreebetContract(
     return freebetContractEntity
   }
 
+  if (!chainId) {
+    throw new Error(`chainId is null`)
+  }
+
   const { lp, name } = await getLPAndNameOfFreebetV2Details(
     freebetContractAddress,
     chainId
@@ -203,6 +207,10 @@ FreeBetContract_Transfer_loader(({ event, context }) => {
   context.Freebet.load(getEntityId(event.srcAddress, event.params.tokenId.toString()), {});
 });
 FreeBetContract_Transfer_handler(({ event, context }) => {
+  if (!event.params.tokenId) {
+    throw new Error(`v2 handleTransfer token id is null`)
+  }
+
   // create nft
   if (event.params.from === ZERO_ADDRESS) {
     return

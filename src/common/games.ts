@@ -82,7 +82,7 @@ export async function createGame(
         }
         // Proceed with using 'data' as a JavaScript object
 
-        context.log.debug(`v3 data: ${JSON.stringify(data)}`)
+        // context.log.debug(`v3 data: ${JSON.stringify(data)}`)
     }
 
     if (data === null) {

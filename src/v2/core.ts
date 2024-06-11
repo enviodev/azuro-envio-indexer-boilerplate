@@ -123,7 +123,7 @@ Corev2Contract_ConditionStopped_handler(({ event, context }) => {
 });
 
 Corev2Contract_NewBet_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress, {})
+  context.CoreContract.load(event.srcAddress, {loadLiquidityPool: true})
   
   const conditionEntityId = getEntityId(event.srcAddress, event.params.conditionId.toString())
   context.Condition.load(conditionEntityId, {})
@@ -198,7 +198,12 @@ Corev2Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
 
   for (let i = 0; i < conditionEntity.outcomesIds!.length; i++) {
     const outcomeEntityId = getEntityId(conditionEntity.id, conditionEntity.outcomesIds![i].toString())
-    const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!
+    const outcomeEntity = await context.Outcome.get(outcomeEntityId)
+
+    if (!outcomeEntity) {
+      throw new Error(`v2 handleNewBet handleOddsChanged outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`)
+    }
+
     outcomesEntities = outcomesEntities.concat([outcomeEntity])
   }
 

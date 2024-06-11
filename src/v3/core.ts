@@ -43,6 +43,7 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   
   // TODO remove later
   if (!gameEntity) {
+    // 0x204e7371Ade792c5C006fb52711c50a7efC843ed_1577316943
     throw new Error(`v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`)
   }
 

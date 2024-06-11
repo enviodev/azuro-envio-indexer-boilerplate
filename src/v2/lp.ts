@@ -39,6 +39,10 @@ LPv2Contract_BettorWin_loader(({ event, context }) => {
   context.LiveBet.load(getEntityId(event.params.core, event.params.tokenId.toString()), {})
 });
 LPv2Contract_BettorWin_handler(({ event, context }) => {
+  if (!event.params.tokenId) {
+    throw new Error('LPv2Contract_BettorWin_handler: tokenId is null')
+  }
+
   const coreAddress = event.params.core
   bettorWin(coreAddress, event.params.tokenId, event.params.amount, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
 });

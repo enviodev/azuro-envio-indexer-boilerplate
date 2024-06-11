@@ -220,11 +220,16 @@ export async function resolveCondition(
   else {
     let wonOutcomes: string[] = []
 
-    // for (let i = 0; i < winningOutcomes.length; i++) {
-    //   const outcomeEntityId = getEntityId(conditionEntity.id, winningOutcomes[i].toString())
-    //   // const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!.id
-    //   // wonOutcomes = wonOutcomes.concat([outcomeEntity])
-    // }
+    for (let i = 0; i < winningOutcomes.length; i++) {
+      const outcomeEntityId = getEntityId(conditionEntity.id, winningOutcomes[i].toString())
+      const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!.id
+      
+      if (!outcomeEntity) {
+        throw new Error(`resolveCondition outcomeEntityId not found with id = ${outcomeEntityId}`)
+      }
+
+      wonOutcomes = wonOutcomes.concat([outcomeEntity])
+    }
 
     // conditionEntity.wonOutcomes = wonOutcomes
     conditionEntity.wonOutcomeIds = winningOutcomes

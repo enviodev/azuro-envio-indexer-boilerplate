@@ -32,7 +32,6 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
 
   if (!coreContractEntity) {
     throw new Error(`coreContractEntity not found. coreContractEntityId = ${event.srcAddress}`)
-    return
   }
 
   const conditionId = event.params.conditionId
@@ -158,7 +157,6 @@ CoreContract_ConditionStopped_handler(({ event, context }) => {
   // TODO remove later
   if (!conditionEntity) {
     throw new Error(`v1 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
   }
 
   pauseUnpauseCondition(

@@ -129,7 +129,6 @@ export async function redeemFreebet(
   // TODO remove later
   if (!freebetEntity) {
     throw new Error(`redeemFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
-    return null
   }
 
   context.Freebet.set({
@@ -194,13 +193,12 @@ export function transferFreebet(
   const azuroBetId = freebetEntity.azuroBetId
 
   if (coreAddress !== undefined && azuroBetId !== undefined) {
-    const betEntityId = coreAddress + "_" + azuroBetId.toString()
+    const betEntityId = getEntityId(coreAddress, azuroBetId.toString())
     const betEntity = context.Bet.get(betEntityId)
 
     // TODO remove later
     if (!betEntity) {
       throw new Error(`transferFreebet betEntity not found. betEntityId = ${betEntityId}`)
-      return null
     }
 
     context.Bet.set({
