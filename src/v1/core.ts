@@ -17,30 +17,44 @@ import { getAzuroBetAddress, getTokenForPool } from "../contracts/lpv1";
 
 import { createPoolEntity } from "../common/pool";
 import { createCoreEntity } from "../common/factory";
-import { createCondition, pauseUnpauseCondition, resolveCondition } from "../common/condition";
+import {
+  createCondition,
+  pauseUnpauseCondition,
+  resolveCondition,
+} from "../common/condition";
 import { CORE_TYPE_PRE_MATCH, VERSION_V1 } from "../constants";
 import { createAzuroBetEntity } from "../common/azurobet";
 import { createGame, shiftGame } from "../common/games";
-import { deserialiseConditionV1Result, getConditionV1FromId } from "../contracts/corev1";
+import {
+  deserialiseConditionV1Result,
+  getConditionV1FromId,
+} from "../contracts/corev1";
 import { getEntityId } from "../utils/schema";
 
 CoreContract_ConditionCreated_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress, {})
+  context.CoreContract.load(event.srcAddress, {});
 });
 CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.srcAddress);
 
   if (!coreContractEntity) {
-    throw new Error(`coreContractEntity not found. coreContractEntityId = ${event.srcAddress}`)
+    throw new Error(
+      `coreContractEntity not found. coreContractEntityId = ${event.srcAddress}`
+    );
   }
 
-  const conditionId = event.params.conditionId
-  const startsAt = event.params.timestamp
-  const _conditionData = await getConditionV1FromId(event.srcAddress, event.chainId, conditionId, context)
-  const conditionData = deserialiseConditionV1Result(_conditionData.condition)
+  const conditionId = event.params.conditionId;
+  const startsAt = event.params.timestamp;
+  const _conditionData = await getConditionV1FromId(
+    event.srcAddress,
+    event.chainId,
+    conditionId,
+    context
+  );
+  const conditionData = deserialiseConditionV1Result(_conditionData.condition);
 
-  const coreAddress = event.srcAddress
-  const liquidityPoolAddress = coreContractEntity.liquidityPool_id
+  const coreAddress = event.srcAddress;
+  const liquidityPoolAddress = coreContractEntity.liquidityPool_id;
 
   const gameEntity = await createGame(
     liquidityPoolAddress,
@@ -53,11 +67,13 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     BigInt(event.blockNumber),
     BigInt(event.blockTimestamp),
     event.chainId,
-    context,
-  )
+    context
+  );
 
   if (!gameEntity) {
-    throw new Error(`v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`)
+    throw new Error(
+      `v1 ConditionCreated can\'t create game. conditionId = ${conditionId.toString()}`
+    );
   }
 
   await createCondition(
@@ -76,34 +92,39 @@ CoreContract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     event.blockNumber,
     event.blockTimestamp,
     context,
-    startsAt,
-  )
+    startsAt
+  );
 });
 
 CoreContract_ConditionResolved_loader(({ event, context }) => {
-  context.CoreContract.load(event.srcAddress, {loadLiquidityPool: true})
-  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
+  context.CoreContract.load(event.srcAddress, { loadLiquidityPool: true });
+  context.Condition.load(
+    getEntityId(event.srcAddress, event.params.conditionId.toString()),
+    {}
+  );
 });
 CoreContract_ConditionResolved_handlerAsync(async ({ event, context }) => {
-  const conditionId = event.params.conditionId
-  const coreAddress = event.srcAddress
+  const conditionId = event.params.conditionId;
+  const coreAddress = event.srcAddress;
 
-  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
-  const conditionEntity = await context.Condition.get(conditionEntityId)
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
+  const conditionEntity = await context.Condition.get(conditionEntityId);
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(`v1 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    throw new Error(
+      `v1 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
+    return;
   }
 
-  const coreContractEntity = await context.CoreContract.get(coreAddress)
+  const coreContractEntity = await context.CoreContract.get(coreAddress);
 
   if (!coreContractEntity) {
-    throw new Error(`CoreContract not found. coreAddress = ${coreAddress}`)
+    throw new Error(`CoreContract not found. coreAddress = ${coreAddress}`);
   }
 
-  const liquidityPoolAddress = coreContractEntity.liquidityPool_id
+  const liquidityPoolAddress = coreContractEntity.liquidityPool_id;
 
   await resolveCondition(
     VERSION_V1,
@@ -114,69 +135,85 @@ CoreContract_ConditionResolved_handlerAsync(async ({ event, context }) => {
     event.blockNumber,
     event.blockTimestamp,
     event.chainId,
-    context,
-  )
+    context
+  );
 });
 
 CoreContract_ConditionShifted_loader(({ event, context }) => {
-  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {loadGame: {}})
+  context.Condition.load(
+    getEntityId(event.srcAddress, event.params.conditionId.toString()),
+    { loadGame: {} }
+  );
 });
 CoreContract_ConditionShifted_handler(({ event, context }) => {
-  const conditionId = event.params.conditionId
-  const coreAddress = event.srcAddress
+  const conditionId = event.params.conditionId;
+  const coreAddress = event.srcAddress;
 
-  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
-  const conditionEntity = context.Condition.get(conditionEntityId)
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
+  const conditionEntity = context.Condition.get(conditionEntityId);
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(`v1 ConditionShifted conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
-    return
+    throw new Error(
+      `v1 ConditionShifted conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
+    return;
   }
 
-  shiftGame(conditionEntity.game_id, event.params.newTimestamp, event.transactionHash, event.blockNumber, event.blockTimestamp, context)
+  shiftGame(
+    conditionEntity.game_id,
+    event.params.newTimestamp,
+    event.transactionHash,
+    event.blockNumber,
+    event.blockTimestamp,
+    context
+  );
 
   context.Condition.set({
     ...conditionEntity,
     internalStartsAt: event.params.newTimestamp,
     _updatedAt: BigInt(event.blockTimestamp),
-  })
-
+  });
 });
 
 CoreContract_ConditionStopped_loader(({ event, context }) => {
-  context.Condition.load(getEntityId(event.srcAddress, event.params.conditionId.toString()), {})
+  context.Condition.load(
+    getEntityId(event.srcAddress, event.params.conditionId.toString()),
+    {}
+  );
 });
-CoreContract_ConditionStopped_handler(({ event, context }) => {
-  const conditionId = event.params.conditionId
-  const coreAddress = event.srcAddress
+CoreContract_ConditionStopped_handler(async ({ event, context }) => {
+  const conditionId = event.params.conditionId;
+  const coreAddress = event.srcAddress;
 
-  const conditionEntityId = getEntityId(coreAddress, conditionId.toString())
-  const conditionEntity = context.Condition.get(conditionEntityId)
+  const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
+  const conditionEntity = await context.Condition.get(conditionEntityId);
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(`v1 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`)
+    throw new Error(
+      `v1 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
   }
 
-  pauseUnpauseCondition(
+  await pauseUnpauseCondition(
     conditionEntity,
     event.params.flag,
     BigInt(event.blockTimestamp),
     context
-  )
+  );
 });
 
 CoreContract_LpChanged_loader(async ({ event, context }) => {
   await context.contractRegistration.addLP(event.params.newLp);
   context.CoreContract.load(event.srcAddress, {});
 
-  const resp = await getAzuroBetAddress(event.params.newLp, event.chainId)
-  await context.contractRegistration.addAzurobetv1(resp.azuroBetAddress)
+  const resp = await getAzuroBetAddress(event.params.newLp, event.chainId);
+  await context.contractRegistration.addAzurobetv1(resp.azuroBetAddress);
 });
 
 CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
-  const coreAddress = event.srcAddress
+  const coreAddress = event.srcAddress;
   const liquidityPoolAddress = event.params.newLp;
 
   const token = await getTokenForPool(liquidityPoolAddress, event.chainId);
@@ -189,7 +226,7 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
     BigInt(event.blockNumber),
     BigInt(event.blockTimestamp),
     event.chainId,
-    context,
+    context
   );
 
   const coreContractEntity = await context.CoreContract.get(event.srcAddress);
@@ -199,11 +236,11 @@ CoreContract_LpChanged_handlerAsync(async ({ event, context }) => {
       event.srcAddress,
       liquidityPool,
       CORE_TYPE_PRE_MATCH,
-      context,
+      context
     );
   }
 
-  const resp = await getAzuroBetAddress(liquidityPoolAddress, event.chainId)
+  const resp = await getAzuroBetAddress(liquidityPoolAddress, event.chainId);
 
-  createAzuroBetEntity(coreAddress, resp.azuroBetAddress, context)
+  createAzuroBetEntity(coreAddress, resp.azuroBetAddress, context);
 });
