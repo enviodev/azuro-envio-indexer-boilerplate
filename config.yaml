@@ -18,6 +18,7 @@ contracts:
     handler: src/v1/lp.ts
     events:
       - event: BetterWin(address indexed better, uint256 tokenId, uint256 amount)
+        isAsync: true
       - event: LiquidityAdded(address indexed account, uint256 amount, uint48 leaf)
         isAsync: true
       - event: LiquidityRemoved(address indexed account, uint48 indexed leaf, uint256 amount)
@@ -79,6 +80,7 @@ contracts:
     handler: src/v2/lp.ts
     events:
       - event: BettorWin(address indexed core, address indexed bettor, uint256 tokenId, uint256 amount)
+        isAsync: true
       - event: GameCanceled(uint256 indexed gameId)
       - event: GameShifted(uint256 indexed gameId, uint64 newStart)
       - event: LiquidityAdded(address indexed account, uint48 indexed depositId, uint256 amount)
@@ -96,6 +98,7 @@ contracts:
     handler: src/v3/lp.ts
     events:
       - event: BettorWin(address indexed core, address indexed bettor, uint256 tokenId, uint256 amount)
+        isAsync: true
       - event: GameCanceled(uint256 indexed gameId)
       - event: GameShifted(uint256 indexed gameId, uint64 newStart)
       - event: LiquidityAdded(address indexed account, uint48 indexed depositId, uint256 amount)
