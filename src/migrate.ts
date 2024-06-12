@@ -2,12 +2,12 @@ import fs from "fs";
 import sqlite3 from "sqlite3";
 
 // SQLite database initialization
-const db = new sqlite3.Database(".cache/cache.db");
+const db = new sqlite3.Database("../.cache/cache.db");
 
 // const currentCacheFile = "../.cache/conditionv1-100.json";
 // const tableName = "conditionv1100";
-const currentCacheFile = "../.cache/conditionv2-100.json";
-const tableName = "conditionv2100";
+// const currentCacheFile = "../.cache/conditionv2-100.json";
+// const tableName = "conditionv2100";
 // const currentCacheFile = ".cache/freebetv1-100.json";
 // const tableName = "freebetv1100";
 // const currentCacheFile = ".cache/ipfsmatchdetails-100.json";
@@ -22,11 +22,23 @@ const tableName = "conditionv2100";
 // const tableName = "token100";
 
 // Read data from JSON file
-const jsonData = fs.readFileSync(currentCacheFile, "utf8");
-const dataObj = JSON.parse(jsonData);
+// const jsonData = fs.readFileSync(currentCacheFile, "utf8");
+// const dataObj = JSON.parse(jsonData);
+
+function createTable(tableName: string) {
+  // Create table if not exists
+  db.run(`
+    CREATE TABLE IF NOT EXISTS ${tableName} (
+      id TEXT PRIMARY KEY,
+      data TEXT
+    )
+  `);
+}
+
+createTable("conditionv3100")
 
 // Function to migrate data into SQLite database
-function migrateData() {
+function migrateData(tableName: string, dataObj: any) {
   db.serialize(() => {
     // Create table if not exists
     db.run(`
@@ -51,4 +63,4 @@ function migrateData() {
 }
 
 // Call the migration function
-migrateData();
+// migrateData();
