@@ -11,6 +11,7 @@ contracts:
         isAsync: true
       - event: ConditionShifted(uint256 oracleCondId, uint256 conditionId, uint64 newTimestamp)
       - event: ConditionStopped(uint256 indexed conditionId, bool flag)
+        isAsync: true
       - event: LpChanged(address indexed newLp)
         isAsync: true
   - name: LP
@@ -63,6 +64,7 @@ contracts:
       - event: ConditionResolved(uint256 indexed conditionId, uint8 state, uint64 outcomeWin, int128 lpProfit)
         isAsync: true
       - event: ConditionStopped(uint256 indexed conditionId, bool flag)
+        isAsync: true
       - event: NewBet(address indexed  bettor, address indexed affiliate, uint256 indexed conditionId, uint256 tokenId, uint64 outcomeId, uint128 amount, uint64 odds, uint128[2] funds)
         isAsync: true
       - event: OddsChanged(uint256 indexed conditionId, uint64[2] newOdds)
@@ -142,6 +144,7 @@ contracts:
       - event: ConditionResolved(uint256 indexed conditionId, uint8 state, uint64[] winningOutcomes, int128 lpProfit)
         isAsync: true
       - event: ConditionStopped(uint256 indexed conditionId, bool flag)
+        isAsync: true
       - event: NewBet( address indexed bettor,  address indexed affiliate, uint256 indexed conditionId, uint256 tokenId, uint64 outcomeId, uint128 amount, uint256 odds, uint128[] funds)
         isAsync: true
       - event: OddsChanged(uint256 indexed conditionId, uint256[] newOdds)
@@ -188,17 +191,17 @@ networks:
   #     url: https://gnosis.hypersync.xyz/
   #   contracts:
   #     - name: LPv2
-  #       address: 
+  #       address:
   #         - 0x204e7371Ade792c5C006fb52711c50a7efC843ed
   - id: 100
-    start_block: 0  
+    start_block: 0
     contracts:
       - name: Core
         address:
           - 0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d
       - name: LP
       - name: Azurobetv1 # load dynamic contract with async smart contract call
-        # address: 
+        # address:
         #   - 0xFd9E5A2A1bfc8B57A288A3e12E2c601b0Cc7e476
       - name: XYZFreeBet
         address:
@@ -207,7 +210,7 @@ networks:
         address:
           - 0x8EA1a7241537F10fa73363FDC6380F3FC8619c03
       - name: LPv2
-        address: 
+        address:
           - 0x204e7371Ade792c5C006fb52711c50a7efC843ed
       - name: FreeBet
         address:
@@ -219,7 +222,7 @@ networks:
         # address:
         #   - 0xA3A1B460c68dc91c5B3f71f5487A76fac42858bf
       - name: Expressv2
-        # address: 
+        # address:
         #   - 0x4eE3923484dfdc7Ea2F1c558c2c820a97a727636
       - name: FreeBetFactory
         address:
@@ -234,8 +237,6 @@ networks:
         address:
           - 0x68762711e7bea5716c715a9bb3978e56a842043a
       - name: LPv3
-        address: 
+        address:
           - 0x204e7371Ade792c5C006fb52711c50a7efC843ed
-
-
 # https://docs.bookmaker.xyz/

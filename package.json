@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "chai": "4.3.10",
-    "envio": "^1.0.2",
+    "envio": "1.0.2",
     "ethers": "6.8.0",
     "sqlite3": "^5.1.7",
     "web3": "^4.4.0"
