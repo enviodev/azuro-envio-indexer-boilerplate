@@ -200,7 +200,7 @@ FreeBetContract_FreeBetReissued_loader(({ event, context }) => {
   context.Freebet.load(getEntityId(event.srcAddress, event.params.id.toString()), {});
 });
 FreeBetContract_FreeBetReissued_handler(({ event, context }) => {
-  reissueFreebet(event.srcAddress, event.params.id, event.blockNumber, context)
+  reissueFreebet(event.srcAddress, event.params.id, event.blockTimestamp, context)
 });
 
 FreeBetContract_Transfer_loader(({ event, context }) => {

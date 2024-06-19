@@ -21,10 +21,6 @@ export function createCoreEntity(
   // 0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e v2
   // 0x7f3F3f19c4e4015fd9Db2f22e653c766154091EF v3
 
-  // if (coreAddress.toLowerCase() === '0xC95C831c7bDb0650b8cD5F2a542b263872d8ed0e'.toLowerCase()) {
-  //   throw new Error('setting v2 core')
-  // }
-
   context.log.debug(`create core entity ${coreAddress}`)
   context.CoreContract.set(coreContractEntity) 
   return coreContractEntity

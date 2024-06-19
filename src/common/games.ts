@@ -80,12 +80,10 @@ export async function createGame(
         if (data === null) {
             throw new Error(`createGame (v3) bytes data failed to convert to object. data: ${dataBytes}`);
         }
-        // Proceed with using 'data' as a JavaScript object
-
-        // context.log.debug(`v3 data: ${JSON.stringify(data)}`)
+        // Proceed with using 'data' as aJavaScript object
     }
 
-    if (data === null) {
+    if (!data) {
         throw new Error('createGame data is null')
     }
 
@@ -117,10 +115,8 @@ export async function createGame(
 
     // V2
     const countryObject = data.country
-
     if (isPlainObject(countryObject) && countryObject !== undefined) {
         const countryObjectNameField = countryObject.name
-
         if (typeof countryObjectNameField === 'string') {
             countryName = countryObjectNameField
         }
@@ -130,23 +126,20 @@ export async function createGame(
 
     // V1
     const titleLeagueField = data.titleLeague
-
     if (typeof titleLeagueField === 'string') {
         leagueName = titleLeagueField.toString()
     }
 
     // V2
     const leagueObjectField = data.league
-
     if (isPlainObject(leagueObjectField) && leagueObjectField !== undefined) {
         const leagueObjectNameField = leagueObjectField.name
-
         if (typeof leagueObjectNameField === 'string') {
             leagueName = leagueObjectNameField
         }
     }
 
-    if (leagueName === null) {
+    if (!leagueName) {
         throw new Error('createGame leagueName is null')
     }
 
@@ -156,7 +149,7 @@ export async function createGame(
         throw new Error('createGame sportHubName is null')
     }
 
-    let sportHubEntity = await context.SportHub.get(sportHubName!)
+    let sportHubEntity = await context.SportHub.get(sportHubName)
 
     if (!sportHubEntity) {
         sportHubEntity = {
@@ -374,7 +367,8 @@ export function shiftGame(
 
     // TODO remove later
     if (!gameEntity) {
-        throw new Error(`shiftGame gameEntity not found. gameEntityId = ${gameEntityId}`)
+        context.log.error(`shiftGame gameEntity not found. gameEntityId = ${gameEntityId}`)
+        return null
     }
 
     context.Game.set({

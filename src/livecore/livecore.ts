@@ -39,7 +39,7 @@ LiveCorev1Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     //     event.blockTimestamp,
     //     context,
     // )
-    // throw new Error(`livecore.ts: handleConditionCreated not implemented, address needed ${event.srcAddress}`)
+    throw new Error(`livecore.ts: handleConditionCreated not implemented, address needed ${event.srcAddress}`)
 });
 
 LiveCorev1Contract_ConditionResolved_loader(({ event, context }) => {
@@ -73,7 +73,7 @@ LiveCorev1Contract_ConditionResolved_handlerAsync(async ({ event, context }) => 
 
     // TODO remove later
     if (!liveConditionEntity) {
-        throw new Error(`handleConditionResolved liveConditionEntity not found. liveConditionEntityId = ${liveConditionEntityId}`)
+        context.log.error(`handleConditionResolved liveConditionEntity not found. liveConditionEntityId = ${liveConditionEntityId}`)
         return
     }
 

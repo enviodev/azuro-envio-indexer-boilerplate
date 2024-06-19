@@ -229,7 +229,7 @@ XYZFreeBetContract_FreeBetReissued_loader(({ event, context }) => {
   context.FreebetContract.load(event.srcAddress, {});
 });
 XYZFreeBetContract_FreeBetReissued_handler(({ event, context }) => {
-  reissueFreebet(event.srcAddress, event.params.id, event.blockNumber, context)
+  reissueFreebet(event.srcAddress, event.params.id, event.blockTimestamp, context)
 });
 
 XYZFreeBetContract_Transfer_loader(({ event, context }) => {

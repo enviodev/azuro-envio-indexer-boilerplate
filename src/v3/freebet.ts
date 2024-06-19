@@ -25,10 +25,12 @@ FreeBetv3Contract_NewBet_handlerAsync(async ({ event, context }) => {
   const coreContractEntity = await context.CoreContract.get(event.params.core);
 
   if (!coreContractEntity) {
-    throw new Error(
+    context.log.error(
       `v3 handleNewBet (freebet) coreContractEntity not found. coreContractEntityId = ${event.params.core} freebetAddress = ${event.srcAddress}`
     );
+    return
   }
+
 
   const freebetContractEntity = (await context.FreebetContract.get(
     event.srcAddress

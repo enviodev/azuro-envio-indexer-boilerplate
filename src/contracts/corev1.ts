@@ -92,6 +92,23 @@ export async function getConditionV1FromId(
 export function deserialiseConditionV1Result(
   result: ConditionV1Response
 ): ConditionV1 {
+
+  if (result.fundBank.length !== 2) {
+    throw new Error("fundBank.length !== 2");
+  }
+
+  if (result.payouts.length !== 2) {
+    throw new Error("payouts.length !== 2");
+  }
+
+  if (result.totalNetBets.length !== 2) {
+    throw new Error("totalNetBets.length !== 2");
+  }
+
+  if (result.outcomes.length !== 2) {
+    throw new Error("outcomes.length !== 2");
+  }
+
   const condition: ConditionV1 = {
     fundBank: [BigInt(result.fundBank[0]), BigInt(result.fundBank[1])],
     payouts: [BigInt(result.payouts[0]), BigInt(result.payouts[1])],

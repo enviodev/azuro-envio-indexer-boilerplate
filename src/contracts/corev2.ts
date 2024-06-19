@@ -84,6 +84,19 @@ export async function getConditionV2FromId(
 export function deserialiseConditionV2Result(
   response: ConditionV2Response
 ): ConditionV2 {
+
+  if (response.funds.length !== 2) {
+    throw new Error("funds.length !== 2");
+  }
+
+  if (response.virtualFunds.length !== 2) {
+    throw new Error("virtualFunds.length !== 2");
+  }
+
+  if (response.outcomes.length !== 2) {
+    throw new Error("outcomes.length !== 2");
+  }
+
   const condition: ConditionV2 = {
     gameId: BigInt(response.gameId),
     funds: [BigInt(response.funds[0]), BigInt(response.funds[1])],

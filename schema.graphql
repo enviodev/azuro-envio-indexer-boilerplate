@@ -32,7 +32,7 @@ type LiquidityPoolContract @entity {
   # tvl: BigDecimal!
   # "(betsAmount - wonBetsAmount) * Xprofit / (depositedAmount - withdrawnAmount) / daysSinceDeployment * 365"
   rawApr: BigInt!
-  apr: BigInt! # BigDecimal! will need to handle big decimals
+  apr: String! # will need to handle big decimals
   nfts: [LiquidityPoolNft!]! @derivedFrom(field: "liquidityPool")
   liquidityManager: String
   depositedWithStakingAmount: BigInt!
@@ -164,17 +164,17 @@ type Bet @entity {
   # _conditions: [Condition!]!
   _conditionIds: [BigInt!]!
   rawAmount: BigInt!
-  # amount: BigDecimal!
+  amount: String!
   _tokenDecimals: Int!
   rawPotentialPayout: BigInt!
-  # potentialPayout: BigDecimal!
+  potentialPayout: String!
   rawPayout: BigInt
-  # payout: BigDecimal
+  payout: String
   rawOdds: BigInt!
-  # odds: BigDecimal!
+  odds: String!
   _oddsDecimals: Int!
   rawSettledOdds: BigInt
-  # settledOdds: BigDecimal
+  settledOdds: String
   "when the last game from all sub bets starts at + 2h"
   approxSettledAt: BigInt!
   selections: [Selection!]! @derivedFrom(field: "bet")

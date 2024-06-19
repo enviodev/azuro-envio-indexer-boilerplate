@@ -34,19 +34,16 @@ export async function getConditionV3FromId(
   const getRpcUrl = (rpcsToRotate: string[]) => {
     const rpc = rpcsToRotate[rpcIndex];
     rpcIndex = (rpcIndex + 1) % rpcsToRotate.length;
+    console.log("rpc: ", rpc)
     return rpc;
   };
 
   // RPC URL
   // const rpcURL = CHAIN_CONSTANTS[chainId].rpcURL;
   const rpcURL = getRpcUrl(rpcsToRotate);
-  console.log("trying with ", rpcURL);
 
   // Create Web3 instance
   const web3 = new Web3(rpcURL);
-
-  console.log("waiting 100ms");
-  await sleep(100);
 
   // Create LPv1 contract instance
   const corev3Contract = new web3.eth.Contract(contractABI, contractAddress);
@@ -101,6 +98,18 @@ export function deserialiseConditionV3Result(
   } else {
     throw new Error(
       `v3 ConditionCreated isExpressForbidden incorrect format. isExpressForbidden = ${response.isExpressForbidden}`
+    );
+  }
+
+  if (response.payouts.length !== 2) {
+    throw new Error(
+      `v3 ConditionCreated payouts length is incorrect. payouts = ${response.payouts}`
+    );
+  }
+
+  if (response.virtualFunds.length !== 2) {
+    throw new Error(
+      `v3 ConditionCreated virtualFunds length is incorrect. virtualFunds = ${response.virtualFunds}`
     );
   }
 

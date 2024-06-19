@@ -16,7 +16,7 @@ import {
       event.params.tokenId,
       event.params.from,
       event.params.to,
-      event.blockNumber,
+      event.blockTimestamp,
       context
     )
   });

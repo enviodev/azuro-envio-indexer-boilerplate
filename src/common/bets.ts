@@ -42,7 +42,7 @@ export async function transferBet(
   tokenId: bigint,
   from: string,
   to: string,
-  block: number,
+  blockTimestamp: number,
   context: Azurobetv2Contract_TransferEvent_handlerContextAsync
 ): Promise<BetEntity | null> {
   // create nft
@@ -77,9 +77,6 @@ export async function transferBet(
     throw new Error(`transferBet coreAddress and azuroBetAddress are null`);
   }
 
-  if (tokenId == undefined) {
-    console.log("tokenId is undefined: AB");
-  }
   const betEntityId = getEntityId(finalCoreAddress, tokenId.toString());
   const betEntity = await context.Bet.get(betEntityId);
 
@@ -98,7 +95,7 @@ export async function transferBet(
     ...betEntity,
     actor: actor,
     owner: to,
-    _updatedAt: BigInt(block),
+    _updatedAt: BigInt(blockTimestamp),
   });
 
   return betEntity;
@@ -112,9 +109,6 @@ export async function linkBetWithFreeBet(
   blockTimestamp: number,
   context: XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync
 ): Promise<BetEntity> {
-  if (tokenId == undefined) {
-    console.log("tokenId is undefined: ABC");
-  }
   const betEntityId = getEntityId(coreAddress, tokenId.toString());
   const betEntity = await context.Bet.get(betEntityId);
 
@@ -244,9 +238,6 @@ export async function createBet(
     MULTIPLIERS_VERSIONS.get(version)!
   );
 
-  if (tokenId == undefined) {
-    console.log("tokenId is undefined: ABDS");
-  }
   const betEntityId = getEntityId(coreAddress, tokenId.toString());
 
   if (!betEntityId) {
@@ -259,13 +250,15 @@ export async function createBet(
     const conditionEntity = conditionEntities[k];
     const outcomeEntities: OutcomeEntity[] = [];
 
-    // double-check of sorting by sortOrder field
-    for (let j = 0; j < conditionEntity.outcomesIds!.length; j++) {
-      const outcomeId = conditionEntity.outcomesIds![j];
+    if(!conditionEntity.outcomesIds) {
+      throw new Error(
+        `conditionEntity.outcomesIds is not defined. coreAddress: ${coreAddress}, tokenId: ${tokenId}`
+      );
+    }
 
-      if (outcomeId == undefined) {
-        console.log("outcomeId is undefined: A");
-      }
+    // double-check of sorting by sortOrder field
+    for (let j = 0; j < conditionEntity.outcomesIds.length; j++) {
+      const outcomeId = conditionEntity.outcomesIds[j];
 
       const outcomeEntityId = getEntityId(
         conditionEntity.id,
@@ -296,10 +289,7 @@ export async function createBet(
     for (let i = 0; i < outcomeEntities.length; i++) {
       const outcomeEntity = deepCopy(outcomeEntities[i]);
 
-      if (
-        outcomeEntity.outcomeId === betOutcomeEntities[k].outcomeId &&
-        outcomeEntity._betsEntityIds != undefined
-      ) {
+      if (outcomeEntity.outcomeId === betOutcomeEntities[k].outcomeId) {
         outcomeEntity._betsEntityIds = outcomeEntity._betsEntityIds!.concat([
           betEntityId,
         ]);
@@ -319,6 +309,7 @@ export async function createBet(
         //   BASES_VERSIONS.mustGetEntry(version).value,
         // )
       }
+
       outcomeEntity._updatedAt = createdBlockTimestamp;
       context.Outcome.set(outcomeEntity);
     }
@@ -332,10 +323,10 @@ export async function createBet(
     _lostSubBetsCount: 0,
     _canceledSubBetsCount: 0,
     rawOdds: odds,
-    // odds: toDecimal(
-    //   betEntity.rawOdds,
-    //   BASES_VERSIONS.mustGetEntry(version).value,
-    // ),
+    odds: toDecimal(
+      odds,
+      BASES_VERSIONS.mustGetEntry(version).value,
+    ).toString(),
     _oddsDecimals: BASES_VERSIONS.mustGetEntry(version).value,
     // _conditions: conditionEntitiesIds,
     // _games: gameEntitiesIds,
@@ -347,14 +338,14 @@ export async function createBet(
     actor: bettor,
     affiliate: affiliate ? affiliate : undefined,
     rawAmount: amount,
-    // amount: toDecimal(amount, tokenDecimals),
+    amount: toDecimal(amount, tokenDecimals).toString(),
     _tokenDecimals: tokenDecimals,
     _conditionIds: conditionIds,
     rawPotentialPayout: potentialPayout,
-    // potentialPayout: toDecimal(
-    // potentialPayout,
-    // tokenDecimals,
-    // ),
+    potentialPayout: toDecimal(
+      potentialPayout,
+      tokenDecimals,
+    ).toString(),
     createdTxHash: txHash,
     createdBlockNumber: BigInt(createdBlockNumber),
     createdBlockTimestamp: BigInt(createdBlockTimestamp),
@@ -373,18 +364,15 @@ export async function createBet(
     rawPayout: undefined,
     rawSettledOdds: undefined,
     resolvedTxHash: undefined,
+    //
+    payout: undefined, 
+    settledOdds: undefined,
   };
 
   context.Bet.set(betEntity);
 
   for (let i = 0; i < betOutcomeEntities.length; i++) {
     const betOutcomeEntity: OutcomeEntity = betOutcomeEntities[i];
-
-    if (!conditionEntities[i].conditionId.toString()) {
-      throw new Error(
-        `createBet conditionId is not defined. coreAddress: ${coreAddress}, tokenId: ${tokenId}`
-      );
-    }
 
     const selectionEntityId = getEntityId(
       betEntityId,
@@ -437,9 +425,10 @@ export async function bettorWin(
     const liveBetEntity = await context.LiveBet.get(betEntityId);
 
     if (!liveBetEntity) {
-      throw new Error(
+      context.log.error(
         `handleBettorWin liveBetEntity not found in bettorWin. betEntity = ${betEntityId}`
       );
+      return 
     }
 
     context.LiveBet.set({
@@ -461,53 +450,17 @@ export async function bettorWin(
       CORE_TYPE_PRE_MATCH_V2,
     ].includes(coreContractEntity.type_.toLowerCase())
   ) {
-    let betEntity = await context.Bet.get(betEntityId);
+    const betEntity = await context.Bet.get(betEntityId);
 
     if (!betEntity) {
       context.log.error(
         `handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`
       );
-      betEntity = {
-        id: betEntityId,
-        core_id: "0x4fE6A9e47db94a9b2a4FfeDE8db1602FD1fdd37d",
-        type_: "Ordinar",
-        betId: 0n,
-        bettor: "String!",
-        owner: "String!",
-        actor: "String!",
-        affiliate: "String",
-        _conditionIds: [],
-        rawAmount: 0n,
-        _tokenDecimals: 18,
-        rawPotentialPayout: 0n,
-        rawPayout: 0n,
-        rawOdds: 0n,
-        _oddsDecimals: 1,
-        rawSettledOdds: 0n,
-        approxSettledAt: 0n,
-        createdBlockNumber: 0n,
-        createdBlockTimestamp: 0n,
-        createdTxHash: "String!",
-        resolvedBlockNumber: 0n,
-        resolvedBlockTimestamp: 0n,
-        resolvedTxHash: "String",
-        status: "Accepted",
-        result: "Won",
-        isRedeemable: false,
-        isRedeemed: false,
-        redeemedBlockNumber: 0n,
-        redeemedBlockTimestamp: 0n,
-        redeemedTxHash: "String",
-        _subBetsCount: 0,
-        _wonSubBetsCount: 0,
-        _lostSubBetsCount: 0,
-        _canceledSubBetsCount: 0,
-        _isFreebet: false,
-        freebet_id: "Freebet",
-        _updatedAt: 0n,
-      };
-      // return null;
-      // throw new Error(`handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}. core type: ${coreContractEntity.type_}`)
+      return
+    }
+
+    if(!betEntity.rawAmount) {
+      throw new Error(`betEntity.rawAmount is empty 3`);
     }
 
     context.Bet.set({
@@ -515,12 +468,13 @@ export async function bettorWin(
       isRedeemed: true,
       isRedeemable: false,
       rawPayout: amount,
-      // payout: toDecimal(amount, betEntity._tokenDecimals),
+      payout: toDecimal(amount, betEntity._tokenDecimals).toString(),
       redeemedBlockNumber: BigInt(blockNumber),
       redeemedBlockTimestamp: BigInt(blockTimestamp),
       redeemedTxHash: txHash,
       _updatedAt: BigInt(blockTimestamp),
     });
+
   } else {
     throw new Error(
       `unknown core type in bettorWin: ${coreContractEntity.type_}`
@@ -570,11 +524,7 @@ export function createLiveBet(
     context.LiveCondition.set(liveConditionEntities[0]);
   }
 
-  const potentialPayout = (amount * odds) / MULTIPLIERS_VERSIONS.get(version)!;
-
-  if (tokenId == undefined) {
-    console.log("tokenId is undefined: AsdvcsB");
-  }
+  const potentialPayout = safeDiv((amount * odds), MULTIPLIERS_VERSIONS.get(version)!);
 
   const liveBetEntityId = getEntityId(coreAddress, tokenId.toString());
 
@@ -582,9 +532,15 @@ export function createLiveBet(
     const liveConditionEntity = liveConditionEntities[k];
     const outcomeEntities: Mutable<LiveOutcomeEntity>[] = [];
 
+    if (!liveConditionEntity.outcomesIds) {
+      throw new Error(
+        `liveConditionEntity.outcomesIds is not defined. coreAddress: ${coreAddress}, tokenId: ${tokenId}`
+      );
+    }
+
     // double-check of sorting by sortOrder field
-    for (let j = 0; j < liveConditionEntity.outcomesIds!.length; j++) {
-      const outcomeId = liveConditionEntity.outcomesIds![j];
+    for (let j = 0; j < liveConditionEntity.outcomesIds.length; j++) {
+      const outcomeId = liveConditionEntity.outcomesIds[j];
 
       if (outcomeId == undefined) {
         console.log("outcomeId is undefined: AsasddvcsB");

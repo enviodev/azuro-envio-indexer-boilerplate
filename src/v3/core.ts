@@ -17,6 +17,7 @@ import {
   Corev3Contract_ConditionResolved_handlerAsync,
   Corev3Contract_NewBet_handlerAsync,
   Corev3Contract_OddsChanged_handlerAsync,
+  Corev3Contract_ConditionStopped_handlerAsync,
 } from "../../generated/src/Handlers.gen";
 import { createBet } from "../common/bets";
 import {
@@ -50,9 +51,6 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!
     .liquidityPool_id;
 
-  if (event.params.gameId == undefined) {
-    console.log("jbaebaibdawd");
-  }
 
   const gameEntityId = getEntityId(
     liquidityPoolAddress,
@@ -64,9 +62,10 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   // TODO remove later
   if (!gameEntity) {
     // 0x204e7371Ade792c5C006fb52711c50a7efC843ed_1577316943
-    throw new Error(
+    context.log.error(
       `v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`
     );
+    return
   }
 
   await createCondition(
@@ -102,9 +101,10 @@ Corev3Contract_ConditionResolved_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
+    context.log.error(
       `v3 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`
     );
+    return
   }
 
   const liquidityPoolAddress = (await context.CoreContract.get(coreAddress))!
@@ -124,30 +124,24 @@ Corev3Contract_ConditionResolved_handlerAsync(async ({ event, context }) => {
 });
 
 Corev3Contract_ConditionStopped_loader(({ event, context }) => {
-  if (event.params.conditionId == undefined) {
-    console.log("jbaebaibdaaaasdcacaecasdcwd");
-  }
   context.Condition.load(
     getEntityId(event.srcAddress, event.params.conditionId.toString()),
     { loadGame: {} }
   );
 });
-Corev3Contract_ConditionStopped_handler(async ({ event, context }) => {
+Corev3Contract_ConditionStopped_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId;
   const coreAddress = event.srcAddress;
-
-  if (event.params.conditionId == undefined) {
-    console.log("jbasdcaceedcasdcwd");
-  }
 
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
   const conditionEntity = await context.Condition.get(conditionEntityId);
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
+    context.log.error(
       `v3 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`
     );
+    return
   }
 
   await pauseUnpauseCondition(
@@ -172,28 +166,21 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
   const conditionId = event.params.conditionId;
   const coreAddress = event.srcAddress;
 
-  if (event.params.conditionId == undefined) {
-    console.log("jbaebjbubcewd");
-  }
-
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
   const conditionEntity = await context.Condition.get(conditionEntityId);
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
+    context.log.error(
       `v3 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`
     );
+    return
   }
 
   const lp = (await context.CoreContract.get(coreAddress))!.liquidityPool_id;
   const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(
     lp
   ))!;
-
-  if (event.params.outcomeId == undefined) {
-    console.log("jbaebaibdaaasdccaeeeswqasdcwd");
-  }
 
   const outcomeEntityId = getEntityId(
     conditionEntity.id,
@@ -208,6 +195,10 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
   }
 
   // context.log.debug(`creating v3 bet with id ${getEntityId(coreAddress, event.params.tokenId.toString())}`)
+
+  if (!event.params.amount) {
+    throw new Error(`Amount is not defined for bet ${event.transactionHash}`);
+  }
 
   await createBet(
     VERSION_V3,
@@ -242,30 +233,27 @@ Corev3Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
   );
   const conditionData = deserialiseConditionV3Result(_conditionData.condition);
 
-  if (event.params.conditionId == undefined) {
-    console.log("jbaeascsebaibdaaasdcasdcwd");
-  }
-
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
 
   const conditionEntity = await context.Condition.get(conditionEntityId);
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
+    context.log.error(
       `v3 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`
     );
+    return
   }
 
   let outcomesEntities: OutcomeEntity[] = [];
 
-  for (let i = 0; i < conditionEntity.outcomesIds!.length; i++) {
-    if (conditionEntity.outcomesIds![i] == undefined) {
-      console.log("jbaacesscscasdcwd");
-    }
+  if(!conditionEntity.outcomesIds) {
+    throw new Error(`v3 handleOddsChanged conditionEntity.outcomesIds not found. conditionEntityId = ${conditionEntityId}`)
+  }
 
+  for (let i = 0; i < conditionEntity.outcomesIds.length; i++) {
     const outcomeEntityId = getEntityId(
       conditionEntity.id,
-      conditionEntity.outcomesIds![i].toString()
+      conditionEntity.outcomesIds[i].toString()
     );
     const outcomeEntity = await context.Outcome.get(outcomeEntityId);
 
@@ -312,9 +300,10 @@ Corev3Contract_MarginChanged_handler(({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
+    context.log.error(
       `v3 handleMarginChanged conditionEntity not found. conditionEntityId = {conditionEntityId}`
     );
+    return
   }
 
   updateConditionMargin(
@@ -351,9 +340,10 @@ Corev3Contract_ReinforcementChanged_handler(({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
+    context.log.error(
       `v3 handleReinforcementChanged conditionEntity not found. conditionEntityId = ${conditionEntityId}`
     );
+    return
   }
 
   updateConditionReinforcement(

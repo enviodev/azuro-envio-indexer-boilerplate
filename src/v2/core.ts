@@ -140,9 +140,10 @@ Corev2Contract_ConditionStopped_handler(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
+    context.log.error(
       `v2 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`
     );
+    return
   }
 
   await pauseUnpauseCondition(
@@ -242,17 +243,24 @@ Corev2Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
+    context.log.error(
       `v2 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`
     );
+    return
   }
 
   let outcomesEntities: OutcomeEntity[] = [];
 
-  for (let i = 0; i < conditionEntity.outcomesIds!.length; i++) {
+  if(!conditionEntity.outcomesIds) {
+    throw new Error(
+      `v2 handleNewBet handleOddsChanged conditionEntity.outcomesIds not found. conditionEntityId = ${conditionEntityId}`
+    );
+  }
+
+  for (let i = 0; i < conditionEntity.outcomesIds.length; i++) {
     const outcomeEntityId = getEntityId(
       conditionEntity.id,
-      conditionEntity.outcomesIds![i].toString()
+      conditionEntity.outcomesIds[i].toString()
     );
     const outcomeEntity = await context.Outcome.get(outcomeEntityId);
 

@@ -1,5 +1,6 @@
 import { C1e9, C1e12, VERSION_V2, VERSION_V3, VERSION_V1 } from '../constants'
 import { Version } from './types';
+import Decimal from 'decimal.js';
 
 export function safeDiv(numerator: bigint, divisor: bigint): bigint {
   const bigNumerator = BigInt(numerator);
@@ -47,16 +48,10 @@ function addMargin(odds: bigint, margin: bigint, decimals: bigint): bigint {
   return newOdds
 }
 
-// export function toDecimal(x: bigint, decimals: number = 18): BigDecimal {
-//   const divisor = new BigDecimal(BigInt(10) ** BigInt(decimals))
-
-//   return new BigDecimal(x) / (divisor)
-// }
-
-export function toDecimal(x: bigint, decimals: number = 18): bigint {
-  const divisor = BigInt(10) ** BigInt(decimals)
-
-  return x / divisor
+export function toDecimal(x: bigint, decimals: number = 18): string {
+  const divisor = new Decimal((BigInt(10) ** BigInt(decimals)).toString())
+  const numerator = new Decimal(x.toString())
+  return numerator.div(divisor).toString()
 }
 
 function ceil(a: bigint, m: bigint, decimals: bigint): bigint {
@@ -151,7 +146,8 @@ function calcProbability(outcomeFund: bigint, fund: bigint, winningOutcomesCount
   const probability = div(outcomeFund * BigInt(winningOutcomesCount), fund)
 
   if (probability < 1000n){
-    // throw new Error(`v3 odds probability lower than 1000, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
+    // TODO throw error
+    // console.log(`v3 odds probability lower than 1000, outcomeFund is ${outcomeFund.toString()}, probability is ${probability.toString()}, fund is ${fund.toString()}, winningOutcomesCount is ${winningOutcomesCount.toString()}`)
   }
 
   if (probability >= C1e12) {

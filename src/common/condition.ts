@@ -9,6 +9,7 @@ import {
   Corev2Contract_ConditionCreatedEvent_handlerContextAsync,
   Corev2Contract_OddsChangedEvent_handlerContext,
   Corev2Contract_OddsChangedEvent_handlerContextAsync,
+  Corev3Contract_ConditionStoppedEvent_handlerContextAsync,
   Corev3Contract_MarginChangedEvent_handlerContext,
   Corev3Contract_ReinforcementChangedEvent_handlerContext,
   CountryEntity,
@@ -46,13 +47,14 @@ import {
   VERSION_V3,
 } from "../constants";
 import { removeItem } from "../utils/array";
-import { getOdds, toDecimal } from "../utils/math";
+import { getOdds, safeDiv, toDecimal } from "../utils/math";
 import { calcPayoutV2, calcPayoutV3 } from "./express";
 import { countConditionResolved } from "./pool";
 import { Condition, LiveCondition } from "../src/DbFunctions.bs";
 import { getEntityId } from "../utils/schema";
 import { Mutable, Version } from "../utils/types";
 import { deepCopy } from "../utils/mapping";
+import { Decimal } from "decimal.js";
 
 export async function createCondition(
   version: Version,
@@ -75,12 +77,6 @@ export async function createCondition(
   startsAt: bigint | null = null
 ): Promise<Mutable<ConditionEntity> | null> {
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
-
-  if (!conditionEntityId) {
-    throw new Error(
-      `createCondition conditionEntityId is empty, conditionId ${conditionId}`
-    );
-  }
 
   const conditionEntity: Mutable<ConditionEntity> = {
     id: conditionEntityId,
@@ -120,73 +116,38 @@ export async function createCondition(
     );
   }
 
+  context.Condition.set(conditionEntity);
+
   let outcomeIds: bigint[] = [];
+
+  if (outcomes.length !== 2) {
+    throw new Error(`createCondition outcomes length is not 2. conditionentity id = ${conditionEntityId}`);
+  }
 
   for (let i = 0; i < outcomes.length; i++) {
     outcomeIds = outcomeIds.concat([outcomes[i]]);
 
     const outcomeId = outcomes[i].toString();
 
-    if (!outcomeId) {
-      throw new Error(
-        `createCondition outcomeId is empty, conditionId ${conditionEntityId}`
-      );
-    }
-
     const outcomeEntityId = getEntityId(conditionEntityId, outcomeId);
 
-    // const outcomeEntity: OutcomeEntity = {
-    //   id: outcomeEntityId,
-    //   core_id: coreAddress,
-    //   outcomeId: outcomes[i],
-    //   condition_id: conditionEntity.id,
-    //   sortOrder: i,
-    //   fund: funds[i],
-    //   rawCurrentOdds: newOdds[i],
-    //   _betsEntityIds: [],
-    //   // currentOdds: toDecimal(
-    //   //   newOdds[i],
-    //   //   BASES_VERSIONS.mustGetEntry(version).value,
-    //   // ),
-    //   _updatedAt: BigInt(createBlockTimestamp),
-    // };
     const outcomeEntity: OutcomeEntity = {
       id: outcomeEntityId,
       core_id: coreAddress,
       outcomeId: outcomes[i],
       condition_id: conditionEntity.id,
       sortOrder: i,
-      fund: 0n,
-      rawCurrentOdds: 0n,
-      _betsEntityIds: undefined,
+      fund: funds[i] ? funds[i] : 0n, 
+      rawCurrentOdds: newOdds[i] ? newOdds[i] : 0n, 
+      _betsEntityIds: [],
       // currentOdds: toDecimal(
       //   newOdds[i],
       //   BASES_VERSIONS.mustGetEntry(version).value,
-      // ),
+      // ).toString(),
       _updatedAt: BigInt(createBlockTimestamp),
     };
 
-    if (
-      outcomes[i] == undefined ||
-      funds[i] == undefined ||
-      newOdds[i] == undefined
-    ) {
-      console.log("donking it here");
-      console.log(outcomes[i]);
-      console.log(funds[i]);
-      console.log(newOdds[i]);
-      console.log("outcomeEntityId");
-      console.log(outcomeEntityId);
-    }
-
     context.Outcome.set(outcomeEntity);
-  }
-
-  // TODO remove
-  // Does throw in v3
-  if (outcomes.length !== 2) {
-    // context.log.debug(`createCondition outcomeIds.length !== 2 length is ${outcomes.length}`)
-    // throw new Error(`createCondition outcomeIds.length !== 2`)
   }
 
   conditionEntity.outcomesIds = outcomeIds;
@@ -197,7 +158,13 @@ export async function createCondition(
 
   context.Condition.set(conditionEntity);
 
-  const gameEntity = (await context.Game.get(gameEntityId))!;
+  const gameEntity = await context.Game.get(gameEntityId);
+
+  if (!gameEntity) {
+    throw new Error(
+      `createCondition gameEntity not found with id = ${gameEntityId}`
+    );
+  }
 
   context.Game.set({
     ...gameEntity,
@@ -209,9 +176,13 @@ export async function createCondition(
     _updatedAt: BigInt(createBlockTimestamp),
   });
 
-  const leagueEntity = (await context.League.get(gameEntity.league_id))!;
+  const leagueEntity = await context.League.get(gameEntity.league_id);
 
-  if (!leagueEntity.activeGamesEntityIds!.includes(gameEntityId)) {
+  if(!leagueEntity) {
+    throw new Error(`createCondition leagueEntity not found with id = ${gameEntity.league_id}`)
+  }
+
+  if (leagueEntity.activeGamesEntityIds!.includes(gameEntityId)) {
     context.League.set({
       ...leagueEntity,
       activeGamesEntityIds: leagueEntity.activeGamesEntityIds!.concat([
@@ -220,9 +191,13 @@ export async function createCondition(
       hasActiveGames: true,
     });
 
-    const countryEntity = (await context.Country.get(leagueEntity.country_id))!;
+    const countryEntity = await context.Country.get(leagueEntity.country_id)
 
-    if (!countryEntity.activeLeaguesEntityIds!.includes(leagueEntity.id)) {
+    if (!countryEntity) {
+      throw new Error(`createCondition countryEntity not found with id = ${leagueEntity.country_id}`)
+    }
+
+    if (countryEntity.activeLeaguesEntityIds!.includes(leagueEntity.id)) {
       context.Country.set({
         ...countryEntity,
         activeLeaguesEntityIds: countryEntity.activeLeaguesEntityIds!.concat([
@@ -251,25 +226,29 @@ export function updateConditionOdds(
   );
 
   if (!odds) {
-    context.log.error(
+    throw new Error(
       `updateConditionOdds odds is null, conditionId = ${conditionEntity.id}`
     );
-    return null;
+    // return null;
   }
 
   for (let i = 0; i < outcomesEntities.length; i++) {
     const outcomeEntity = outcomesEntities[i];
 
-    // context.Outcome.set({
-    //   ...outcomeEntity,
-    //   fund: funds[i],
-    //   rawCurrentOdds: odds[i],
-    //   // currentOdds: toDecimal(
-    //   //   odds[i],
-    //   //   BASES_VERSIONS.mustGetEntry(version).value,
-    //   // ),
-    //   _updatedAt: BigInt(block),
-    // });
+    if(!outcomeEntity._betsEntityIds) {
+      throw new Error(`outcomeEntity._betsEntityIds is empty 2`);
+    }
+
+    context.Outcome.set({
+      ...outcomeEntity,
+      fund: funds[i] ? funds[i] : 0n,
+      rawCurrentOdds: odds[i] ? odds[i] : 0n,
+      // currentOdds: toDecimal(
+      //   odds[i],
+      //   BASES_VERSIONS.mustGetEntry(version).value,
+      // ),
+      _updatedAt: BigInt(block),
+    });
   }
 
   return conditionEntity;
@@ -341,10 +320,10 @@ export async function resolveCondition(
     throw new Error(`resolveCondition outcomesIds is empty.`);
   }
 
-  for (let i = 0; i < conditionEntity.outcomesIds!.length; i++) {
+  for (let i = 0; i < conditionEntity.outcomesIds.length; i++) {
     const outcomeEntityId = getEntityId(
       conditionEntity.id,
-      conditionEntity.outcomesIds![i].toString()
+      conditionEntity.outcomesIds[i].toString()
     );
     const outcomeEntity = await context.Outcome.get(outcomeEntityId);
 
@@ -354,128 +333,130 @@ export async function resolveCondition(
       );
     }
 
-    if (
-      outcomeEntity._betsEntityIds != undefined &&
-      outcomeEntity._betsEntityIds!.length === 0
-    ) {
-      continue;
+    if (!outcomeEntity._betsEntityIds || outcomeEntity._betsEntityIds.length === 0) {
+      continue
     }
 
-    if (outcomeEntity._betsEntityIds != undefined) {
-      for (let j = 0; j < outcomeEntity._betsEntityIds.length; j++) {
-        const betEntityId = outcomeEntity._betsEntityIds![j];
-        const _betEntity = (await context.Bet.get(betEntityId))!;
-        const betEntity = deepCopy(_betEntity);
+    for (let j = 0; j < outcomeEntity._betsEntityIds.length; j++) {
+      const betEntityId = outcomeEntity._betsEntityIds[j];
+      const _betEntity = await context.Bet.get(betEntityId);
 
-        betsAmount = betsAmount + betEntity.rawAmount;
+      if (!_betEntity) {
+        throw new Error(
+          `resolveCondition betEntity not found with id = ${betEntityId}`
+        )
+      }
 
-        const selectionEntityId = getEntityId(
-          betEntityId,
-          conditionEntity.conditionId.toString()
+      const betEntity = deepCopy(_betEntity);
+
+      betsAmount = betsAmount + betEntity.rawAmount;
+
+      const selectionEntityId = getEntityId(
+        betEntityId,
+        conditionEntity.conditionId.toString()
+      );
+      const _selectionEntity = await context.Selection.get(selectionEntityId);
+      if (!_selectionEntity) {
+        throw new Error(
+          `resolveCondition selectionEntity not found with id = ${selectionEntityId}`
         );
-        const _selectionEntity = await context.Selection.get(selectionEntityId);
-        if (!_selectionEntity) {
-          throw new Error(
-            `resolveCondition selectionEntity not found with id = ${selectionEntityId}`
-          );
-        }
-        const selectionEntity = deepCopy(_selectionEntity);
+      }
+      const selectionEntity = deepCopy(_selectionEntity);
 
-        if (!isCanceled) {
-          if (winningOutcomes.indexOf(selectionEntity._outcomeId) !== -1) {
-            betEntity._wonSubBetsCount += 1;
-            selectionEntity.result = SELECTION_RESULT_WON;
-          } else {
-            betEntity._lostSubBetsCount += 1;
-            selectionEntity.result = SELECTION_RESULT_LOST;
-          }
+      if (!isCanceled) {
+        if (winningOutcomes.indexOf(selectionEntity._outcomeId) !== -1) {
+          betEntity._wonSubBetsCount += 1;
+          selectionEntity.result = SELECTION_RESULT_WON;
         } else {
-          betEntity._canceledSubBetsCount += 1;
+          betEntity._lostSubBetsCount += 1;
+          selectionEntity.result = SELECTION_RESULT_LOST;
         }
+      } else {
+        betEntity._canceledSubBetsCount += 1;
+      }
 
-        context.Selection.set(selectionEntity);
+      context.Selection.set(selectionEntity);
 
-        // All subBets is resolved
-        if (
-          betEntity._wonSubBetsCount +
-            betEntity._lostSubBetsCount +
-            betEntity._canceledSubBetsCount ===
-          betEntity._subBetsCount
-        ) {
-          betEntity.resolvedBlockTimestamp = BigInt(blockTimestamp);
-          betEntity.resolvedBlockNumber = BigInt(blockNumber);
-          betEntity.resolvedTxHash = transactionHash;
-          betEntity.rawSettledOdds = betEntity.rawOdds;
-          // settledOdds: betEntity.odds, // BigDecimal
+      // All subBets is resolved
+      if (
+        betEntity._wonSubBetsCount +
+        betEntity._lostSubBetsCount +
+        betEntity._canceledSubBetsCount ===
+        betEntity._subBetsCount
+      ) {
+        betEntity.resolvedBlockTimestamp = BigInt(blockTimestamp);
+        betEntity.resolvedBlockNumber = BigInt(blockNumber);
+        betEntity.resolvedTxHash = transactionHash;
+        betEntity.rawSettledOdds = betEntity.rawOdds;
+        betEntity.settledOdds = betEntity.odds // BigDecimal
 
-          // At least one subBet is lost - customer lost
-          if (betEntity._lostSubBetsCount > 0) {
-            betEntity.result = BET_RESULT_LOST;
-            betEntity.status = BET_STATUS_RESOLVED;
-            betEntity.rawPayout = 0n;
-            // payout: BigDecimal.zero(), // BigDecimal
-          }
-          // At least one subBet is won and no lost subBets - customer won
-          else if (betEntity._wonSubBetsCount > 0) {
-            betEntity.result = BET_RESULT_WON;
-            betEntity.status = BET_STATUS_RESOLVED;
-            betEntity.isRedeemable = true;
+        // At least one subBet is lost - customer lost
+        if (betEntity._lostSubBetsCount > 0) {
+          betEntity.result = BET_RESULT_LOST;
+          betEntity.status = BET_STATUS_RESOLVED;
+          betEntity.rawPayout = 0n;
+          betEntity.payout = '0'; // BigDecimal
+        }
+        // At least one subBet is won and no lost subBets - customer won
+        else if (betEntity._wonSubBetsCount > 0) {
+          betEntity.result = BET_RESULT_WON;
+          betEntity.status = BET_STATUS_RESOLVED;
+          betEntity.isRedeemable = true;
 
-            if (betEntity.type_ === BET_TYPE_ORDINAR) {
-              betEntity.rawPayout = betEntity.rawPotentialPayout;
-              // payout: betEntity.potentialPayout,
-            } else if (betEntity.type_ === BET_TYPE_EXPRESS) {
-              let payoutSC: bigint | null = null;
+          if (betEntity.type_ === BET_TYPE_ORDINAR) {
+            betEntity.rawPayout = betEntity.rawPotentialPayout;
+            betEntity.payout = betEntity.potentialPayout
+          } else if (betEntity.type_ === BET_TYPE_EXPRESS) {
+            let payoutSC: bigint | null = null;
 
-              if (version === VERSION_V2) {
-                payoutSC = await calcPayoutV2(
-                  betEntity.core_id,
-                  betEntity.betId,
-                  chainId
-                );
-              } else if (version === VERSION_V3) {
-                payoutSC = await calcPayoutV3(
-                  betEntity.core_id,
-                  betEntity.betId,
-                  chainId
-                );
-              }
-
-              if (payoutSC !== null) {
-                betEntity.rawPayout = payoutSC;
-                // payout: toDecimal(payoutSC, betEntity._tokenDecimals),
-                betEntity.rawSettledOdds =
-                  (payoutSC * 10n) ** BigInt(betEntity._oddsDecimals) /
-                  betEntity.rawAmount;
-                // settledOdds: toDecimal(
-                // betEntity.rawSettledOdds!,
-                // betEntity._oddsDecimals,
-                // ),
-              } else {
-                context.log.debug(
-                  `betEntity type = ${betEntity.type_} payoutSC is null`
-                );
-                betEntity.rawPayout = 0n;
-                // payout: 0n,
-              }
+            if (version === VERSION_V2) {
+              payoutSC = await calcPayoutV2(
+                betEntity.core_id,
+                betEntity.betId,
+                chainId
+              );
+            } else if (version === VERSION_V3) {
+              payoutSC = await calcPayoutV3(
+                betEntity.core_id,
+                betEntity.betId,
+                chainId
+              );
             }
 
-            wonBetsAmount = wonBetsAmount + betEntity.rawPayout!;
+            if (payoutSC !== null) {
+              betEntity.rawPayout = payoutSC;
+              betEntity.payout = toDecimal(payoutSC, betEntity._tokenDecimals).toString()
+              betEntity.rawSettledOdds = safeDiv((payoutSC * 10n) ** BigInt(betEntity._oddsDecimals), betEntity.rawAmount);
+              betEntity.settledOdds = toDecimal(
+                betEntity.rawSettledOdds!,
+                betEntity._oddsDecimals,
+              ).toString()
+            } else {
+              betEntity.rawPayout = 0n;
+              betEntity.payout = '0'
+            }
           }
 
-          // Only canceled subBets - express was canceled
-          else {
-            betEntity.status = BET_STATUS_CANCELED;
-            betEntity.isRedeemable = true;
-            betEntity.rawPayout = betEntity.rawAmount;
-            // payout: betEntity.amount,
-          }
+          wonBetsAmount = wonBetsAmount + betEntity.rawPayout!;
         }
-        context.Bet.set({
-          ...betEntity,
-          _updatedAt: BigInt(blockTimestamp),
-        });
+
+        // Only canceled subBets - express was canceled
+        else {
+          betEntity.status = BET_STATUS_CANCELED;
+          betEntity.isRedeemable = true;
+          betEntity.rawPayout = betEntity.rawAmount;
+          betEntity.payout = betEntity.amount
+        }
       }
+
+      if (!betEntity.rawAmount) {
+        throw new Error(`betEntity.rawAmount is empty 1`);
+      }
+
+      context.Bet.set({
+        ...betEntity,
+        _updatedAt: BigInt(blockTimestamp),
+      });
     }
   }
 
@@ -586,7 +567,7 @@ export async function pauseUnpauseCondition(
   _conditionEntity: ConditionEntity,
   flag: boolean,
   blockTimestamp: bigint,
-  context: CoreContract_ConditionStoppedEvent_handlerContext
+  context: CoreContract_ConditionStoppedEvent_handlerContext | Corev3Contract_ConditionStoppedEvent_handlerContextAsync
 ): Promise<ConditionEntity | null> {
   const conditionEntity = deepCopy(_conditionEntity);
 
@@ -601,9 +582,9 @@ export async function pauseUnpauseCondition(
     _updatedAt: blockTimestamp,
   });
 
-  const _gameEntity: GameEntity = await context.Game.get(
+  const _gameEntity = await context.Game.get(
     conditionEntity.game_id
-  )!;
+  );
 
   if (!_gameEntity) {
     throw new Error(
@@ -701,21 +682,27 @@ export async function resolveLiveCondition(
     throw new Error("resolveCondition outcomesIds is empty.");
   }
 
-  for (let i = 0; i < liveConditionEntity.outcomesIds!.length; i++) {
+  for (let i = 0; i < liveConditionEntity.outcomesIds.length; i++) {
     const liveOutcomeEntityId = getEntityId(
       liveConditionEntity.id,
-      liveConditionEntity.outcomesIds![i].toString()
+      liveConditionEntity.outcomesIds[i].toString()
     );
-    const liveOutcomeEntity = (await context.LiveOutcome.get(
+    const liveOutcomeEntity = await context.LiveOutcome.get(
       liveOutcomeEntityId
-    ))!;
+    );
 
-    if (liveOutcomeEntity._betsEntityIds!.length === 0) {
+    if (!liveOutcomeEntity) {
+      throw new Error(
+        `resolveCondition liveOutcomeEntity not found with id = ${liveOutcomeEntityId}`
+      );
+    }
+
+    if (!liveOutcomeEntity._betsEntityIds || liveOutcomeEntity._betsEntityIds.length === 0) {
       continue;
     }
 
-    for (let j = 0; j < liveOutcomeEntity._betsEntityIds!.length; j++) {
-      const livebetEntityId = liveOutcomeEntity._betsEntityIds![j];
+    for (let j = 0; j < liveOutcomeEntity._betsEntityIds.length; j++) {
+      const livebetEntityId = liveOutcomeEntity._betsEntityIds[j];
       const _liveBetEntity = (await context.LiveBet.get(livebetEntityId))!;
       const liveBetEntity = deepCopy(_liveBetEntity);
 
@@ -747,8 +734,8 @@ export async function resolveLiveCondition(
       // All subBets is resolved
       if (
         liveBetEntity._wonSubBetsCount +
-          liveBetEntity._lostSubBetsCount +
-          liveBetEntity._canceledSubBetsCount ===
+        liveBetEntity._lostSubBetsCount +
+        liveBetEntity._canceledSubBetsCount ===
         liveBetEntity._subBetsCount
       ) {
         liveBetEntity.resolvedBlockTimestamp = BigInt(blockTimestamp);
@@ -830,6 +817,8 @@ export function createLiveCondition(
     outcomesIds: undefined,
     resolvedTxHash: undefined,
   };
+  
+  context.LiveCondition.set(liveConditionEntity);
 
   let liveOutcomeIds: bigint[] = [];
 

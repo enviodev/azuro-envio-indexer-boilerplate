@@ -1,5 +1,5 @@
 import { FreeBetContract_BettorWinEvent_handlerContext, FreeBetContract_BettorWinEvent_handlerContextAsync, FreeBetContract_FreeBetMintedEvent_handlerContext, FreeBetContract_FreeBetMintedEvent_handlerContextAsync, FreeBetContract_FreeBetRedeemedEvent_eventArgs, FreeBetContract_FreeBetRedeemedEvent_handlerContext, FreeBetContract_FreeBetRedeemedEvent_handlerContextAsync, FreeBetContract_FreeBetReissuedEvent_handlerContext, FreeBetContract_TransferEvent_handlerContext, FreeBetv3Contract_NewBetEvent_handlerContext, FreebetContractEntity, FreebetEntity, XYZFreeBetContract_FreeBetMintedBatchEvent_handlerContextAsync, XYZFreeBetContract_FreeBetRedeemedEvent_eventArgs, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContext, XYZFreeBetContract_FreeBetRedeemedEvent_handlerContextAsync, eventLog } from "../../generated/src/Types.gen";
-import { FREEBET_STATUS_CREATED, FREEBET_STATUS_REDEEMED } from "../constants";
+import { FREEBET_STATUS_CREATED, FREEBET_STATUS_REDEEMED, FREEBET_STATUS_REISSUED, FREEBET_STATUS_WITHDRAWN } from "../constants";
 import { getEntityId } from "../utils/schema";
 
 export function createFreebetContractEntity(
@@ -68,10 +68,10 @@ export function createFreebet(
     core_id: coreAddress,
     status: _status,
     rawAmount: amount,
-    // amount: amount.toBigDecimal(),
+    // amount: toDecimal(freebetEntity.rawAmount, tokenDecimals),
     tokenDecimals: tokenDecimals,
     rawMinOdds: minOdds,
-    // minOdds: minOdds.toBigDecimal(),
+    // minOdds: toDecimal(freebetEntity.rawMinOdds, BASES_VERSIONS.mustGetEntry(version).value),
     durationTime: durationTime,
     expiresAt: durationTime + createBlock,
     createdTxHash: txHash,
@@ -90,7 +90,7 @@ export function createFreebet(
 export function reissueFreebet(
   freebetContractAddress: string,
   freebetId: bigint,
-  reissueBlock: number,
+  reissueBlockTimestamp: number,
   context: FreeBetContract_FreeBetReissuedEvent_handlerContext,
 ): FreebetEntity | null {
 
@@ -104,11 +104,11 @@ export function reissueFreebet(
 
   context.Freebet.set({
     ...freebetEntity,
-    expiresAt: freebetEntity.durationTime + BigInt(reissueBlock),
-    status: FREEBET_STATUS_REDEEMED,
+    expiresAt: freebetEntity.durationTime + BigInt(reissueBlockTimestamp),
+    status: FREEBET_STATUS_REISSUED,
     core_id: undefined,
     azuroBetId: undefined,
-    _updatedAt: BigInt(reissueBlock),
+    _updatedAt: BigInt(reissueBlockTimestamp),
   })
 
   return freebetEntity
@@ -139,7 +139,6 @@ export async function redeemFreebet(
     _updatedAt: BigInt(event.blockTimestamp),
   })
 
-
   return freebetEntity
 }
 
@@ -158,7 +157,7 @@ export async function withdrawFreebet(
 
   context.Freebet.set({
     ...freebetEntity,
-    status: "Withdrawn",
+    status: FREEBET_STATUS_WITHDRAWN,
     _updatedAt: BigInt(blockTimestamp),
   })
 
@@ -199,6 +198,10 @@ export function transferFreebet(
     // TODO remove later
     if (!betEntity) {
       throw new Error(`transferFreebet betEntity not found. betEntityId = ${betEntityId}`)
+    }
+
+    if(!betEntity.rawAmount) {
+      throw new Error(`betEntity.rawAmount is empty 2`);
     }
 
     context.Bet.set({

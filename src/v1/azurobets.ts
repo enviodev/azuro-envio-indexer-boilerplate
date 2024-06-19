@@ -15,9 +15,8 @@ Azurobetv1Contract_Transfer_handlerAsync(async ({ event, context }) => {
     event.params.tokenId,
     event.params.from,
     event.params.to,
-    event.blockNumber,
+    event.blockTimestamp,
     context
   )
 
-  // throw new Error('catches')
 });

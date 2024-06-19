@@ -181,6 +181,10 @@ LPv3Contract_NewGame_loader(({ event, context }) => {});
 LPv3Contract_NewGame_handlerAsync(async ({ event, context }) => {
   const network = "gnosis";
 
+  if(!event.params.data) {
+    throw new Error("Data is null");
+  }
+
   await createGame(
     event.srcAddress,
     event.params.gameId,
@@ -197,9 +201,6 @@ LPv3Contract_NewGame_handlerAsync(async ({ event, context }) => {
 });
 
 LPv3Contract_Transfer_loader(({ event, context }) => {
-  if (event.params.tokenId == undefined) {
-    console.log("ascnaweoicansd");
-  }
   context.LiquidityPoolNft.load(
     getEntityId(event.srcAddress, event.params.tokenId.toString()),
     {}

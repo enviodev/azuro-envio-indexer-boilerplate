@@ -176,6 +176,10 @@ LPv2Contract_NewGame_loader(({ event, context }) => {}); // new game v2 vs v3? /
 LPv2Contract_NewGame_handlerAsync(async ({ event, context }) => {
   const network = "gnosis";
 
+  if (!event.params.ipfsHash) {
+    throw new Error("LPv2Contract_NewGame_handler: ipfsHash is null");
+  }
+
   await createGame(
     event.srcAddress,
     event.params.gameId,

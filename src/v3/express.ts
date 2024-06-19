@@ -76,9 +76,6 @@ Expressv3Contract_NewBet_handler(({ event, context }) => {
 });
 
 Expressv3Contract_Transfer_loader(({ event, context }) => {
-  if (event.params.tokenId == undefined) {
-    console.log("cnaobcae");
-  }
   const betEntityId = getEntityId(
     event.srcAddress,
     event.params.tokenId.toString()
@@ -92,7 +89,7 @@ Expressv3Contract_Transfer_handlerAsync(async ({ event, context }) => {
     event.params.tokenId,
     event.params.from,
     event.params.to,
-    event.blockNumber,
+    event.blockTimestamp,
     context
   );
 });

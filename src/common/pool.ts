@@ -121,11 +121,11 @@ export async function createPoolEntity(
     chainName: 'gnosis', // TODO: get chain name
     token: tokenAddress,
     version: version,
-    chainId: chainId,
+    chainId: chainId, // TODO: get chain id
     tokenDecimals: decimals,
     asset: symbol,
     rawApr: 0n,
-    apr: 0n,
+    apr: '0',
     betsAmount: 0n,
     betsCount: 0n,
     wonBetsAmount: 0n,
@@ -170,12 +170,15 @@ export async function depositLiquidity(
   }
 
   const depositedAmount = liquidityPoolContractEntity.depositedAmount + amount;
-  let depositedWithStakingAmount =
-    liquidityPoolContractEntity.depositedWithStakingAmount;
+  
+  let depositedWithStakingAmount: bigint; 
 
   if (liquidityPoolContractEntity.liquidityManager) {
     depositedWithStakingAmount =
       liquidityPoolContractEntity.depositedWithStakingAmount + amount;
+  } else {
+    depositedWithStakingAmount =
+    liquidityPoolContractEntity.depositedWithStakingAmount;
   }
 
   context.LiquidityPoolContract.set({
@@ -252,19 +255,19 @@ export async function withdrawLiquidity(
       `withdrawLiquidity liquidityPoolContractEntity not found. liquidityPoolAddress = ${liquidityPoolAddress}`
     );
   }
+  
+  let withdrawnWithStakingAmount: bigint
+  if (liquidityPoolContractEntity.liquidityManager) {
+    withdrawnWithStakingAmount = liquidityPoolContractEntity.withdrawnWithStakingAmount + amount
+  } else {
+    withdrawnWithStakingAmount = liquidityPoolContractEntity.withdrawnWithStakingAmount
+  }
 
   context.LiquidityPoolContract.set({
     ...liquidityPoolContractEntity,
     withdrawnAmount: liquidityPoolContractEntity.withdrawnAmount + amount,
+    withdrawnWithStakingAmount: withdrawnWithStakingAmount,
   });
-
-  if (liquidityPoolContractEntity.liquidityManager) {
-    context.LiquidityPoolContract.set({
-      ...liquidityPoolContractEntity,
-      withdrawnWithStakingAmount:
-        liquidityPoolContractEntity.withdrawnWithStakingAmount + amount,
-    });
-  }
 
   await updatePoolOnCommonEvents(
     liquidityPoolAddress,
