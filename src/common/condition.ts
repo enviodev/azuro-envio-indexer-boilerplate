@@ -121,7 +121,7 @@ export async function createCondition(
   let outcomeIds: bigint[] = [];
 
   if (outcomes.length !== 2) {
-    throw new Error(`createCondition outcomes length is not 2. conditionentity id = ${conditionEntityId}`);
+    // throw new Error(`createCondition outcomes length is not 2. conditionentity id = ${conditionEntityId}`);
   }
 
   for (let i = 0; i < outcomes.length; i++) {
@@ -270,9 +270,10 @@ export async function resolveCondition(
   const _conditionEntity = await context.Condition.get(conditionEntityId);
 
   if (!_conditionEntity) {
-    throw new Error(
+    context.log.error(
       `resolveCondition conditionEntity not found with id = ${conditionEntityId}`
     );
+    return null
   }
 
   const conditionEntity = deepCopy(_conditionEntity);

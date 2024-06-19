@@ -181,10 +181,6 @@ LPv3Contract_NewGame_loader(({ event, context }) => {});
 LPv3Contract_NewGame_handlerAsync(async ({ event, context }) => {
   const network = "gnosis";
 
-  if(!event.params.data) {
-    throw new Error("Data is null");
-  }
-
   await createGame(
     event.srcAddress,
     event.params.gameId,
@@ -196,7 +192,7 @@ LPv3Contract_NewGame_handlerAsync(async ({ event, context }) => {
     BigInt(event.blockNumber),
     BigInt(event.blockTimestamp),
     event.chainId,
-    context
+    context,
   );
 });
 

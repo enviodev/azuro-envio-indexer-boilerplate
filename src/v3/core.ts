@@ -280,20 +280,12 @@ Corev3Contract_MarginChanged_loader(({ event, context }) => {
   const conditionId = event.params.conditionId;
   const coreAddress = event.srcAddress;
 
-  if (conditionId == undefined) {
-    console.log("jbaacesscsmmbuccasdcwd");
-  }
-
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
   context.Condition.load(conditionEntityId, {});
 });
 Corev3Contract_MarginChanged_handler(({ event, context }) => {
   const conditionId = event.params.conditionId;
   const coreAddress = event.srcAddress;
-
-  if (conditionId == undefined) {
-    console.log("jbaacesscsmmbucwd");
-  }
 
   const conditionEntityId = getEntityId(coreAddress, conditionId.toString());
   const conditionEntity = context.Condition.get(conditionEntityId);

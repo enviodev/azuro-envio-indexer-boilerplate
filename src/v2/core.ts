@@ -178,9 +178,10 @@ Corev2Contract_NewBet_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    throw new Error(
+    context.log.error(
       `v2 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`
     );
+    return
   }
 
   const lp = (await context.CoreContract.get(coreAddress))!.liquidityPool_id;
