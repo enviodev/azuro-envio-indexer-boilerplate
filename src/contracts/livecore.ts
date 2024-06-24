@@ -22,6 +22,8 @@ export async function getLiveConditionFromId(
   const cache = await Cache.init(CacheCategory.LiveCondition, chainId);
   const _condition = await cache.read(conditionId);
 
+  console.log("condition id: ", conditionId);
+
   if (_condition) {
     return _condition;
   }
@@ -39,30 +41,29 @@ export async function getLiveConditionFromId(
     const _result = (await Promise.resolve(
       liveCoreContract.methods.getCondition(conditionId).call()
     )) as unknown;
+
+    console.log('awe')
     const result = _result as LiveCondition;
 
+    console.log('awe')
+    console.log(JSON.stringify(result, null, 2))
+
+    throw new Error('not implemented')
+
     const condition: LiveConditionResponse = {
-      gameId: result.gameId.toString().toLowerCase(),
-      funds: [
-        result.funds[0].toString().toLowerCase(),
-        result.funds[1].toString().toLowerCase(),
-      ],
-      virtualFunds: [
-        result.virtualFunds[0].toString().toLowerCase(),
-        result.virtualFunds[1].toString().toLowerCase(),
-      ],
-      reinforcement: result.reinforcement.toString().toLowerCase(),
-      affiliatesReward: result.affiliatesReward.toString().toLowerCase(),
-      outcomes: [
-        result.outcomes[0].toString().toLowerCase(),
-        result.outcomes[1].toString().toLowerCase(),
-      ],
-      outcomeWin: result.outcomeWin.toString().toLowerCase(),
-      margin: result.margin.toString().toLowerCase(),
-      oracle: result.oracle.toString().toLowerCase(),
-      endsAt: result.endsAt.toString().toLowerCase(),
-      state: result.state.toString().toLowerCase(),
-      leaf: result.leaf.toString().toLowerCase(),
+      gameId: result.gameId.toString(),
+      payouts: result.payouts.map(payout => payout.toString().toLowerCase()),
+      virtualFunds: result.virtualFunds.map(virtualFund => virtualFund.toString().toLowerCase()),
+      totalNetBets: result.totalNetBets.toString(),
+      reinforcement: result.reinforcement.toString(),
+      fund: result.fund.toString(),
+      margin: result.margin.toString(),
+      endsAt: result.endsAt.toString(),
+      lastDepositId: result.lastDepositId.toString(),
+      winningOutcomesCount: result.winningOutcomesCount.toString(),
+      state: result.state.toString(),
+      oracle: result.oracle.toString(),
+      isExpressForbidden: result.isExpressForbidden.toString(),
     };
 
     const entry = {
@@ -81,22 +82,44 @@ export async function getLiveConditionFromId(
 export function deserialiseLiveConditionResult(
   response: LiveConditionResponse
 ): LiveCondition {
+  let isExpressForbidden: boolean;
+
+  if (response.isExpressForbidden === "true") {
+    isExpressForbidden = true;
+  } else if (response.isExpressForbidden === "false") {
+    isExpressForbidden = false;
+  } else {
+    throw new Error(
+      `v3 ConditionCreated isExpressForbidden incorrect format. isExpressForbidden = ${response.isExpressForbidden}`
+    );
+  }
+
+  if (response.payouts.length !== 2) {
+    throw new Error(
+      `v3 ConditionCreated payouts length is incorrect. payouts = ${response.payouts}`
+    );
+  }
+
+  if (response.virtualFunds.length !== 2) {
+    throw new Error(
+      `v3 ConditionCreated virtualFunds length is incorrect. virtualFunds = ${response.virtualFunds}`
+    );
+  }
+
   const condition: LiveCondition = {
     gameId: BigInt(response.gameId),
-    funds: [BigInt(response.funds[0]), BigInt(response.funds[1])],
-    virtualFunds: [
-      BigInt(response.virtualFunds[0]),
-      BigInt(response.virtualFunds[1]),
-    ],
+    payouts: response.payouts.map(payout => BigInt(payout)),
+    virtualFunds: response.virtualFunds.map(virtualFund => BigInt(virtualFund)),
+    totalNetBets: BigInt(response.totalNetBets),
     reinforcement: BigInt(response.reinforcement),
-    affiliatesReward: BigInt(response.affiliatesReward),
-    outcomes: [BigInt(response.outcomes[0]), BigInt(response.outcomes[1])],
-    outcomeWin: BigInt(response.outcomeWin),
+    fund: BigInt(response.fund),
     margin: BigInt(response.margin),
-    oracle: response.oracle,
     endsAt: BigInt(response.endsAt),
+    lastDepositId: BigInt(response.lastDepositId),
+    winningOutcomesCount: BigInt(response.winningOutcomesCount),
     state: BigInt(response.state),
-    leaf: BigInt(response.leaf),
+    oracle: response.oracle,
+    isExpressForbidden: isExpressForbidden,
   };
   return condition;
 }

@@ -22,19 +22,20 @@ export async function getConditionV3FromId(
 ): Promise<{
   readonly condition: ConditionV3Response;
 }> {
+  
   const conditionId = _conditionId.toString();
   const cache = await Cache.init(CacheCategory.ConditionV3, chainId);
   const _condition = await cache.read(conditionId);
-
+  
   if (_condition) {
     return _condition;
   }
-
+  
   // a function to loop through rpcsToRotate
   const getRpcUrl = (rpcsToRotate: string[]) => {
     const rpc = rpcsToRotate[rpcIndex];
     rpcIndex = (rpcIndex + 1) % rpcsToRotate.length;
-    console.log("rpc: ", rpc)
+    // console.log("rpc: ", rpc)
     return rpc;
   };
 
@@ -57,11 +58,8 @@ export async function getConditionV3FromId(
 
     const condition: ConditionV3Response = {
       gameId: result.gameId.toString(),
-      payouts: [result.payouts[0].toString(), result.payouts[1].toString()],
-      virtualFunds: [
-        result.virtualFunds[0].toString(),
-        result.virtualFunds[1].toString(),
-      ],
+      payouts: result.payouts.map(payout => payout.toString().toLowerCase()),
+      virtualFunds: result.virtualFunds.map(virtualFund => virtualFund.toString().toLowerCase()),
       totalNetBets: result.totalNetBets.toString(),
       reinforcement: result.reinforcement.toString(),
       fund: result.fund.toString(),
@@ -78,7 +76,7 @@ export async function getConditionV3FromId(
       condition: condition,
     } as const;
 
-    cache.add({ [conditionId]: entry as any });
+    await cache.add({ [conditionId]: entry as any });
 
     return entry;
   } catch (err) {
@@ -101,25 +99,10 @@ export function deserialiseConditionV3Result(
     );
   }
 
-  if (response.payouts.length !== 2) {
-    throw new Error(
-      `v3 ConditionCreated payouts length is incorrect. payouts = ${response.payouts}`
-    );
-  }
-
-  if (response.virtualFunds.length !== 2) {
-    throw new Error(
-      `v3 ConditionCreated virtualFunds length is incorrect. virtualFunds = ${response.virtualFunds}`
-    );
-  }
-
   const condition: ConditionV3 = {
     gameId: BigInt(response.gameId),
-    payouts: [BigInt(response.payouts[0]), BigInt(response.payouts[1])],
-    virtualFunds: [
-      BigInt(response.virtualFunds[0]),
-      BigInt(response.virtualFunds[1]),
-    ],
+    payouts: response.payouts.map(payout => BigInt(payout)),
+    virtualFunds: response.virtualFunds.map(virtualFund => BigInt(virtualFund)),
     totalNetBets: BigInt(response.totalNetBets),
     reinforcement: BigInt(response.reinforcement),
     fund: BigInt(response.fund),

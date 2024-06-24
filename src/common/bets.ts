@@ -81,9 +81,10 @@ export async function transferBet(
   const betEntity = await context.Bet.get(betEntityId);
 
   if (!betEntity) {
-    throw new Error(
-      `transferBet betEntity not found. betEntity = ${betEntityId}`
-    );
+    // throw new Error(
+    //   `transferBet betEntity not found. betEntity = ${betEntityId}`
+    // );
+    return null
   }
 
   let actor = betEntity.actor;
@@ -453,9 +454,9 @@ export async function bettorWin(
     const betEntity = await context.Bet.get(betEntityId);
 
     if (!betEntity) {
-      context.log.error(
-        `handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`
-      );
+      // context.log.error(
+      //   `handleBettorWin betEntity not found in bettorWin. betEntity = ${betEntityId}`
+      // );
       return
     }
 

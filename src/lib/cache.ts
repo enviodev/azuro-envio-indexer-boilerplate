@@ -163,15 +163,24 @@ export class Entry<T extends Shape> {
     const data = JSON.stringify(fields[id]);
     // // console.log("Executing query:", query, "with id:", id, "and data:", data);
     return new Promise<void>((resolve, reject) => {
-      db.run(query, [id, data], (err) => {
-        if (err) {
-          console.error("Error executing query:", err);
-          reject(err);
-        } else {
-          // // console.log("Data added successfully");
-          resolve();
-        }
-      });
+      db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
+        db.run(query, [id, data], (err) => {
+          if (err) {
+            console.error("Error executing query:", err);
+            reject(err);
+          } else {
+            // // console.log("Data added successfully");
+            resolve();
+          }
+        });
+        db.run('COMMIT', (err) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve()
+        });
+      })
     });
   }
 }

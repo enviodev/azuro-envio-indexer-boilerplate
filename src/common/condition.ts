@@ -50,11 +50,37 @@ import { removeItem } from "../utils/array";
 import { getOdds, safeDiv, toDecimal } from "../utils/math";
 import { calcPayoutV2, calcPayoutV3 } from "./express";
 import { countConditionResolved } from "./pool";
-import { Condition, LiveCondition } from "../src/DbFunctions.bs";
 import { getEntityId } from "../utils/schema";
 import { Mutable, Version } from "../utils/types";
 import { deepCopy } from "../utils/mapping";
 import { Decimal } from "decimal.js";
+import sqlite3 from 'sqlite3';
+
+const db = new sqlite3.Database(".cache/cache.db");
+
+// Function to delete an entry by ID
+function deleteEntryById(id: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const sql = 'DELETE FROM conditionv3100 WHERE id=?';
+
+    // Use a transaction to perform multiple deletions
+    db.serialize(() => {
+      db.run('BEGIN TRANSACTION');
+      db.run(sql, id, function (err) {
+        if (err) {
+          return reject(err);
+        }
+        console.log(`Row(s) deleted for id: ${id}`);
+      });
+      db.run('COMMIT', (err) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve()
+      });
+    });
+  })
+}
 
 export async function createCondition(
   version: Version,
@@ -111,17 +137,37 @@ export async function createCondition(
   );
 
   if (!newOdds) {
-    throw new Error(
-      `createCondition getOdds returned null, conditionId ${conditionEntityId}, version is ${version}`
-    );
+    // throw new Error(
+    //   `createCondition getOdds returned null, conditionId ${conditionEntityId}, version is ${version}`
+    // );
+    return null;
   }
 
   context.Condition.set(conditionEntity);
 
   let outcomeIds: bigint[] = [];
 
-  if (outcomes.length !== 2) {
-    // throw new Error(`createCondition outcomes length is not 2. conditionentity id = ${conditionEntityId}`);
+  // TODO check for v1 and v2!
+  if (outcomes.length != funds.length || outcomes.length != newOdds.length) {
+    // console.log('outcomes = ', outcomes)
+    // console.log('conditionId = ', conditionId.toString())
+    // throw new Error(`outcomes.lenth = ${outcomes.length}, funds.length = ${funds.length}, newOdds.length = ${newOdds.length}`)
+
+    if (outcomes.length < funds.length || outcomes.length < newOdds.length) {
+      throw new Error(`createCondition outcomes length is less than funds or newOdds. 
+      conditionentity id = ${conditionEntityId} outcomes length = ${outcomes.length}`)
+    }
+
+    await deleteEntryById(conditionId.toString());
+    return null;
+
+    // if(coreAddress != '0x7f3F3f19c4e4015fd9Db2f22e653c766154091EF'){
+    //   throw new Error('this should only happen in v3')
+    // }
+
+    throw new Error(`createCondition outcomes length is not 2. 
+     conditionentity id = ${conditionEntityId} outcomes length = ${outcomes.length}`)
+
   }
 
   for (let i = 0; i < outcomes.length; i++) {
@@ -137,8 +183,8 @@ export async function createCondition(
       outcomeId: outcomes[i],
       condition_id: conditionEntity.id,
       sortOrder: i,
-      fund: funds[i] ? funds[i] : 0n, 
-      rawCurrentOdds: newOdds[i] ? newOdds[i] : 0n, 
+      fund: funds[i],
+      rawCurrentOdds: newOdds[i],
       _betsEntityIds: [],
       // currentOdds: toDecimal(
       //   newOdds[i],
@@ -146,6 +192,15 @@ export async function createCondition(
       // ).toString(),
       _updatedAt: BigInt(createBlockTimestamp),
     };
+
+    if (!funds[i]) {
+      context.log.debug(`funds[i] = ${funds[i]}, length = ${funds.length}`)
+      throw new Error(`createCondition funds is empty ${funds}. conditionId = ${conditionEntityId}`);
+    }
+
+    if (!newOdds[i]) {
+      throw new Error(`createCondition newOdds is empty ${newOdds}`);
+    }
 
     context.Outcome.set(outcomeEntity);
   }
@@ -178,7 +233,7 @@ export async function createCondition(
 
   const leagueEntity = await context.League.get(gameEntity.league_id);
 
-  if(!leagueEntity) {
+  if (!leagueEntity) {
     throw new Error(`createCondition leagueEntity not found with id = ${gameEntity.league_id}`)
   }
 
@@ -235,7 +290,7 @@ export function updateConditionOdds(
   for (let i = 0; i < outcomesEntities.length; i++) {
     const outcomeEntity = outcomesEntities[i];
 
-    if(!outcomeEntity._betsEntityIds) {
+    if (!outcomeEntity._betsEntityIds) {
       throw new Error(`outcomeEntity._betsEntityIds is empty 2`);
     }
 
@@ -293,15 +348,16 @@ export async function resolveCondition(
         conditionEntity.id,
         winningOutcomes[i].toString()
       );
-      const outcomeEntity = (await context.Outcome.get(outcomeEntityId))!.id;
+      const outcomeEntity = await context.Outcome.get(outcomeEntityId);
 
       if (!outcomeEntity) {
-        throw new Error(
-          `resolveCondition outcomeEntityId not found with id = ${outcomeEntityId}`
-        );
+        // throw new Error(
+        //   `resolveCondition outcomeEntityId not found with id = ${outcomeEntityId}`
+        // );
+        return null
       }
 
-      wonOutcomes = wonOutcomes.concat([outcomeEntity]);
+      wonOutcomes = wonOutcomes.concat([outcomeEntityId]);
     }
 
     // conditionEntity.wonOutcomes = wonOutcomes
@@ -318,7 +374,8 @@ export async function resolveCondition(
 
   // TODO remove later
   if (!conditionEntity.outcomesIds) {
-    throw new Error(`resolveCondition outcomesIds is empty.`);
+    // throw new Error(`resolveCondition outcomesIds is empty.`);
+    return null
   }
 
   for (let i = 0; i < conditionEntity.outcomesIds.length; i++) {
@@ -818,7 +875,7 @@ export function createLiveCondition(
     outcomesIds: undefined,
     resolvedTxHash: undefined,
   };
-  
+
   context.LiveCondition.set(liveConditionEntity);
 
   let liveOutcomeIds: bigint[] = [];
@@ -882,3 +939,6 @@ export function updateConditionReinforcement(
 
   return conditionEntity;
 }
+
+// 100100000000000015792828700000000000000252652188
+// 100100000000000015797071530000000000000254248197

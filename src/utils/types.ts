@@ -101,8 +101,8 @@ export type ConditionV2Response = {
 
 export type ConditionV3 = {
   gameId: bigint;
-  payouts: [bigint, bigint];
-  virtualFunds: [bigint, bigint];
+  payouts: bigint[];
+  virtualFunds: bigint[];
   totalNetBets: bigint;
   reinforcement: bigint;
   fund: bigint;
@@ -117,8 +117,8 @@ export type ConditionV3 = {
 
 export type ConditionV3Response = {
   gameId: string;
-  payouts: [string, string];
-  virtualFunds: [string, string];
+  payouts: string[];
+  virtualFunds: string[];
   totalNetBets: string;
   reinforcement: string;
   fund: string;
@@ -134,30 +134,32 @@ export type ConditionV3Response = {
 // TODO
 export type LiveCondition = {
   gameId: bigint;
-  funds: [bigint, bigint];
-  virtualFunds: [bigint, bigint];
+  payouts: bigint[];
+  virtualFunds: bigint[];
+  totalNetBets: bigint;
   reinforcement: bigint;
-  affiliatesReward: bigint;
-  outcomes: [bigint, bigint];
-  outcomeWin: bigint;
+  fund: bigint;
   margin: bigint;
-  oracle: string;
   endsAt: bigint;
+  lastDepositId: bigint;
+  winningOutcomesCount: bigint;
   state: bigint;
-  leaf: bigint;
+  oracle: string;
+  isExpressForbidden: boolean;
 };
 // TODO
 export type LiveConditionResponse = {
   gameId: string;
-  funds: [string, string];
-  virtualFunds: [string, string];
+  payouts: string[];
+  virtualFunds: string[];
+  totalNetBets: string;
   reinforcement: string;
-  affiliatesReward: string;
-  outcomes: [string, string];
-  outcomeWin: string;
+  fund: string;
   margin: string;
-  oracle: string;
   endsAt: string;
+  lastDepositId: string;
+  winningOutcomesCount: string;
   state: string;
-  leaf: string;
+  oracle: string;
+  isExpressForbidden: string;
 }

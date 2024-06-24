@@ -7,7 +7,7 @@ type chainConstants = {
 export const rpcsToRotate = [
   "https://rpc.ankr.com/gnosis",
   "https://gnosis-mainnet.public.blastapi.io",
-  "https://rpc.gnosischain.com",
+  // "https://rpc.gnosischain.com",
   "https://gnosis.blockpi.network/v1/rpc/public",
   "https://rpc.gnosis.gateway.fm",
   "https://gnosis-rpc.publicnode.com",

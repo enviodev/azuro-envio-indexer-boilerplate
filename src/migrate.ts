@@ -35,7 +35,7 @@ function createTable(tableName: string) {
   `);
 }
 
-createTable("conditionv3100")
+createTable("livecondition100")
 
 // Function to migrate data into SQLite database
 function migrateData(tableName: string, dataObj: any) {

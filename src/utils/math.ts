@@ -215,7 +215,8 @@ function getOddsFromProbabilities(probabilities: bigint[], margin: bigint, winni
 
     if (newError === error) {
       if ((div(margin, oddsSpread) - C1e12) >= PRECISION) {
-        throw new Error('margin / oddsSpread - 1 >= precision')
+        // throw new Error('margin / oddsSpread - 1 >= precision')
+        return null
       }
       return odds
     }
@@ -281,8 +282,8 @@ export function v3(funds: bigint[], margin: bigint, winningOutcomesCount: number
     }
 
     if (odds[i] <= C1e12) {
-      // TODO throw error
-      //console.log(`v3 odds lower than 1^12, fund is ${funds[i]}. Odds are ${odds[i]}. i is ${i}. Odds list is ${odds}`)
+      // console.log(`v3 odds lower than 1^12, fund is ${funds[i]}. Odds are ${odds[i]}. i is ${i}. Odds list is ${odds}`)
+      // return null
     }
   }
 
