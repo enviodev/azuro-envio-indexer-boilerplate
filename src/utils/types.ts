@@ -131,32 +131,23 @@ export type ConditionV3Response = {
   isExpressForbidden: string;
 };
 
-// TODO
 export type LiveCondition = {
-  gameId: bigint;
+  maxReserved: bigint;
   payouts: bigint[];
-  virtualFunds: bigint[];
   totalNetBets: bigint;
-  reinforcement: bigint;
-  fund: bigint;
-  margin: bigint;
-  endsAt: bigint;
-  lastDepositId: bigint;
-  winningOutcomesCount: bigint;
-  state: bigint;
+  settledAt: bigint;
+  lastDepositId: number;
+  winningOutcomesCount: number;
+  state: number;
   oracle: string;
   isExpressForbidden: boolean;
 };
-// TODO
+
 export type LiveConditionResponse = {
-  gameId: string;
+  maxReserved: string;
   payouts: string[];
-  virtualFunds: string[];
   totalNetBets: string;
-  reinforcement: string;
-  fund: string;
-  margin: string;
-  endsAt: string;
+  settledAt: string;
   lastDepositId: string;
   winningOutcomesCount: string;
   state: string;

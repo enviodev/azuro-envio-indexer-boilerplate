@@ -90,7 +90,7 @@ FreeBetContract_FreeBetMinted_handlerAsync(async ({ event, context }) => {
   const freebetContractEntity = await getOrCreateFreebetContract(event.srcAddress, event.chainId, context)
 
   if (!freebetContractEntity) {
-    return
+    throw new Error(`Unable to get or create freebet contract entity with address ${event.srcAddress}`)
   }
 
   const liquidityPoolContractEntity = (await context.LiquidityPoolContract.get(freebetContractEntity.liquidityPool_id))!
@@ -183,7 +183,9 @@ FreeBetContract_FreeBetRedeemed_handlerAsync(async ({ event, context }) => {
   )
 
   if (!freebetEntity) {
-    throw new Error(`v2 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id}`)
+    // throw new Error(`v2 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id}`)
+    context.log.error(`v2 handleFreeBetRedeemed freebetEntity not found. freebetId = ${event.params.id}`)
+    return
   }
 
   await linkBetWithFreeBet(

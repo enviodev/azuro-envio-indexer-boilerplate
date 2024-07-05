@@ -12,4 +12,9 @@ UpgradeableBeaconContract_Upgraded_loader(({ event, context }) => {
 })
 UpgradeableBeaconContract_Upgraded_handler(({ event, context }) => {
     // do nothing
+    if (event.blockNumber === 29_704_715){
+        context.log.error(`UpgradeableBeaconContract_Upgraded_loader found in correct block: ${event.params.implementation}`)
+    } else {
+        context.log.debug(`UpgradeableBeaconContract_Upgraded_loader outside correct block: ${event.params.implementation}`)
+    }
 })

@@ -128,7 +128,9 @@ export async function redeemFreebet(
 
   // TODO remove later
   if (!freebetEntity) {
-    throw new Error(`redeemFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    // throw new Error(`redeemFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    context.log.error(`redeemFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    return null
   }
 
   context.Freebet.set({

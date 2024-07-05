@@ -22,7 +22,7 @@ export async function getLiveConditionFromId(
   const cache = await Cache.init(CacheCategory.LiveCondition, chainId);
   const _condition = await cache.read(conditionId);
 
-  console.log("condition id: ", conditionId);
+  console.log("live condition condition id: ", conditionId);
 
   if (_condition) {
     return _condition;
@@ -38,33 +38,23 @@ export async function getLiveConditionFromId(
   const liveCoreContract = new web3.eth.Contract(contractABI, contractAddress);
 
   try {
-    const _result = (await Promise.resolve(
+    const result = (await Promise.resolve(
       liveCoreContract.methods.getCondition(conditionId).call()
-    )) as unknown;
-
-    console.log('awe')
-    const result = _result as LiveCondition;
-
-    console.log('awe')
-    console.log(JSON.stringify(result, null, 2))
-
-    throw new Error('not implemented')
+    )) as unknown as LiveCondition;
 
     const condition: LiveConditionResponse = {
-      gameId: result.gameId.toString(),
+      maxReserved: result.maxReserved.toString(),
       payouts: result.payouts.map(payout => payout.toString().toLowerCase()),
-      virtualFunds: result.virtualFunds.map(virtualFund => virtualFund.toString().toLowerCase()),
       totalNetBets: result.totalNetBets.toString(),
-      reinforcement: result.reinforcement.toString(),
-      fund: result.fund.toString(),
-      margin: result.margin.toString(),
-      endsAt: result.endsAt.toString(),
+      settledAt: result.settledAt.toString(),
       lastDepositId: result.lastDepositId.toString(),
       winningOutcomesCount: result.winningOutcomesCount.toString(),
       state: result.state.toString(),
       oracle: result.oracle.toString(),
       isExpressForbidden: result.isExpressForbidden.toString(),
-    };
+    }
+
+    console.log(condition)
 
     const entry = {
       condition: condition,
@@ -79,11 +69,10 @@ export async function getLiveConditionFromId(
   }
 }
 
-export function deserialiseLiveConditionResult(
+export function deserialiseLiveConditionResponse(
   response: LiveConditionResponse
 ): LiveCondition {
   let isExpressForbidden: boolean;
-
   if (response.isExpressForbidden === "true") {
     isExpressForbidden = true;
   } else if (response.isExpressForbidden === "false") {
@@ -94,32 +83,17 @@ export function deserialiseLiveConditionResult(
     );
   }
 
-  if (response.payouts.length !== 2) {
-    throw new Error(
-      `v3 ConditionCreated payouts length is incorrect. payouts = ${response.payouts}`
-    );
-  }
-
-  if (response.virtualFunds.length !== 2) {
-    throw new Error(
-      `v3 ConditionCreated virtualFunds length is incorrect. virtualFunds = ${response.virtualFunds}`
-    );
-  }
-
   const condition: LiveCondition = {
-    gameId: BigInt(response.gameId),
+    maxReserved: BigInt(response.maxReserved),
     payouts: response.payouts.map(payout => BigInt(payout)),
-    virtualFunds: response.virtualFunds.map(virtualFund => BigInt(virtualFund)),
     totalNetBets: BigInt(response.totalNetBets),
-    reinforcement: BigInt(response.reinforcement),
-    fund: BigInt(response.fund),
-    margin: BigInt(response.margin),
-    endsAt: BigInt(response.endsAt),
-    lastDepositId: BigInt(response.lastDepositId),
-    winningOutcomesCount: BigInt(response.winningOutcomesCount),
-    state: BigInt(response.state),
+    settledAt: BigInt(response.settledAt),
+    lastDepositId: Number(response.lastDepositId),
+    winningOutcomesCount: Number(response.winningOutcomesCount),
+    state: Number(response.state),
     oracle: response.oracle,
     isExpressForbidden: isExpressForbidden,
   };
+
   return condition;
 }
