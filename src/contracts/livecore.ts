@@ -16,13 +16,9 @@ export async function getLiveConditionFromId(
 ): Promise<{
   readonly condition: LiveConditionResponse;
 }> {
-  console.log("livecore", contractAddress);
-
   const conditionId = _conditionId.toString();
   const cache = await Cache.init(CacheCategory.LiveCondition, chainId);
   const _condition = await cache.read(conditionId);
-
-  console.log("live condition condition id: ", conditionId);
 
   if (_condition) {
     return _condition;
@@ -53,8 +49,6 @@ export async function getLiveConditionFromId(
       oracle: result.oracle.toString(),
       isExpressForbidden: result.isExpressForbidden.toString(),
     }
-
-    console.log(condition)
 
     const entry = {
       condition: condition,

@@ -21,9 +21,6 @@ LiveCorev1Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
     const conditionId = event.params.conditionId
     const coreAddress = event.srcAddress
 
-    context.log.error(`livecore.ts: handleConditionCreated not implemented, address needed ${event.srcAddress}`)
-    context.log.error(`livecore.ts: handleConditionCreated not implemented, conditionId needed ${conditionId}`)
-
     const _conditionData = await getLiveConditionFromId(event.srcAddress, event.chainId, conditionId)
     const conditionData = deserialiseLiveConditionResponse(_conditionData.condition)
     

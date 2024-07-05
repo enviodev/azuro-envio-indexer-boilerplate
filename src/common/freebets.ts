@@ -229,7 +229,10 @@ export function resolveFreebet(
 
   // TODO remove later
   if (!freebetEntity) {
-    throw new Error(`resolveFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    
+    // throw new Error(`resolveFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    context.log.error(`resolveFreebet freebetEntity not found. freebetEntityId = ${freebetEntityId}`)
+    return null
   }
 
   context.Freebet.set({

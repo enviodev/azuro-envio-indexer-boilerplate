@@ -190,7 +190,7 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
   const outcomeEntity = await context.Outcome.get(outcomeEntityId);
 
   if (!outcomeEntity) {
-    // throw new Error(
+    // context.log.error(
     //   `v3 handleNewBet outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`
     // );
     return

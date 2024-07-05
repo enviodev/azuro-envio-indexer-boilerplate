@@ -10,7 +10,10 @@ This repo is to help the grantee build the opensource azuro indexer, it includes
 ### Setup
 
 #### Changes to generated code
+
 This indexer requires some small changes to the generated code, the code that gets created when you run `pnpm envio codegen`:
+
+Note that after performing the following changes to the generated code, avoid using `pnpm envio dev` (unless you make changes to the config.yaml), instead use `pnpm envio start` or `pnpm envio start -r`. 
 
 
 1. `pnpm envio codegen` will build the generated code files

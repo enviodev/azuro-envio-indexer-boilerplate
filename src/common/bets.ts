@@ -426,9 +426,9 @@ export async function bettorWin(
     const liveBetEntity = await context.LiveBet.get(betEntityId);
 
     if (!liveBetEntity) {
-      context.log.error(
-        `handleBettorWin liveBetEntity not found in bettorWin. betEntity = ${betEntityId}`
-      );
+      // context.log.error(
+      //   `handleBettorWin liveBetEntity not found in bettorWin. betEntity = ${betEntityId}`
+      // );
       return 
     }
 
