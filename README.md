@@ -7,9 +7,7 @@ This repo is to help the grantee build the opensource azuro indexer, it includes
 - [Azuro Subgraph v3](https://thegraph.azuro.org/subgraphs/name/azuro-protocol/azuro-api-gnosis-v3/graphql) for cross referencing the values
 
 
-### Setup
-
-#### Changes to generated code
+### Changes to generated code
 
 This indexer requires some small changes to the generated code, the code that gets created when you run `pnpm envio codegen`:
 
@@ -58,6 +56,11 @@ let getAbiMapping = (self: t, ~fromBlock) => {
 ![image](https://github.com/enviodev/azuro-envio-indexer-boilerplate/assets/74208897/03efce60-479b-4096-9c94-a05e8f8fac3a)
 
 
-### Cached .db files
+## Cached .db files
 
 - *.db files on the repo are stored as LFS pointers (Github large file system), so you may need to run `git lfs pull` to restore the *.db files locally
+
+## Multichain
+
+To make this indexer multichain, simply add the additional blockchain information under the `networks` section in `config.yaml`.
+Also see [dev note at the bottom here](https://docs.envio.dev/docs/HyperIndex/multichain-indexing#schema-file) for possible optimization. 
