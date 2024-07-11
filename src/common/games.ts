@@ -367,7 +367,7 @@ export function shiftGame(
 
     // TODO remove later
     if (!gameEntity) {
-        // context.log.error(`shiftGame gameEntity not found. gameEntityId = ${gameEntityId}`)
+        context.log.error(`shiftGame gameEntity not found. gameEntityId = ${gameEntityId}`)
         return null
     }
 

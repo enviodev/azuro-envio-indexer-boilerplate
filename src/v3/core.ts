@@ -63,9 +63,9 @@ Corev3Contract_ConditionCreated_handlerAsync(async ({ event, context }) => {
   // TODO remove later
   if (!gameEntity) {
     // 0x204e7371Ade792c5C006fb52711c50a7efC843ed_1577316943
-    // context.log.error(
-    //   `v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`
-    // );
+    context.log.error(
+      `v3 ConditionCreated gameEntity not found. gameEntityId = ${gameEntityId}`
+    );
     return
   }
 
@@ -102,9 +102,9 @@ Corev3Contract_ConditionResolved_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    // context.log.error(
-    //   `v3 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`
-    // );
+    context.log.error(
+      `v3 handleConditionResolved conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
     return
   }
 
@@ -139,9 +139,9 @@ Corev3Contract_ConditionStopped_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    // context.log.error(
-    //   `v3 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`
-    // );
+    context.log.error(
+      `v3 handleConditionStopped conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
     return
   }
 
@@ -172,9 +172,9 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    // context.log.error(
-    //   `v3 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`
-    // );
+    context.log.error(
+      `v3 handleNewBet conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
     return
   }
 
@@ -190,13 +190,11 @@ Corev3Contract_NewBet_handlerAsync(async ({ event, context }) => {
   const outcomeEntity = await context.Outcome.get(outcomeEntityId);
 
   if (!outcomeEntity) {
-    // context.log.error(
-    //   `v3 handleNewBet outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`
-    // );
+    context.log.error(
+      `v3 handleNewBet outcomeEntity not found. outcomeEntityId = ${outcomeEntityId}`
+    );
     return
   }
-
-  // context.log.debug(`creating v3 bet with id ${getEntityId(coreAddress, event.params.tokenId.toString())}`)
 
   if (!event.params.amount) {
     throw new Error(`Amount is not defined for bet ${event.transactionHash}`);
@@ -240,15 +238,16 @@ Corev3Contract_OddsChanged_handlerAsync(async ({ event, context }) => {
   const conditionEntity = await context.Condition.get(conditionEntityId);
   // TODO remove later
   if (!conditionEntity) {
-    // context.log.error(
-    //   `v3 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`
-    // );
+    context.log.error(
+      `v3 handleNewBet handleOddsChanged not found. conditionEntityId = ${conditionEntityId}`
+    );
     return
   }
 
   let outcomesEntities: OutcomeEntity[] = [];
 
   if(!conditionEntity.outcomesIds) {
+    context.log.error(`v3 handleOddsChanged conditionEntity.outcomesIds not found. conditionEntityId = ${conditionEntityId}`)
     // context.log.debug(`conditionEntity ${conditionEntity}`)
     // context.log.debug(`outcomeIds ${conditionEntity.outcomesIds}`)
     // throw new Error(`v3 handleOddsChanged conditionEntity.outcomesIds not found. conditionEntityId = ${conditionEntityId}`)
@@ -297,9 +296,9 @@ Corev3Contract_MarginChanged_handler(({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    // context.log.error(
-    //   `v3 handleMarginChanged conditionEntity not found. conditionEntityId = {conditionEntityId}`
-    // );
+    context.log.error(
+      `v3 handleMarginChanged conditionEntity not found. conditionEntityId = {conditionEntityId}`
+    );
     return
   }
 
@@ -329,9 +328,9 @@ Corev3Contract_ReinforcementChanged_handler(({ event, context }) => {
 
   // TODO remove later
   if (!conditionEntity) {
-    // context.log.error(
-    //   `v3 handleReinforcementChanged conditionEntity not found. conditionEntityId = ${conditionEntityId}`
-    // );
+    context.log.error(
+      `v3 handleReinforcementChanged conditionEntity not found. conditionEntityId = ${conditionEntityId}`
+    );
     return
   }
 
