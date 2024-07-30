@@ -147,7 +147,8 @@ export async function createCondition(
 
   let outcomeIds: bigint[] = [];
 
-  // TODO check for v1 and v2!
+  // v1 and v2 only ever have 2 outcomes
+  // v3 can have 2 or 3 outcomes
   if (outcomes.length != funds.length || outcomes.length != newOdds.length) {
     // console.log('outcomes = ', outcomes)
     // console.log('conditionId = ', conditionId.toString())
